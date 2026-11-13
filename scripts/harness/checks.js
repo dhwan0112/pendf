@@ -55,10 +55,24 @@
 			opened.push(String(u));
 			return null;
 		};
+		// A hidden/occluded window also gets no `scroll` events (they are
+		// dispatched in the rendering step, like rAF). Emulate the browser:
+		// fire one whenever a viewer container's scroll position changed.
+		const scrollPos = new WeakMap();
+		const scrollPump = setInterval(() => {
+			for (const c of document.querySelectorAll(".ppp-container")) {
+				const pos = c.scrollTop + "," + c.scrollLeft;
+				if (scrollPos.get(c) !== pos) {
+					scrollPos.set(c, pos);
+					c.dispatchEvent(new Event("scroll"));
+				}
+			}
+		}, 40);
 		let tornDown = false;
 		H.teardown = () => {
 			if (tornDown) return;
 			tornDown = true;
+			clearInterval(scrollPump);
 			try {
 				app.workspace.iterateAllLeaves((l) => {
 					if (!leavesBefore.has(l)) l.detach();
@@ -205,9 +219,10 @@
 		const checks = {};
 		const check = async (name, fn) => {
 			if (cfg.only && !cfg.only.includes(name)) return;
+			if (tornDown) return; // torn down from outside (timeout, Ctrl+C): run nothing more
 			H.step = name;
 			try {
-				const d = (await fn()) || {};
+				const d = (await Promise.race([fn(), sleep(150_000).then(() => Promise.reject(new Error("check timed out after 150 s")))])) || {};
 				checks[name] = { ok: d.ok !== false, ...d };
 			} catch (e) {
 				checks[name] = { ok: false, error: String((e && e.stack) || e).slice(0, 800) };
@@ -678,14 +693,26 @@
 				return res;
 			});
 
-			await check("corejs-footprint", async () => {
-				const src = require("fs").readFileSync(cfg.probeBundle, "utf8");
+			// Clean-realm check: the main window already carries polyfills from
+			// other plugins (and earlier legacy builds), so only a fresh iframe
+			// realm can show what our pdf.js does. Load the transformed modern
+			// build there, render fixtures through a real worker AND the
+			// main-thread fallback, and diff every built-in by identity.
+			await check("pdfjs-footprint", async () => {
+				const fs = require("fs");
+				const src = fs.readFileSync(cfg.probeBundle, "utf8");
+				const workerSrc = fs.readFileSync(cfg.probeWorker, "utf8");
+				const files = {};
+				for (const n of ["a4.pdf", "korean-embedded.pdf", "rotations.pdf", "cropbox.pdf"]) files[n] = new Uint8Array(fs.readFileSync(cfg.fixturesDir + "/" + n));
 				const frame = document.createElement("iframe");
 				frame.style.display = "none";
 				document.body.appendChild(frame);
 				try {
 					const w = frame.contentWindow;
-					const NAMES = ["Object", "Array", "Map", "WeakMap", "Set", "WeakSet", "Promise", "Math", "RegExp", "String", "Number", "Symbol", "JSON", "Reflect", "ArrayBuffer", "DataView", "Uint8Array", "Float32Array", "Iterator", "AbortSignal", "URL", "structuredClone", "Error", "AggregateError"];
+					// hidden iframe: rAF never fires; shim it *before* the baseline snapshot
+					w.requestAnimationFrame = (cb) => w.setTimeout(() => cb(w.performance.now()), 16);
+					w.cancelAnimationFrame = (id) => w.clearTimeout(id);
+					const NAMES = ["Object", "Function", "Array", "Map", "WeakMap", "Set", "WeakSet", "Promise", "Math", "RegExp", "String", "Number", "Boolean", "Symbol", "JSON", "Reflect", "ArrayBuffer", "SharedArrayBuffer", "DataView", "Uint8Array", "Uint8ClampedArray", "Int32Array", "Float32Array", "Float64Array", "Iterator", "AbortSignal", "AbortController", "URL", "Blob", "Response", "TextDecoder", "Error", "TypeError", "AggregateError", "Intl", "Date", "Atomics", "WeakRef", "FinalizationRegistry", "Proxy", "Worker", "Path2D", "DOMMatrix", "OffscreenCanvas", "CanvasRenderingContext2D", "FontFace", "Document", "Element", "HTMLCanvasElement", "EventTarget", "MessagePort"];
 					const snap = () => {
 						const out = {};
 						const add = (label, obj) => {
@@ -706,13 +733,31 @@
 					};
 					const before = snap();
 					w.eval(src);
+					// copy the bytes into the iframe realm
+					const inRealm = {};
+					for (const [k, v] of Object.entries(files)) {
+						inRealm[k] = new w.Uint8Array(v.length);
+						inRealm[k].set(v);
+					}
+					const viaWorker = await w.__pppProbe(inRealm, workerSrc, "web-worker");
+					const viaMainThread = await w.__pppProbe(inRealm, workerSrc, "main-thread");
 					const after = snap();
-					const added = [], replaced = [];
+					const added = [], replaced = [], removed = [];
 					for (const [k, v] of Object.entries(after)) {
 						if (!(k in before)) added.push(k);
-						else if (before[k] !== v && typeof before[k] === "function" && !k.startsWith("globalThis.")) replaced.push(k);
+						else if (before[k] !== v && (typeof before[k] === "function" || typeof v === "function")) replaced.push(k);
 					}
-					return { added, replaced, ok: replaced.length === 0 };
+					for (const k of Object.keys(before)) if (!(k in after)) removed.push(k);
+					const ownAdded = added.filter((k) => k !== "globalThis.__pppProbe");
+					const rendersOk = (r) => Object.values(r).every((x) => x.rendered > 0 && x.ops > 0) && r["korean-embedded.pdf"].text > 0;
+					return {
+						viaWorker,
+						viaMainThread,
+						added: ownAdded,
+						replaced,
+						removed,
+						ok: ownAdded.length === 0 && replaced.length === 0 && removed.length === 0 && rendersOk(viaWorker) && rendersOk(viaMainThread),
+					};
 				} finally {
 					frame.remove();
 				}

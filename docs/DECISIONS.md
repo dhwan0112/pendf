@@ -13,12 +13,12 @@
 - **근거:** 지시문이 "원격 설정은 남겨둘 것"이라고 했다. 저장소를 묻지 않고 새로 만들지 않는다는 기존 원칙도 있다.
 - **되돌리기:** `gh repo create dhwan0112/pdf-ppp --private --source . --push`.
 
-## D-03 pdfjs-dist 6.5.438, legacy 빌드
-- **결정:** 최신 안정판을 정확한 버전으로 고정하고 legacy 빌드만 번들한다. modern 빌드 import는 esbuild 플러그인이 막는다.
-- **근거:** INVESTIGATION 1절. modern 빌드는 Chromium 138이나 iPadOS WebKit이 보장하지 않는 JS 기능을 쓴다.
-- **대안:** modern 빌드에 폴리필을 따로 넣기. 결국 legacy 빌드와 같은 결과다.
-- **되돌리기:** `esbuild.config.mjs`의 `LEGACY_*` 경로를 `build/…`로 바꾼다. 워커 변환 규칙도 modern 소스에 맞춰야 한다.
-- **부작용:** legacy 빌드의 core-js 폴리필은 해당 내장 기능이 **없을 때만** 전역 프로토타입에 추가한다. 실측 결과는 D-13.
+## D-03 pdfjs-dist 6.5.438, modern 빌드 + 빌드 시 ponyfill 치환
+- **결정:** 최신 안정판을 정확한 버전으로 고정한다. **modern 빌드**를 번들하고, Chromium 138이나 iPadOS WebKit에 없을 수 있는 최신 내장 기능의 호출 지점을 빌드 시 모듈 지역 함수로 바꾼다(`scripts/pdfjs-ponyfill.mjs`). 소스는 `"pdfjs-dist"`와 `"pdfjs-dist/web/pdf_viewer.mjs"`만 import할 수 있다. esbuild 플러그인이 둘을 변환된 modern 파일로 연결하고, 그 밖의 경로는 막는다.
+- **근거:** 처음에는 legacy 빌드를 썼다. 깨끗한 realm에서 실측해 보니 legacy 빌드의 core-js가 공유 창의 내장 객체에 11개를 추가하고, 네이티브 `Promise.try`·`Iterator#take`·`#drop`을 교체했다(INVESTIGATION 10절, D-13). 스탠드얼론 원칙이 우선이므로 바꿨다. 교체 뒤에는 추가·교체가 0건이고 번들도 3.31에서 3.21 MB로 줄었다.
+- **대안:** (a) legacy 빌드 유지: 전역 변경. (b) pdf.js 5.x로 내리기: 5.4도 같은 최신 기능을 쓴다. (c) modern 빌드에 전역 폴리필: (a)와 같다.
+- **위험:** 치환하지 않은 네이티브 의존(Iterator 헬퍼 등)이 오래된 엔진에 없을 수 있다. 로드 시 엔진 검사(D-16)가 알린다. 치환할 수 없는 모양이 생기면 빌드가 실패한다.
+- **되돌리기:** commit `0dfc589`(legacy 빌드) 상태로 `esbuild.config.mjs`와 `src/pdfjs/index.ts`의 import를 되돌린다.
 
 ## D-04 전역 접근은 빌드 시 변환으로 제거
 - **결정:** `scripts/pdfjs-transform.mjs`가 pdfjs 전역 읽기·쓰기를 모두 지운다. 각 규칙의 일치 횟수가 다르면 빌드를 실패시킨다.
@@ -65,8 +65,11 @@
 - **결정:** id `pdf-ppp`, 이름 `PDF+++`(가칭), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
 - **근거:** 기존 플러그인(Wikiwurzel 등)과 같은 표기. 쓰는 API(`FileView`, `Scope`, `Platform`, `setIcon`)는 1.5 이전부터 공개되어 있다.
 
-## D-13 (조사 후 채움) core-js 폴리필 흔적
-아래 "실측" 절 참고.
+## D-13 내장 객체 무변경을 검증 기준으로 삼음
+- **결정:** "다른 플러그인과 접점 없음"을 Obsidian API 수준을 넘어 **JS 내장 객체 수준**까지 적용한다. 번들된 pdf.js도 공유 창의 내장 객체를 추가·교체·삭제하지 않아야 한다.
+- **검증:** (1) 정적 검사: check-standalone이 `main.js`와 그 안의 워커에서 `core-js`, `__core-js_shared__`, 내장 객체 대입을 금지한다. 빌드는 치환 뒤 AST를 다시 훑는다. (2) 동적 검사: 하네스 `pdfjs-footprint`가 깨끗한 iframe realm에서 실제로 렌더링한 뒤, `Function`을 포함한 내장 객체 50여 종을 동일성으로 비교한다.
+- **측정값:** legacy는 추가 11개 + `__core-js_shared__`, 교체 3개(`Promise.try`, `Iterator#take`, `Iterator#drop`). modern+ponyfill은 0, 0, 0.
+- **주의:** 개발 중 SciWiki 창에는 legacy 빌드를 로드했을 때의 core-js 흔적이 남아 있다. Obsidian을 재시작하면 사라진다.
 
 ## D-14 테스트 도구
 - vitest 5.1, TypeScript 5.9.3(타입 검사; TS 7은 JS API가 없어 도구 연동이 불안정), postcss 8(CSS 스코핑), pdf-lib 1.17.1 + @pdf-lib/fontkit(fixture 생성, 개발 의존성만). 런타임 의존성은 `pdfjs-dist` 하나다.
@@ -75,3 +78,13 @@
 - **결정:** 사이드카 이름은 지시문대로 `<이름>.pdf.ppp.json`을 유지한다.
 - **주의:** Obsidian Sync는 기본 설정에서 "기타 파일 형식"을 동기화하지 않는다. Obsidian Sync를 쓰면 *Settings → Sync → Sync all other types*를 켜야 사이드카가 기기 사이에 오간다. iCloud와 Git은 상관없다. REPORT의 열린 질문에 올렸다.
 - **대안:** `.md` 확장자 사이드카. 항상 동기화되지만 노트 목록·검색·그래프에 보인다.
+
+## D-16 로드 시 엔진 검사
+- **결정:** 플러그인을 로드할 때 `src/pdfjs/engine.ts`가 치환하지 않은 네이티브 의존(Iterator 헬퍼, `Set#intersection`, `Promise.withResolvers`, `AbortSignal.any`, `structuredClone`, `Object.hasOwn`, `Array#findLast/at`, `DecompressionStream`, `Worker`, `Path2D/DOMMatrix`)을 검사한다. 빠진 기능이 있으면 로그에 남기고 뷰 상단에 배너를 띄운다. 렌더링은 그대로 시도한다.
+- **근거:** 전역 폴리필이라는 안전망을 걷어냈으므로, 테스트할 수 없는 기기(iPad)에서 실패하면 원인이 바로 보여야 한다.
+- **되돌리기:** `main.ts`의 `checkEngine()` 호출을 지운다.
+
+## D-17 데스크톱 자동 검증 하네스
+- **결정:** `scripts/obsidian-harness.mjs`가 Obsidian CLI(`obsidian vault=… eval`)로 실제 Obsidian 안에서 Phase 1·2 완료 기준을 검사한다. 검사 대상은 SciWiki 테스트 볼트뿐이다. 하네스는 매번 자신이 연 탭, 심(shim), 플러그인 활성화, 사이드카, `data.json`을 되돌린다. 검사마다 150초 제한이 있고, Node 쪽이 중단돼도(SIGINT/SIGTERM) 정리 코드가 돈다.
+- **주의:** 하네스 파일은 플러그인 코드가 아니다. 플러그인을 다시 로드하려고 `app.plugins`를 쓰므로 check-standalone 검사 대상(`src/`, `main.js`)에서 빠져 있다.
+- **환경 제약:** 창이 숨어 있을 때의 Chromium 동작(rAF 정지, scroll 이벤트 없음, intensive timer throttling)은 INVESTIGATION 11절에 정리했다.

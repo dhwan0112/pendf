@@ -3,6 +3,7 @@ import { PdfPppView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
 import { DEFAULT_SETTINGS, MAX_POSITIONS, PdfPppSettingTab, type PdfPppSettings } from "./settings";
 import { destroyWorker } from "./pdfjs";
+import { checkEngine, type EngineReport } from "./pdfjs/engine";
 import { moveSidecar, type SidecarStore } from "./store/sidecar";
 import { adapterFs } from "./store/obsidianFs";
 import { sidecarPathFor } from "./store/schema";
@@ -12,11 +13,15 @@ const log = logger("plugin");
 
 export default class PdfPppPlugin extends Plugin {
 	settings: PdfPppSettings = structuredClone(DEFAULT_SETTINGS);
+	engine: EngineReport = { ok: true, missing: [], ponyfilled: {} };
 	private stores = new Set<SidecarStore>();
 	private saveSettingsTimer: number | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+		this.engine = checkEngine();
+		log.info(`engine: ${navigator.userAgent} → ${JSON.stringify(this.engine)}`);
+		if (!this.engine.ok) log.warn(`missing JavaScript features: ${this.engine.missing.join(", ")}`);
 		this.registerView(VIEW_TYPE, (leaf) => new PdfPppView(leaf, this));
 		this.registerView(PEN_PROBE_VIEW, (leaf) => new PenProbeView(leaf));
 		this.addSettingTab(new PdfPppSettingTab(this.app, this));

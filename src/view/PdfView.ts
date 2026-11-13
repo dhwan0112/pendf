@@ -130,6 +130,7 @@ export class PdfPppView extends FileView {
 		this.container.tabIndex = 0;
 		this.viewerEl = this.container.createDiv({ cls: "pdfViewer" });
 		this.applySettings();
+		this.showEngineWarning();
 
 		this.registerDomEvent(window, "focus", () => void this.checkExternal());
 		this.registerEvent(
@@ -213,7 +214,7 @@ export class PdfPppView extends FileView {
 	async onLoadFile(file: TFile): Promise<void> {
 		const token = ++this.loadToken;
 		await this.teardown();
-		this.setBanner(null);
+		if (!this.showEngineWarning()) this.setBanner(null);
 		this.viewerEl.empty();
 		const loading = this.viewerRoot.createDiv({ cls: "ppp-loading", text: "Loading…" });
 		try {
@@ -352,10 +353,17 @@ export class PdfPppView extends FileView {
 		layers.refresh();
 	}
 
+	private showEngineWarning(): boolean {
+		const e = this.plugin.engine;
+		if (e.ok) return false;
+		this.setBanner(`This device’s JavaScript engine lacks: ${e.missing.join(", ")}. PDFs may fail to render; updating iPadOS / the Obsidian app should fix it.`, "error");
+		return true;
+	}
+
 	private showStoreStatus(store: SidecarStore): void {
 		switch (store.status) {
 			case "ok":
-				this.setBanner(null);
+				if (!this.showEngineWarning()) this.setBanner(null);
 				break;
 			case "fingerprint-mismatch":
 				this.setBanner(`Annotations hidden: ${store.path} belongs to a different PDF. Nothing will be written to it.`, "warn");

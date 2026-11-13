@@ -49,6 +49,14 @@ export const RULES = {
       count: 1,
     },
   ],
+  "pdf.worker.mjs": [
+    {
+      name: "drop globalThis.pdfjsWorker write in worker",
+      find: /globalThis\.pdfjsWorker = \{\s*WorkerMessageHandler: WorkerMessageHandler\s*\};/g,
+      replace: "",
+      count: 1,
+    },
+  ],
   "pdf.worker.min.mjs": [
     {
       name: "drop globalThis.pdfjsWorker write in worker",
@@ -59,7 +67,7 @@ export const RULES = {
   ],
 };
 
-export const VIEWER_PRELUDE = 'import * as __pppPdfjs from "pdfjs-dist/legacy/build/pdf.mjs";\n';
+export const VIEWER_PRELUDE = 'import * as __pppPdfjs from "pdfjs-dist/build/pdf.mjs";\n';
 
 /**
  * Apply the rules for `key` to `src`. Throws if any rule matches a different

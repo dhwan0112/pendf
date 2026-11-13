@@ -49,7 +49,7 @@ describe("check-standalone", () => {
 		["obsidian-pdfjs", "window.pdfjsLib.getDocument(x);"],
 		["core-pdf-view", "app.workspace.getLeavesOfType('pdf');"],
 		["register-pdf-ext", "this.registerExtensions(['pdf'], 'x');"],
-		["pdfjs-modern", "import { getDocument } from 'pdfjs-dist';"],
+		["pdfjs-import", "import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';"],
 		["ts-suppress", "// @ts-ignore\nfoo();"],
 	];
 	for (const [rule, code] of bad) {
@@ -91,11 +91,12 @@ describe("check-standalone", () => {
 	});
 });
 
-describe("pdfjs-transform on the real pdf.js 6.5.438 legacy sources", () => {
+describe("pdfjs-transform on the real pdf.js 6.5.438 sources", () => {
 	const files: [string, string][] = [
-		["pdf.mjs", "legacy/build/pdf.mjs"],
-		["pdf_viewer.mjs", "legacy/web/pdf_viewer.mjs"],
-		["pdf.worker.min.mjs", "legacy/build/pdf.worker.min.mjs"],
+		["pdf.mjs", "build/pdf.mjs"],
+		["pdf_viewer.mjs", "web/pdf_viewer.mjs"],
+		["pdf.worker.mjs", "build/pdf.worker.mjs"],
+		["pdf.worker.min.mjs", "build/pdf.worker.min.mjs"],
 	];
 	for (const [key, rel] of files) {
 		it(`${key}: no pdfjs global remains`, () => {
@@ -108,8 +109,8 @@ describe("pdfjs-transform on the real pdf.js 6.5.438 legacy sources", () => {
 		expect(() => transform("pdf.mjs", "nothing to see here")).toThrow(/expected 1 match/);
 	});
 	it("viewer reads the bundled module instead of the global", () => {
-		const out = transform("pdf_viewer.mjs", readFileSync(path.join(pdfjsRoot, "legacy/web/pdf_viewer.mjs"), "utf8")) as string;
-		expect(out.startsWith('import * as __pppPdfjs from "pdfjs-dist/legacy/build/pdf.mjs";')).toBe(true);
+		const out = transform("pdf_viewer.mjs", readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.mjs"), "utf8")) as string;
+		expect(out.startsWith('import * as __pppPdfjs from "pdfjs-dist/build/pdf.mjs";')).toBe(true);
 		expect(out).toContain("} = __pppPdfjs;");
 	});
 });
@@ -121,7 +122,7 @@ describe("scope-css", () => {
 		expect(scopeSelector(":root:not(.x)", ".s")).toBe(".s:not(.x)");
 	});
 	it("scopes the real pdf_viewer.css: no unscoped rule, no image urls", () => {
-		const css = scopeCss(readFileSync(path.join(pdfjsRoot, "legacy/web/pdf_viewer.css"), "utf8"), ".pdf-ppp-root") as string;
+		const css = scopeCss(readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.css"), "utf8"), ".pdf-ppp-root") as string;
 		expect(css).not.toMatch(/url\(\s*["']?images\//);
 		// every rule outside @keyframes starts with the scope
 		const selectors: string[] = [];

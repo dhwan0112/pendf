@@ -19,6 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import esbuild from "esbuild";
 import { transform } from "./pdfjs-transform.mjs";
+import { ponyfill } from "./pdfjs-ponyfill.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (k, d) => {
@@ -43,36 +44,37 @@ function evalInObsidian(code) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// --- build a pdf.js-only bundle for the core-js footprint check (iframe realm)
-async function buildPdfjsProbeBundle() {
+// --- pdf.js-only probe bundle + worker for the clean-realm footprint check.
+// Same transforms as main.js (global stripping + ponyfills, modern build).
+async function buildPdfjsProbe() {
 	const dir = path.join(root, "node_modules", ".cache", "pdf-ppp");
 	mkdirSync(dir, { recursive: true });
-	const out = path.join(dir, "pdfjs-probe.js");
+	const bundle = path.join(dir, "pdfjs-probe.js");
+	const worker = path.join(dir, "pdfjs-probe-worker.js");
 	const pdfjsRoot = path.dirname(fileURLToPath(import.meta.resolve("pdfjs-dist/package.json")));
+	const src = (key, file) => ponyfill(transform(key, readFileSync(file, "utf8")), key).code;
 	await esbuild.build({
-		stdin: { contents: 'import "pdfjs-dist/legacy/build/pdf.mjs";\nimport "pdfjs-dist/legacy/web/pdf_viewer.mjs";\n', resolveDir: root, loader: "js" },
+		entryPoints: [path.join(root, "scripts", "harness", "probe-entry.js")],
 		bundle: true,
 		format: "iife",
 		platform: "browser",
 		target: "es2022",
-		outfile: out,
+		outfile: bundle,
 		logLevel: "silent",
 		logOverride: { "empty-import-meta": "silent" },
 		plugins: [
 			{
-				name: "t",
+				name: "pdfjs",
 				setup(b) {
-					b.onResolve({ filter: /^pdfjs-dist\/legacy\/(build\/pdf|web\/pdf_viewer)\.mjs$/ }, (a) => ({ path: path.join(pdfjsRoot, a.path.replace("pdfjs-dist/", "")) }));
-					b.onLoad({ filter: /legacy[\\/](build[\\/]pdf|web[\\/]pdf_viewer)\.mjs$/ }, (a) => ({
-						contents: transform(a.path.endsWith("pdf_viewer.mjs") ? "pdf_viewer.mjs" : "pdf.mjs", readFileSync(a.path, "utf8")),
-						loader: "js",
-						resolveDir: path.dirname(a.path),
-					}));
+					b.onResolve({ filter: /^pdfjs-dist(\/build\/pdf\.mjs)?$/ }, () => ({ path: path.join(pdfjsRoot, "build", "pdf.mjs") }));
+					b.onLoad({ filter: /[\\/]pdfjs-dist[\\/]build[\\/]pdf\.mjs$/ }, (a) => ({ contents: src("pdf.mjs", a.path), loader: "js", resolveDir: path.dirname(a.path) }));
 				},
 			},
 		],
 	});
-	return out;
+	const w = esbuild.transformSync(src("pdf.worker.mjs", path.join(pdfjsRoot, "build", "pdf.worker.mjs")), { loader: "js", format: "esm", target: "es2022", minify: true, logLevel: "silent" });
+	writeFileSync(worker, w.code);
+	return { bundle, worker };
 }
 
 const checksPath = path.join(root, "scripts", "harness", "checks.js");
@@ -80,11 +82,13 @@ const fwd = (p) => p.replace(/\\/g, "/");
 
 async function main() {
 	execFileSync(process.execPath, [path.join(root, "scripts", "install-dev.mjs"), vaultPath, "--fixtures"], { stdio: "inherit" });
-	const probeBundle = await buildPdfjsProbeBundle();
+	const probe = await buildPdfjsProbe();
 	const cfg = {
 		only: only ? only.split(",") : null,
 		expected: JSON.parse(readFileSync(path.join(root, "fixtures", "out", "expected.json"), "utf8")),
-		probeBundle: fwd(probeBundle),
+		probeBundle: fwd(probe.bundle),
+		probeWorker: fwd(probe.worker),
+		fixturesDir: fwd(path.join(root, "fixtures", "out")),
 		ourVersion: JSON.parse(readFileSync(path.join(root, "node_modules", "pdfjs-dist", "package.json"), "utf8")).version,
 	};
 	writeFileSync(path.join(root, "node_modules", ".cache", "pdf-ppp", "cfg.json"), JSON.stringify(cfg));
@@ -123,6 +127,16 @@ async function main() {
 			console.error("teardown eval failed", e);
 		}
 	}
+}
+
+for (const sig of ["SIGINT", "SIGTERM"]) {
+	process.on(sig, () => {
+		try {
+			evalInObsidian(`(()=>{ window.__pppH?.teardown?.(); return "ok"; })()`);
+		} finally {
+			process.exit(130);
+		}
+	});
 }
 
 main().catch((e) => {

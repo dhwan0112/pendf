@@ -1,5 +1,5 @@
 // The only module that touches pdf.js directly. Everything is imported from
-// the bundled (build-time transformed) legacy build — never from Obsidian's
+// the bundled (build-time transformed, ponyfilled) modern build — never from Obsidian's
 // copy (`loadPdfJs()` / `window.pdfjsLib`).
 import {
 	AnnotationEditorType,
@@ -10,8 +10,8 @@ import {
 	VerbosityLevel,
 	getDocument,
 	version as pdfjsVersion,
-} from "pdfjs-dist/legacy/build/pdf.mjs";
-import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
+} from "pdfjs-dist";
+import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
 import {
 	EventBus,
 	FindState,
@@ -19,7 +19,7 @@ import {
 	PDFFindController,
 	PDFLinkService,
 	PDFViewer,
-} from "pdfjs-dist/legacy/web/pdf_viewer.mjs";
+} from "pdfjs-dist/web/pdf_viewer.mjs";
 import { clearAssetCache, getAsset, getWorkerSource, type AssetKind } from "./assets";
 import { logger } from "../util/log";
 

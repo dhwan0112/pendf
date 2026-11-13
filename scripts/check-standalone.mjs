@@ -27,7 +27,7 @@ export const SOURCE_RULES = [
 	{ id: "core-pdf-view", re: /getLeavesOfType\s*\(\s*["'`]pdf["'`]|data-type\s*=\s*\\?["']pdf\\?["']|\.pdf-(viewer|container|toolbar|embed|content)\b|["'`]pdf-viewer["'`]/, why: "touching the core PDF viewer or its DOM" },
 	{ id: "register-pdf-ext", re: /registerExtensions\s*\(/, why: "taking over file extensions (core PDF)" },
 	{ id: "other-plugin", re: /\b(enabledPlugins|getPlugin)\b|["'`](obsidian-pdf-plus|pdf-plus|dataview|excalidraw)["'`]/, why: "detecting or depending on other plugins" },
-	{ id: "pdfjs-modern", re: /from\s+["']pdfjs-dist(?!\/legacy\/(build\/pdf\.mjs|web\/pdf_viewer\.mjs)["'])/, why: "only the transformed legacy pdf.js build may be imported" },
+	{ id: "pdfjs-import", re: /from\s+["']pdfjs-dist(?!["']|\/web\/pdf_viewer\.mjs["'])/, why: 'only "pdfjs-dist" and "pdfjs-dist/web/pdf_viewer.mjs" may be imported (the build maps them to the transformed modern build)' },
 	{ id: "electron-remote", re: /@electron\/remote|require\s*\(\s*["']electron["']\s*\)/, why: "Electron internals" },
 ];
 
@@ -37,6 +37,12 @@ export const BUILD_RULES = [
 	{ id: "obsidian-pdfjs", re: /\bloadPdfJs\b/, why: "Obsidian's pdf.js loader" },
 	{ id: "private-app", re: /\b(viewRegistry|internalPlugins|embedRegistry)\b/, why: "Obsidian private API" },
 	{ id: "monkey-around", re: /monkey-around/, why: "prototype patching library" },
+	{ id: "core-js", re: /__core-js_shared__|core-js/, why: "core-js polyfills install themselves on the shared window" },
+	{
+		id: "builtin-patch",
+		re: /\b(Object|Array|Map|WeakMap|Set|WeakSet|Promise|Math|RegExp|String|Number|Iterator|Uint8Array|Function|JSON|Reflect|Symbol|URL|Error)(\.prototype)?\.[A-Za-z_$][\w$]*\s*=(?!=)/,
+		why: "assignment to a built-in (global polyfill)",
+	},
 ];
 
 function walk(dir) {
