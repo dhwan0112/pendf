@@ -96,6 +96,9 @@
 ## 커밋
 
 ```
+9b7c22c test(harness): full 21-check run on HEAD; docs and pinned dev deps
+820b38f fix(probe): tolerate pointer capture failure; harness smoke + rename-while-open
+f8f38b7 docs: REPORT for Phase 1-2
 1fd42cf fix(highlight): keep the iOS selection while the palette is touched
 044dd65 feat: modern pdf.js with build-time ponyfills instead of core-js
 97d5517 test(harness): reveal the PDF+++ leaf in coexistence checks; diagnostics
