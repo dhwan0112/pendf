@@ -1,0 +1,9 @@
+{
+	"id": "pdf-ppp",
+	"name": "PDF+++",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "A standalone, iPad-first PDF viewer with highlights. No other plugins required.",
+	"author": "Kim Donghwan",
+	"isDesktopOnly": false
+}
