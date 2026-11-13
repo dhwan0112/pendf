@@ -344,12 +344,17 @@
 				const core = app.workspace.getLeaf("split", "vertical");
 				await core.openFile(file("letter.pdf"));
 				await waitFor(() => core.view.getViewType() === "pdf" && core.view.containerEl.querySelector("canvas"), 20000);
-				app.workspace.setActiveLeaf(app.workspace.getLeavesOfType(VIEW)[0], { focus: false });
+				await app.workspace.revealLeaf(v.leaf);
+				app.workspace.setActiveLeaf(v.leaf, { focus: false });
+				await waitFor(() => v.debugSession.viewer.container.clientWidth > 0);
 				v.zoom(1);
 				await waitIdle(v);
 				const cur = v.debugSession.viewer.currentPageNumber;
-				const rerendered = pageView(v, cur).renderingState === 3;
+				const rerendered = await waitRendered(v, cur).then(() => true, () => false);
+				const sv = v.debugSession.viewer;
+				const diag = { cur, scale: sv.currentScale, states: [...Array(sv.pagesCount).keys()].map((i) => sv.getPageView(i).renderingState), canvases: v.containerEl.querySelectorAll("canvas").length, size: [sv.container.clientWidth, sv.container.clientHeight], visible: v.containerEl.isShown?.() };
 				return {
+					diag,
 					coreVersion: window.pdfjsLib?.version,
 					libUntouchedByUs: libBefore === undefined || libBefore === window.pdfjsLib,
 					coreCanvases: core.view.containerEl.querySelectorAll("canvas").length,
@@ -360,8 +365,9 @@
 
 			await check("css-inward", async () => {
 				const { v } = await openPpp("a4.pdf");
-				await waitText(v, 1);
-				const page = pageView(v, 1).div;
+				const curPage = v.debugSession.viewer.currentPageNumber; // may be a remembered page
+				await waitText(v, curPage);
+				const page = pageView(v, curPage).div;
 				const targets = { page, textLayer: page.querySelector(".textLayer"), span: page.querySelector(".textLayer span"), canvasWrapper: page.querySelector(".canvasWrapper"), annotationLayer: page.querySelector(".annotationLayer") };
 				const foreign = {};
 				for (const sheet of document.styleSheets) {
@@ -588,7 +594,18 @@
 					maxRendered = Math.max(maxRendered, rendered);
 				}
 				s.viewer.currentPageNumber = 300;
-				await waitRendered(v, 300);
+				try {
+					await waitRendered(v, 300);
+				} catch (e) {
+					const hist = {};
+					for (let i = 0; i < 300; i++) {
+						const st = s.viewer.getPageView(i).renderingState;
+						hist[st] = (hist[st] ?? 0) + 1;
+					}
+					const pv = s.viewer.getPageView(299);
+					const c = v.debugSession.viewer.container;
+					throw new Error(`page 300 not rendered: current=${s.viewer.currentPageNumber} scale=${s.viewer.currentScale} states=${JSON.stringify(hist)} p300state=${pv.renderingState} p300canvas=${!!pv.div.querySelector("canvas")} scrollTop=${c.scrollTop}/${c.scrollHeight} clientH=${c.clientHeight} visibleNow=${JSON.stringify(s.layers.visiblePages())}`);
+				}
 				const heap = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null;
 				return { maxCanvas, maxLayers, maxRendered, seconds: +((performance.now() - t0) / 1000).toFixed(1), heapMB: heap, ok: maxCanvas <= 40 && maxLayers <= 12 && maxRendered <= 40 };
 			});
