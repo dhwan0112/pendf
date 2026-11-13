@@ -74,7 +74,11 @@ let workerPromise: Promise<PDFWorker> | null = null;
 let refCount = 0;
 let idleTimer: number | null = null;
 let mode: WorkerMode = "none";
+/** Bumped by destroyWorker(); documents opened on an older worker skip waiting on it. */
+let generation = 0;
+let shutDown = false;
 const IDLE_MS = 60_000;
+const CLOSE_TIMEOUT_MS = 3_000;
 
 export function workerMode(): WorkerMode {
 	return mode;
@@ -137,22 +141,38 @@ async function createWorker(): Promise<PDFWorker> {
 	}
 }
 
-async function acquireWorker(): Promise<PDFWorker> {
+async function acquireWorker(): Promise<{ worker: PDFWorker; gen: number }> {
+	if (shutDown) throw new Error("PDF+++ is unloading");
 	refCount++;
 	if (idleTimer !== null) {
 		window.clearTimeout(idleTimer);
 		idleTimer = null;
 	}
 	if (!workerPromise) {
-		workerPromise = createWorker().then((w) => (pdfWorker = w));
+		const gen = generation;
+		workerPromise = createWorker().then((w) => {
+			if (gen !== generation) {
+				// destroyed while starting
+				w.destroy();
+				throw new Error("worker destroyed during start-up");
+			}
+			pdfWorker = w;
+			return w;
+		});
 		workerPromise.catch(() => (workerPromise = null));
 	}
-	return workerPromise;
+	try {
+		return { worker: await workerPromise, gen: generation };
+	} catch (e) {
+		refCount = Math.max(0, refCount - 1);
+		throw e;
+	}
 }
 
-function releaseWorker(): void {
+function releaseWorker(gen: number): void {
+	if (gen !== generation) return; // that worker is already gone
 	refCount = Math.max(0, refCount - 1);
-	if (refCount === 0 && idleTimer === null) {
+	if (refCount === 0 && idleTimer === null && !shutDown) {
 		idleTimer = window.setTimeout(() => {
 			idleTimer = null;
 			if (refCount === 0) destroyWorker();
@@ -160,8 +180,14 @@ function releaseWorker(): void {
 	}
 }
 
-/** Terminate the worker and free the Blob URL. Called on plugin unload. */
-export function destroyWorker(): void {
+/**
+ * Terminate the worker and free the Blob URL. With `final` (plugin unload)
+ * no new worker can be started and no idle timer is armed afterwards.
+ */
+export function destroyWorker(final = false): void {
+	if (final) shutDown = true;
+	generation++;
+	refCount = 0;
 	if (idleTimer !== null) window.clearTimeout(idleTimer);
 	idleTimer = null;
 	pdfWorker?.destroy();
@@ -189,7 +215,7 @@ export interface OpenedDocument {
 }
 
 export async function openDocument(data: ArrayBuffer, password?: string): Promise<OpenedDocument> {
-	const worker = await acquireWorker();
+	const { worker, gen } = await acquireWorker();
 	let task: PDFDocumentLoadingTask | null = null;
 	try {
 		task = getDocument({
@@ -218,18 +244,42 @@ export async function openDocument(data: ArrayBuffer, password?: string): Promis
 				if (closed) return;
 				closed = true;
 				try {
-					await t.destroy();
+					// If the worker was already terminated, destroy() would wait
+					// for an answer that never comes; don't wait on it then.
+					const d = t.destroy();
+					if (gen === generation) await withTimeout(d, CLOSE_TIMEOUT_MS);
+					else d.catch(() => undefined);
+				} catch (e) {
+					log.debug("document destroy", e);
 				} finally {
-					releaseWorker();
+					releaseWorker(gen);
 				}
 			},
 		};
 	} catch (e) {
 		try {
-			await task?.destroy();
+			if (task) await withTimeout(task.destroy(), CLOSE_TIMEOUT_MS);
+		} catch {
+			// ignore
 		} finally {
-			releaseWorker();
+			releaseWorker(gen);
 		}
 		throw e;
 	}
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | void> {
+	return new Promise((resolve, reject) => {
+		const timer = window.setTimeout(() => resolve(), ms);
+		p.then(
+			(v) => {
+				window.clearTimeout(timer);
+				resolve(v);
+			},
+			(e) => {
+				window.clearTimeout(timer);
+				reject(e);
+			},
+		);
+	});
 }

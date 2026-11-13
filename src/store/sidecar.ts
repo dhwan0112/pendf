@@ -224,8 +224,14 @@ export class SidecarStore {
 		this.dirty = false;
 		try {
 			await this.fs.write(tmp, text);
-			if (await this.fs.exists(path)) await this.fs.remove(path);
-			await this.fs.rename(tmp, path);
+			try {
+				// rename-over keeps a complete file on disk at every moment
+				await this.fs.rename(tmp, path);
+			} catch {
+				// some adapters refuse to overwrite: delete, then rename
+				if (await this.fs.exists(path)) await this.fs.remove(path);
+				await this.fs.rename(tmp, path);
+			}
 			this.lastMtime = await this.fs.mtime(path);
 		} catch (e) {
 			this.dirty = true;

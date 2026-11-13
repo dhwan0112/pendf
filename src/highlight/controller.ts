@@ -8,7 +8,7 @@ import { setIcon } from "obsidian";
 import type { Quad, Rect } from "../geometry";
 import { pointInPolygon } from "../geometry";
 import type { LayerManager, LayerRenderer, PageLayer } from "../layers";
-import { svgEl } from "../layers";
+import { pageContentRect, svgEl } from "../layers";
 import type { HighlightColor } from "../settings";
 import type { HighlightAnnotation } from "../store/schema";
 import { uuid } from "../store/schema";
@@ -129,7 +129,7 @@ export class HighlightController implements LayerRenderer {
 		for (const piece of pending.pieces) {
 			const geom = this.host.layers.geometry(piece.pageNumber);
 			if (!geom) continue;
-			const pageRect = piece.pageDiv.getBoundingClientRect();
+			const pageRect = pageContentRect(piece.pageDiv);
 			const viewRects: Rect[] = piece.rects.map((r) => geom.clientRectToView(r, pageRect));
 			const lines = mergeLineRects(viewRects);
 			if (lines.length === 0) continue;
@@ -230,7 +230,7 @@ export class HighlightController implements LayerRenderer {
 		const pageNumber = Number(pageDiv.dataset.pageNumber);
 		const geom = this.host.layers.geometry(pageNumber);
 		if (!geom) return null;
-		const pt = geom.clientToView(clientX, clientY, pageDiv.getBoundingClientRect());
+		const pt = geom.clientToView(clientX, clientY, pageContentRect(pageDiv));
 		const list = store.all().filter((a): a is HighlightAnnotation => a.type === "highlight" && a.page === pageNumber);
 		for (let i = list.length - 1; i >= 0; i--) {
 			for (const q of list[i].quads) if (pointInPolygon(pt, geom.quadToViewPolygon(q), 1.5)) return list[i];

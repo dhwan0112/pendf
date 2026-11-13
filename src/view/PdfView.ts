@@ -605,6 +605,12 @@ export class PdfPppView extends FileView {
 		await this.teardown();
 	}
 
+	/** Close the open document now (plugin unload). */
+	async closeSession(): Promise<void> {
+		this.loadToken++;
+		await this.teardown();
+	}
+
 	private async teardown(): Promise<void> {
 		const s = this.session;
 		if (!s) return;

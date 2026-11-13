@@ -109,14 +109,20 @@ export default class PdfPppPlugin extends Plugin {
 	}
 
 	async onunload(): Promise<void> {
+		// Close every open document (saves annotations) before the worker goes
+		// away; Obsidian detaches the leaves afterwards.
+		const views = this.app.workspace
+			.getLeavesOfType(VIEW_TYPE)
+			.map((l) => l.view)
+			.filter((v): v is PdfPppView => v instanceof PdfPppView);
+		await Promise.all(views.map((v) => v.closeSession().catch((e) => log.error("closing view failed", e))));
 		await this.flushAll();
 		if (this.saveSettingsTimer !== null) {
 			window.clearTimeout(this.saveSettingsTimer);
+			this.saveSettingsTimer = null;
 			await this.saveData(this.settings);
 		}
-		// Views are detached by Obsidian (their onClose tears down pdf.js); the
-		// shared worker and its Blob URL are ours to free.
-		destroyWorker();
+		destroyWorker(true);
 	}
 
 	/** Log ring buffer as text (diagnostics; also used by the dev harness). */

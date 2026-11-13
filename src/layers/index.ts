@@ -237,6 +237,30 @@ export class LayerManager {
 	}
 }
 
+/**
+ * Client rect of a page's content box. pdf.js pages have a (transparent)
+ * border, so the page div's own rect is larger than the area the canvas, the
+ * text layer and our layers occupy. Measuring an inset-0 child keeps this
+ * right under CSS transforms (pinch preview) too.
+ */
+export function pageContentRect(pageDiv: HTMLElement): DOMRect {
+	for (const sel of [":scope > .textLayer", ":scope > .canvasWrapper", ":scope > .ppp-layer-host"]) {
+		const el = pageDiv.querySelector<HTMLElement>(sel);
+		if (!el) continue;
+		const r = el.getBoundingClientRect();
+		if (r.width > 0 && r.height > 0) return r;
+	}
+	const r = pageDiv.getBoundingClientRect();
+	const cs = getComputedStyle(pageDiv);
+	const sx = pageDiv.offsetWidth ? r.width / pageDiv.offsetWidth : 1;
+	const sy = pageDiv.offsetHeight ? r.height / pageDiv.offsetHeight : 1;
+	const bl = (parseFloat(cs.borderLeftWidth) || 0) * sx;
+	const br = (parseFloat(cs.borderRightWidth) || 0) * sx;
+	const bt = (parseFloat(cs.borderTopWidth) || 0) * sy;
+	const bb = (parseFloat(cs.borderBottomWidth) || 0) * sy;
+	return new DOMRect(r.left + bl, r.top + bt, r.width - bl - br, r.height - bt - bb);
+}
+
 export function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number> = {}): SVGElementTagNameMap[K] {
 	const el = document.createElementNS(SVG_NS, tag);
 	for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
