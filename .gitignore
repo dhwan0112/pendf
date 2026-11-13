@@ -5,3 +5,4 @@ build-size.json
 fixtures/out/
 *.log
 .DS_Store
+harness-result.json

@@ -21,8 +21,12 @@ export function scopeCss(css, scope) {
     if (IMAGE_URL.test(decl.value)) decl.remove();
   });
   rootAst.walkRules((rule) => {
-    const parent = rule.parent;
-    if (parent && parent.type === "atrule" && /keyframes$/i.test(parent.name)) return;
+    // pdf.js 6 uses native CSS nesting: only top-level rules get the scope;
+    // nested selectors stay relative to their (already scoped) parent rule.
+    for (let p = rule.parent; p && p.type !== "root"; p = p.parent) {
+      if (p.type === "rule") return;
+      if (p.type === "atrule" && /keyframes$/i.test(p.name)) return;
+    }
     rule.selectors = rule.selectors.map((sel) => scopeSelector(sel.trim(), scope));
   });
   rootAst.walkRules((rule) => {

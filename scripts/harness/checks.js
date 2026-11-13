@@ -1,0 +1,719 @@
+// Runs INSIDE Obsidian (page context) via scripts/obsidian-harness.mjs.
+// Evaluates to { start(cfg) }. Results land in window.__pppH.result.
+// Dev-only: uses app.plugins to reload the plugin under test.
+({
+	start(cfg) {
+		const H = (window.__pppH = { done: false, step: "setup", result: null, error: null });
+		const FIX = "pdf-ppp-fixtures/";
+		const ID = "pdf-ppp";
+		const VIEW = "pdf-ppp-view";
+		const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+		const waitFor = async (fn, ms = 15000, step = 60) => {
+			const t0 = Date.now();
+			let last;
+			for (;;) {
+				try {
+					last = await fn();
+					if (last) return last;
+				} catch (e) {
+					last = e;
+				}
+				if (Date.now() - t0 > ms) throw new Error("timeout waiting for " + (fn.name || fn.toString().slice(0, 120)));
+				await sleep(step);
+			}
+		};
+
+		// ------------------------------------------------------------ shims
+		const orig = {
+			raf: window.requestAnimationFrame,
+			caf: window.cancelAnimationFrame,
+			open: window.open,
+			Worker: window.Worker,
+		};
+		const leavesBefore = new Set();
+		app.workspace.iterateAllLeaves((l) => leavesBefore.add(l));
+		const activeBefore = app.workspace.getMostRecentLeaf();
+		const workers = [];
+		const opened = [];
+		const createdPaths = new Set();
+		class TrackedWorker extends orig.Worker {
+			constructor(url, opts) {
+				super(url, opts);
+				const rec = { url: String(url), terminated: false };
+				workers.push(rec);
+				const t = this.terminate.bind(this);
+				this.terminate = () => {
+					rec.terminated = true;
+					t();
+				};
+			}
+		}
+		window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+		window.cancelAnimationFrame = (id) => clearTimeout(id);
+		window.Worker = TrackedWorker;
+		window.open = (u) => {
+			opened.push(String(u));
+			return null;
+		};
+		let tornDown = false;
+		H.teardown = () => {
+			if (tornDown) return;
+			tornDown = true;
+			try {
+				app.workspace.iterateAllLeaves((l) => {
+					if (!leavesBefore.has(l)) l.detach();
+				});
+				if (activeBefore && activeBefore.parent) app.workspace.setActiveLeaf(activeBefore, { focus: false });
+			} catch (e) {
+				console.error(e);
+			}
+			window.requestAnimationFrame = orig.raf;
+			window.cancelAnimationFrame = orig.caf;
+			window.open = orig.open;
+			window.Worker = orig.Worker;
+			(async () => {
+				await app.plugins.disablePlugin(ID).catch(() => {});
+				const ad = app.vault.adapter;
+				const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
+				if (await ad.exists(dataJson)) await ad.remove(dataJson);
+				for (const p of createdPaths) if (await ad.exists(p)) await ad.remove(p);
+				const listing = await ad.list(FIX).catch(() => ({ files: [] }));
+				for (const f of listing.files) if (/\.ppp\.json(\.tmp)?$/.test(f) || /-renamed\.pdf$/.test(f)) await ad.remove(f);
+			})().catch((e) => console.error(e));
+		};
+
+		// --------------------------------------------------------- helpers
+		const P = () => app.plugins.plugins[ID];
+		const file = (n) => app.vault.getAbstractFileByPath(FIX + n);
+		const reloadPlugin = async () => {
+			await app.plugins.disablePlugin(ID);
+			await app.plugins.loadManifests();
+			await app.plugins.enablePlugin(ID);
+			await waitFor(() => P());
+		};
+		const closeOurs = () => {
+			app.workspace.iterateAllLeaves((l) => {
+				if (!leavesBefore.has(l)) l.detach();
+			});
+		};
+		const pageView = (v, n) => v.debugSession.viewer.getPageView(n - 1);
+		const waitRendered = (v, n) => waitFor(() => pageView(v, n)?.renderingState === 3 && pageView(v, n).div.querySelector("canvas"), 20000);
+		const waitText = (v, n) => waitFor(() => pageView(v, n)?.textLayer?.div?.querySelector("span"), 20000);
+		const openPpp = async (name, state = {}) => {
+			const leaf = app.workspace.getLeaf("tab");
+			await leaf.setViewState({ type: VIEW, state: { file: FIX + name, ...state }, active: true });
+			const v = leaf.view;
+			await waitFor(() => v.debugSession && v.debugSession.ready && v.debugSession.store, 20000);
+			await waitRendered(v, v.debugSession.viewer.currentPageNumber);
+			return { leaf, v };
+		};
+		const goPage = async (v, n) => {
+			v.goToPage(n);
+			await waitRendered(v, n);
+			await waitText(v, n);
+		};
+		const spans = (v, n) => [...pageView(v, n).textLayer.div.querySelectorAll("span")].filter((s) => s.firstChild && s.firstChild.nodeType === 3);
+		const findSpan = (v, n, prefix) => spans(v, n).find((s) => s.textContent.startsWith(prefix));
+		const select = (a, aOff, b, bOff) => {
+			const r = document.createRange();
+			r.setStart(a.firstChild, aOff);
+			r.setEnd(b.firstChild, bOff ?? b.firstChild.data.length);
+			const sel = getSelection();
+			sel.removeAllRanges();
+			sel.addRange(r);
+			return r;
+		};
+		const store = (v) => v.debugSession.store;
+		const hlById = (v, id) => store(v).get(id);
+		const quadBBox = (quads) => {
+			let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+			for (const q of quads) for (let i = 0; i < 8; i += 2) {
+				minX = Math.min(minX, q[i]); maxX = Math.max(maxX, q[i]);
+				minY = Math.min(minY, q[i + 1]); maxY = Math.max(maxY, q[i + 1]);
+			}
+			return { minX, minY, maxX, maxY };
+		};
+		const polyClientRect = (v, id) => {
+			const els = v.containerEl.querySelectorAll(`.ppp-hl[data-id="${id}"] polygon`);
+			if (!els.length) return null;
+			let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+			for (const e of els) {
+				const x = e.getBoundingClientRect();
+				l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom);
+			}
+			return { left: l, top: t, right: r, bottom: b };
+		};
+		const iou = (a, b) => {
+			const ix = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+			const iy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+			const inter = ix * iy;
+			const area = (r) => (r.right - r.left) * (r.bottom - r.top);
+			return inter / (area(a) + area(b) - inter);
+		};
+		const spanRect = (s) => {
+			const r = document.createRange();
+			r.selectNodeContents(s);
+			const x = r.getBoundingClientRect();
+			return { left: x.left, top: x.top, right: x.right, bottom: x.bottom };
+		};
+		// select an exact string even when pdf.js split the line into several spans
+		const textRange = (v, n, text) => {
+			const root = pageView(v, n).textLayer.div;
+			const nodes = [];
+			const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+			let acc = "";
+			for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+				nodes.push([t, acc.length]);
+				acc += t.data;
+			}
+			const i = acc.indexOf(text);
+			if (i < 0) return null;
+			const j = i + text.length;
+			const at = (pos, isEnd) => {
+				for (let k = nodes.length - 1; k >= 0; k--) {
+					const [t, off] = nodes[k];
+					if (isEnd ? off < pos : off <= pos) return [t, pos - off];
+				}
+				return null;
+			};
+			const [sn, so] = at(i, false);
+			const [en, eo] = at(j, true);
+			const r = document.createRange();
+			r.setStart(sn, so);
+			r.setEnd(en, eo);
+			return r;
+		};
+		const selectRange = (r) => {
+			const sel = getSelection();
+			sel.removeAllRanges();
+			sel.addRange(r);
+		};
+		const rangeRect = (r) => {
+			const x = r.getBoundingClientRect();
+			return { left: x.left, top: x.top, right: x.right, bottom: x.bottom };
+		};
+		const waitIdle = async (v) => {
+			await sleep(120);
+			await waitFor(() => {
+				const s = v.debugSession;
+				for (let i = 0; i < s.viewer.pagesCount; i++) if (s.viewer.getPageView(i)?.renderingState === 1) return false;
+				return true;
+			}, 20000);
+			await sleep(80);
+		};
+
+		const checks = {};
+		const check = async (name, fn) => {
+			if (cfg.only && !cfg.only.includes(name)) return;
+			H.step = name;
+			try {
+				const d = (await fn()) || {};
+				checks[name] = { ok: d.ok !== false, ...d };
+			} catch (e) {
+				checks[name] = { ok: false, error: String((e && e.stack) || e).slice(0, 800) };
+			}
+			closeOurs();
+			getSelection().removeAllRanges();
+			await sleep(100);
+		};
+
+		// --------------------------------------------------------- checks
+		const run = async () => {
+			const env = { obsidian: navigator.userAgent.match(/obsidian\/([\d.]+)/i)?.[1], chrome: navigator.userAgent.match(/Chrome\/([\d.]+)/)?.[1], electron: process.versions.electron };
+			const globalsBefore = { pdfjsLib: window.pdfjsLib, pdfjsLibVersion: window.pdfjsLib?.version, pdfjsWorker: window.pdfjsWorker, pdfjsViewer: window.pdfjsViewer };
+			// clean slate: sidecars and the plugin's own settings (remembered positions)
+			const ad = app.vault.adapter;
+			const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
+			await app.plugins.disablePlugin(ID);
+			if (await ad.exists(dataJson)) await ad.remove(dataJson);
+			for (const f of (await ad.list(FIX)).files) if (/\.ppp\.json(\.tmp)?$/.test(f)) await ad.remove(f);
+			await reloadPlugin();
+
+			await check("fixtures-render", async () => {
+				const out = {};
+				for (const name of ["a4.pdf", "letter.pdf", "rotations.pdf", "cropbox.pdf", "two-column.pdf", "korean-cmap.pdf", "korean-embedded.pdf", "links.pdf", "long-300.pdf"]) {
+					const { v } = await openPpp(name);
+					await waitText(v, 1);
+					const text = pageView(v, 1).textLayer.div.textContent;
+					out[name] = { pages: v.debugSession.viewer.pagesCount, chars: text.length, sample: text.slice(0, 40) };
+					closeOurs();
+				}
+				const korean = /한국어/.test(out["korean-cmap.pdf"].sample) && /한국어/.test(out["korean-embedded.pdf"].sample);
+				const allText = Object.values(out).every((x) => x.chars > 10);
+				return { ok: korean && allText && out["long-300.pdf"].pages === 300, out };
+			});
+
+			await check("search", async () => {
+				const { v } = await openPpp("a4.pdf");
+				v.openSearch();
+				v.searchInput.value = "spectra";
+				v.searchInput.dispatchEvent(new Event("input"));
+				const first = await waitFor(() => /^\d+ \/ \d+$/.test(v.searchCount.textContent) && v.searchCount.textContent);
+				v.searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+				const second = await waitFor(() => v.searchCount.textContent !== first && v.searchCount.textContent);
+				const highlighted = await waitFor(() => v.containerEl.querySelectorAll(".textLayer .highlight").length);
+				v.searchInput.value = "zzzznotfound";
+				v.searchInput.dispatchEvent(new Event("input"));
+				const none = await waitFor(() => v.searchCount.textContent === "No matches" && "No matches");
+				return { first, second, highlighted, none, ok: first.startsWith("1 / ") && second.startsWith("2 / ") };
+			});
+
+			await check("links", async () => {
+				const { v } = await openPpp("links.pdf");
+				const s = v.debugSession;
+				const anchors = await waitFor(() => {
+					const a = [...pageView(v, 1).div.querySelectorAll(".annotationLayer a")];
+					return a.length >= 3 && a;
+				});
+				const internal = anchors.find((a) => (a.getAttribute("href") || "").startsWith("#"));
+				internal.click();
+				const jumped = await waitFor(() => s.viewer.currentPageNumber !== 1 && s.viewer.currentPageNumber);
+				v.goToPage(1);
+				await waitRendered(v, 1);
+				const ext = [...pageView(v, 1).div.querySelectorAll(".annotationLayer a")].find((a) => /^https?:/.test(a.getAttribute("href") || ""));
+				ext.click();
+				await sleep(200);
+				closeOurs();
+				const { v: v2 } = await openPpp("long-300.pdf");
+				const toc = await waitFor(() => {
+					const a = [...pageView(v2, 1).div.querySelectorAll(".annotationLayer a")];
+					return a.length >= 30 && a;
+				});
+				toc[9].click(); // chapter 10 → p. 92
+				const tocJump = await waitFor(() => v2.debugSession.viewer.currentPageNumber !== 1 && v2.debugSession.viewer.currentPageNumber);
+				return { jumped, external: opened.slice(), tocJump, ok: (jumped === 2 || jumped === 3) && opened.some((u) => u.startsWith("https://example.com")) && tocJump === 92 };
+			});
+
+			await check("state-restore", async () => {
+				const { leaf, v } = await openPpp("a4.pdf");
+				v.debugSession.viewer.currentScaleValue = "1.5";
+				v.goToPage(3);
+				await sleep(1200); // > state save debounce
+				const vs = leaf.getViewState();
+				closeOurs();
+				const leaf2 = app.workspace.getLeaf("tab");
+				await leaf2.setViewState(vs);
+				const v2 = leaf2.view;
+				await waitFor(() => v2.debugSession && v2.debugSession.ready);
+				await sleep(300);
+				const restored = { page: v2.debugSession.viewer.currentPageNumber, scale: v2.debugSession.viewer.currentScale };
+				closeOurs();
+				// per-file memory without any leaf state
+				await P().openPdf(file("a4.pdf"), true);
+				const v3 = app.workspace.getLeavesOfType(VIEW)[0].view;
+				await waitFor(() => v3.debugSession && v3.debugSession.ready);
+				await sleep(300);
+				const remembered = { page: v3.debugSession.viewer.currentPageNumber, scale: v3.debugSession.viewer.currentScale };
+				return { savedState: { page: vs.state.page, scale: vs.state.scale }, restored, remembered, ok: restored.page === 3 && Math.abs(restored.scale - 1.5) < 0.01 && remembered.page === 3 };
+			});
+
+			await check("coexistence-core-first", async () => {
+				const f = file("a4.pdf");
+				const core = app.workspace.getLeaf("split", "vertical");
+				await core.openFile(f);
+				await waitFor(() => core.view.getViewType() === "pdf" && window.pdfjsLib && core.view.containerEl.querySelector("canvas"), 20000);
+				const lib = window.pdfjsLib;
+				const ver = lib.version;
+				const coreCanvasesBefore = core.view.containerEl.querySelectorAll("canvas").length;
+				const { v } = await openPpp("a4.pdf");
+				v.zoom(1);
+				await waitIdle(v);
+				await sleep(500);
+				const coreCanvasesAfter = core.view.containerEl.querySelectorAll("canvas").length;
+				const pppCanvases = v.containerEl.querySelectorAll("canvas").length;
+				// core keeps working: scroll it and see it render more
+				const sc = core.view.containerEl.querySelector(".pdf-viewer-container, .pdfViewer")?.closest("[class*=container]") || core.view.containerEl;
+				return {
+					coreVersion: ver,
+					ourVersion: cfg.ourVersion,
+					sameLib: window.pdfjsLib === lib,
+					sameVersion: window.pdfjsLib.version === ver,
+					pdfjsWorkerUnchanged: window.pdfjsWorker === globalsBefore.pdfjsWorker,
+					// core defines window.pdfjsViewer itself when its viewer first loads
+					pdfjsViewerBefore: typeof globalsBefore.pdfjsViewer,
+					coreCanvasesBefore,
+					coreCanvasesAfter,
+					pppCanvases,
+					ok: window.pdfjsLib === lib && window.pdfjsLib.version === ver && coreCanvasesAfter > 0 && pppCanvases > 0 && window.pdfjsWorker === globalsBefore.pdfjsWorker,
+				};
+			});
+
+			await check("coexistence-ppp-first", async () => {
+				const { v } = await openPpp("letter.pdf");
+				const libBefore = window.pdfjsLib;
+				const core = app.workspace.getLeaf("split", "vertical");
+				await core.openFile(file("letter.pdf"));
+				await waitFor(() => core.view.getViewType() === "pdf" && core.view.containerEl.querySelector("canvas"), 20000);
+				app.workspace.setActiveLeaf(app.workspace.getLeavesOfType(VIEW)[0], { focus: false });
+				v.zoom(1);
+				await waitIdle(v);
+				const cur = v.debugSession.viewer.currentPageNumber;
+				const rerendered = pageView(v, cur).renderingState === 3;
+				return {
+					coreVersion: window.pdfjsLib?.version,
+					libUntouchedByUs: libBefore === undefined || libBefore === window.pdfjsLib,
+					coreCanvases: core.view.containerEl.querySelectorAll("canvas").length,
+					pppStillRenders: rerendered,
+					ok: window.pdfjsLib?.version !== undefined && core.view.containerEl.querySelectorAll("canvas").length > 0 && rerendered,
+				};
+			});
+
+			await check("css-inward", async () => {
+				const { v } = await openPpp("a4.pdf");
+				await waitText(v, 1);
+				const page = pageView(v, 1).div;
+				const targets = { page, textLayer: page.querySelector(".textLayer"), span: page.querySelector(".textLayer span"), canvasWrapper: page.querySelector(".canvasWrapper"), annotationLayer: page.querySelector(".annotationLayer") };
+				const foreign = {};
+				for (const sheet of document.styleSheets) {
+					let rules;
+					try {
+						rules = sheet.cssRules;
+					} catch {
+						continue;
+					}
+					const text = [...rules].slice(0, 50).map((r) => r.cssText).join("");
+					if (text.includes(".pdf-ppp-root")) continue; // ours
+					const origin = sheet.href || (sheet.ownerNode && (sheet.ownerNode.id || sheet.ownerNode.className)) || "inline";
+					const walk = (list) => {
+						for (const r of list) {
+							if (r.cssRules && !r.selectorText) walk(r.cssRules);
+							if (!r.selectorText) continue;
+							for (const [k, el] of Object.entries(targets)) {
+								if (!el) continue;
+								try {
+									if (el.matches(r.selectorText) && !/^(:root|html|body)$/.test(r.selectorText)) (foreign[k] ??= []).push(`${r.selectorText.slice(0, 90)}  {${r.style.cssText.slice(0, 90)}}  @${String(origin).slice(-40)}`);
+								} catch {}
+							}
+						}
+					};
+					walk(rules);
+				}
+				const cs = getComputedStyle(page);
+				const boxSizing = Object.fromEntries(Object.entries(targets).filter(([, el]) => el).map(([k, el]) => [k, getComputedStyle(el).boxSizing]));
+				const pr = page.getBoundingClientRect();
+				const tr = targets.textLayer.getBoundingClientRect();
+				const cr = targets.canvasWrapper.getBoundingClientRect();
+				const aligned = Math.abs(tr.width - cr.width) < 1 && Math.abs(tr.left - cr.left) < 1 && Math.abs(tr.top - cr.top) < 1;
+				const spanTransform = getComputedStyle(targets.span).transform;
+				return { pageBorder: cs.borderLeftWidth + " " + cs.borderLeftStyle, boxSizing, sizes: { text: [tr.width, tr.height], canvas: [cr.width, cr.height], page: [pr.width, pr.height] }, aligned, spanTransform, foreign, ok: aligned && boxSizing.page === "content-box" && spanTransform !== "none" };
+			});
+
+			await check("highlight-ground-truth", async () => {
+				const out = [];
+				let ok = true;
+				for (const [fname, list] of Object.entries(cfg.expected)) {
+					const { v } = await openPpp(fname);
+					for (const e of list) {
+						await goPage(v, e.page);
+						const range = await waitFor(() => textRange(v, e.page, e.text));
+						selectRange(range);
+						const ids = v.highlights.createFromSelection("#ff0000");
+						const a = hlById(v, ids[0]);
+						const bb = quadBBox(a.quads);
+						const res = {
+							file: fname,
+							page: e.page,
+							quads: a.quads.length,
+							dxStart: +(bb.minX - e.x).toFixed(2),
+							dxEnd: +(bb.maxX - (e.x + e.width)).toFixed(2),
+							// a text box spans roughly [baseline − descent, baseline + ascent]
+							topAboveBaseline: +((bb.maxY - e.baseline) / e.size).toFixed(2),
+							bottomBelowBaseline: +((e.baseline - bb.minY) / e.size).toFixed(2),
+							heightRatio: +((bb.maxY - bb.minY) / e.size).toFixed(2),
+						};
+						res.ok = res.quads === 1 && Math.abs(res.dxStart) < 2.5 && Math.abs(res.dxEnd) < 3 && res.topAboveBaseline > 0.6 && res.topAboveBaseline < 1.3 && res.bottomBelowBaseline > -0.1 && res.bottomBelowBaseline < 0.45 && res.heightRatio > 0.8 && res.heightRatio < 1.6;
+						// on-screen overlay agrees with the text at 3 zoom levels and 2 view rotations
+						await waitFor(() => polyClientRect(v, a.id));
+						const ious = [];
+						for (const step of [null, { scale: 2.2 }, { rotate: 90 }, { scale: 0.8 }, { rotate: 270 }]) {
+							if (step?.scale) v.debugSession.viewer.currentScaleValue = String(step.scale);
+							if (step?.rotate) v.rotate(step.rotate);
+							if (step) {
+								await waitIdle(v);
+								v.goToPage(e.page);
+								await waitRendered(v, e.page);
+								await waitText(v, e.page);
+							}
+							const r2 = await waitFor(() => textRange(v, e.page, e.text));
+							const pr = await waitFor(() => polyClientRect(v, a.id));
+							ious.push(+iou(pr, rangeRect(r2)).toFixed(2));
+						}
+						res.ious = ious;
+						res.ok = res.ok && ious.every((x) => x > 0.6);
+						ok = ok && res.ok;
+						out.push(res);
+						v.rotate(0 - v.debugSession.viewer.pagesRotation);
+						v.debugSession.viewer.currentScaleValue = "page-width";
+						await waitIdle(v);
+					}
+					await v.flush();
+					closeOurs();
+				}
+				return { ok, out };
+			});
+
+			await check("highlight-multiline-columns", async () => {
+				const { v } = await openPpp("two-column.pdf");
+				await waitText(v, 1);
+				const sp = spans(v, 1);
+				const i0 = sp.findIndex((s) => s.textContent.startsWith("[1.1.1]"));
+				// first four lines of the left column's first paragraph
+				select(sp[i0], 0, sp[i0 + 3]);
+				const ids = v.highlights.createFromSelection("#2ea8e5");
+				const a = hlById(v, ids[0]);
+				const colW = (595.28 - 112 - 24) / 2;
+				const bbs = a.quads.map((q) => quadBBox([q]));
+				const inLeftColumn = bbs.every((b) => b.minX >= 54 && b.maxX <= 56 + colW + 3);
+				// a selection that spans both columns must not produce full-width quads
+				const j0 = sp.findIndex((s) => s.textContent.startsWith("[1.2.1]"));
+				select(sp[j0 - 2], 0, sp[j0 + 1]);
+				const ids2 = v.highlights.createFromSelection("#5fb236");
+				const b = hlById(v, ids2[0]);
+				const noBridge = b.quads.map((q) => quadBBox([q])).every((x) => x.maxX - x.minX <= colW + 3);
+				return { lines: a.quads.length, inLeftColumn, crossColumnQuads: b.quads.length, noBridge, text: a.text.slice(0, 60), ok: a.quads.length === 4 && inLeftColumn && noBridge };
+			});
+
+			await check("highlight-korean", async () => {
+				const res = {};
+				for (const name of ["korean-embedded.pdf", "korean-cmap.pdf"]) {
+					const { v } = await openPpp(name);
+					await waitText(v, 1);
+					const sp = spans(v, 1).filter((s) => /[가-힣]/.test(s.textContent));
+					const target = sp[Math.min(2, sp.length - 1)];
+					select(target, 0, target);
+					const ids = v.highlights.createFromSelection("#ffd400");
+					const a = hlById(v, ids[0]);
+					const pr = await waitFor(() => polyClientRect(v, a.id));
+					res[name] = { text: a.text.slice(0, 30), quads: a.quads.length, iou: +iou(pr, spanRect(target)).toFixed(2) };
+					closeOurs();
+				}
+				return { res, ok: Object.values(res).every((r) => /[가-힣]/.test(r.text) && r.quads === 1 && r.iou > 0.6) };
+			});
+
+			await check("highlight-cross-page", async () => {
+				const { v } = await openPpp("a4.pdf");
+				v.debugSession.viewer.currentScaleValue = "0.5";
+				await waitIdle(v);
+				await waitText(v, 1);
+				await waitText(v, 2);
+				const s1 = spans(v, 1);
+				const s2 = spans(v, 2);
+				select(s1[s1.length - 2], 0, s2[1]);
+				const ids = v.highlights.createFromSelection("#ff6680");
+				const list = ids.map((id) => hlById(v, id));
+				return { pages: list.map((a) => a.page), groups: [...new Set(list.map((a) => a.groupId))], ok: list.length === 2 && list[0].page === 1 && list[1].page === 2 && list[0].groupId && list[0].groupId === list[1].groupId };
+			});
+
+			await check("highlight-menu-undo", async () => {
+				const { v } = await openPpp("letter.pdf");
+				await waitText(v, 1);
+				const sp = spans(v, 1);
+				select(sp[2], 0, sp[2]);
+				const [id] = v.highlights.createFromSelection("#ffd400");
+				const pr = await waitFor(() => polyClientRect(v, id));
+				const x = (pr.left + pr.right) / 2;
+				const y = (pr.top + pr.bottom) / 2;
+				getSelection().removeAllRanges();
+				const target = document.elementFromPoint(x, y);
+				target.dispatchEvent(new MouseEvent("click", { clientX: x, clientY: y, bubbles: true, cancelable: true }));
+				const menu = await waitFor(() => v.containerEl.querySelector(".ppp-hl-menu"));
+				// recolor via menu
+				menu.querySelectorAll(".ppp-swatch")[1].click();
+				const recolored = hlById(v, id).color;
+				// delete via menu
+				target.dispatchEvent(new MouseEvent("click", { clientX: x, clientY: y, bubbles: true, cancelable: true }));
+				const menu2 = await waitFor(() => v.containerEl.querySelector(".ppp-hl-menu"));
+				menu2.querySelector(".mod-warning").click();
+				const deleted = hlById(v, id).deleted;
+				const polyGone = !polyClientRect(v, id);
+				v.undo();
+				const back = !hlById(v, id).deleted && !!(await waitFor(() => polyClientRect(v, id)));
+				v.undo();
+				const colorBack = hlById(v, id).color;
+				v.redo();
+				return { recolored, deleted, polyGone, back, colorBack, ok: recolored !== "#ffd400" && deleted && polyGone && back && colorBack === "#ffd400" && hlById(v, id).color === recolored };
+			});
+
+			await check("persist-restart-rename", async () => {
+				const before = (await ad.exists(FIX + "rotations.pdf.ppp.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.ppp.json"));
+				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;
+				await reloadPlugin();
+				const { v } = await openPpp("rotations.pdf");
+				const afterRestart = store(v).all().length;
+				await waitFor(() => v.containerEl.querySelector(".ppp-hl polygon"));
+				closeOurs();
+				const f = file("rotations.pdf");
+				await app.fileManager.renameFile(f, FIX + "rotations-renamed.pdf");
+				const moved = await waitFor(() => ad.exists(FIX + "rotations-renamed.pdf.ppp.json"), 5000);
+				const oldGone = !(await ad.exists(FIX + "rotations.pdf.ppp.json"));
+				const { v: v2 } = await openPpp("rotations-renamed.pdf");
+				const afterRename = store(v2).all().length;
+				closeOurs();
+				await app.fileManager.renameFile(file("rotations-renamed.pdf"), FIX + "rotations.pdf");
+				await waitFor(() => ad.exists(FIX + "rotations.pdf.ppp.json"), 5000);
+				return { saved: n, afterRestart, moved: !!moved, oldGone, afterRename, ok: n > 0 && afterRestart === n && oldGone && afterRename === n };
+			});
+
+			await check("fingerprint-mismatch", async () => {
+				// put a4's sidecar next to letter.pdf
+				await ad.write(FIX + "letter.pdf.ppp.json", JSON.stringify({ schemaVersion: 1, pdfFingerprint: "not-this-pdf", annotations: [] }));
+				const { v } = await openPpp("letter.pdf");
+				const banner = v.containerEl.querySelector(".ppp-banner")?.textContent || "";
+				const status = store(v).status;
+				const before = await ad.read(FIX + "letter.pdf.ppp.json");
+				await v.flush();
+				closeOurs();
+				const after = await ad.read(FIX + "letter.pdf.ppp.json");
+				await ad.remove(FIX + "letter.pdf.ppp.json");
+				return { status, banner: banner.slice(0, 80), untouched: before === after, ok: status === "fingerprint-mismatch" && before === after && banner.length > 0 };
+			});
+
+			await check("long-300-memory", async () => {
+				const { v } = await openPpp("long-300.pdf");
+				const s = v.debugSession;
+				let maxCanvas = 0, maxLayers = 0, maxRendered = 0;
+				const t0 = performance.now();
+				for (const scale of ["page-width", "2", "0.6"]) {
+					s.viewer.currentScaleValue = scale;
+					for (let p = 1; p <= 300; p += 7) {
+						s.viewer.currentPageNumber = p;
+						await sleep(40);
+						s.layers.sync();
+						maxCanvas = Math.max(maxCanvas, v.containerEl.querySelectorAll("canvas").length);
+						maxLayers = Math.max(maxLayers, s.layers.attachedPages.length);
+					}
+					await waitIdle(v);
+					let rendered = 0;
+					for (let i = 0; i < 300; i++) if (s.viewer.getPageView(i).renderingState === 3) rendered++;
+					maxRendered = Math.max(maxRendered, rendered);
+				}
+				s.viewer.currentPageNumber = 300;
+				await waitRendered(v, 300);
+				const heap = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null;
+				return { maxCanvas, maxLayers, maxRendered, seconds: +((performance.now() - t0) / 1000).toFixed(1), heapMB: heap, ok: maxCanvas <= 40 && maxLayers <= 12 && maxRendered <= 40 };
+			});
+
+			await check("fallback-main-thread", async () => {
+				const workerGlobalBefore = window.pdfjsWorker;
+				await app.plugins.disablePlugin(ID);
+				window.Worker = class {
+					constructor() {
+						throw new Error("Worker disabled by harness");
+					}
+				};
+				try {
+					await app.plugins.enablePlugin(ID);
+					await waitFor(() => P());
+					const { v } = await openPpp("a4.pdf");
+					await waitText(v, 1);
+					const log = P().getLogText();
+					return {
+						mode: /falling back to main-thread/.test(log) ? "main-thread" : "?",
+						rendered: pageView(v, 1).renderingState === 3,
+						pdfjsWorkerUnchanged: window.pdfjsWorker === workerGlobalBefore,
+						pdfjsLibUnchanged: window.pdfjsLib === globalsBefore.pdfjsLib || window.pdfjsLib?.version !== cfg.ourVersion,
+						ok: /falling back to main-thread/.test(log) && pageView(v, 1).renderingState === 3 && window.pdfjsWorker === workerGlobalBefore,
+					};
+				} finally {
+					closeOurs();
+					await app.plugins.disablePlugin(ID);
+					window.Worker = TrackedWorker;
+					await app.plugins.enablePlugin(ID);
+					await waitFor(() => P());
+				}
+			});
+
+			await check("unload-cleanup", async () => {
+				const { v } = await openPpp("a4.pdf");
+				await waitText(v, 1);
+				// a pending (debounced, unsaved) highlight must be written on unload
+				const sp = spans(v, 1);
+				select(sp[3], 0, sp[3]);
+				const [id] = v.highlights.createFromSelection("#ffd400");
+				const ours = workers.filter((w) => w.url.startsWith("blob:"));
+				const urls = [...new Set(ours.map((w) => w.url))];
+				await app.plugins.disablePlugin(ID);
+				await sleep(1500);
+				const leftovers = document.querySelectorAll(".pdf-ppp-view, .pdf-ppp-root, .ppp-floating, .ppp-layer-host, .ppp-hud").length;
+				const revoked = [];
+				for (const u of urls) {
+					try {
+						await fetch(u);
+						revoked.push(false);
+					} catch {
+						revoked.push(true);
+					}
+				}
+				const saved = JSON.parse(await ad.read(FIX + "a4.pdf.ppp.json")).annotations.some((a) => a.id === id);
+				const styleLeft = [...document.querySelectorAll("style")].some((s) => s.textContent.includes(".pdf-ppp-root"));
+				const res = {
+					leaves: app.workspace.getLeavesOfType(VIEW).length,
+					leftovers,
+					workers: ours.length,
+					allTerminated: ours.every((w) => w.terminated),
+					blobRevoked: revoked,
+					pendingHighlightSaved: saved,
+					styleLeft,
+				};
+				await app.plugins.enablePlugin(ID);
+				// Obsidian keeps the tab (it remembers the view type for when the plugin returns); none of our DOM may remain
+				res.ok = leftovers === 0 && ours.length > 0 && res.allTerminated && revoked.every(Boolean) && saved && !styleLeft;
+				return res;
+			});
+
+			await check("corejs-footprint", async () => {
+				const src = require("fs").readFileSync(cfg.probeBundle, "utf8");
+				const frame = document.createElement("iframe");
+				frame.style.display = "none";
+				document.body.appendChild(frame);
+				try {
+					const w = frame.contentWindow;
+					const NAMES = ["Object", "Array", "Map", "WeakMap", "Set", "WeakSet", "Promise", "Math", "RegExp", "String", "Number", "Symbol", "JSON", "Reflect", "ArrayBuffer", "DataView", "Uint8Array", "Float32Array", "Iterator", "AbortSignal", "URL", "structuredClone", "Error", "AggregateError"];
+					const snap = () => {
+						const out = {};
+						const add = (label, obj) => {
+							if (!obj) return;
+							for (const k of Reflect.ownKeys(obj)) {
+								const d = Object.getOwnPropertyDescriptor(obj, k);
+								// identities, not source text: core-js patches Function#toString
+								// so that its polyfills print "[native code]"
+								out[`${label}.${String(k)}`] = d.value ?? d.get;
+							}
+						};
+						for (const n of NAMES) {
+							add(n, w[n]);
+							if (w[n] && w[n].prototype) add(n + ".prototype", w[n].prototype);
+						}
+						for (const k of Object.getOwnPropertyNames(w)) out[`globalThis.${k}`] = w[k];
+						return out;
+					};
+					const before = snap();
+					w.eval(src);
+					const after = snap();
+					const added = [], replaced = [];
+					for (const [k, v] of Object.entries(after)) {
+						if (!(k in before)) added.push(k);
+						else if (before[k] !== v && typeof before[k] === "function" && !k.startsWith("globalThis.")) replaced.push(k);
+					}
+					return { added, replaced, ok: replaced.length === 0 };
+				} finally {
+					frame.remove();
+				}
+			});
+
+			return { env, checks };
+		};
+
+		run()
+			.then((r) => (H.result = r))
+			.catch((e) => {
+				H.error = String((e && e.stack) || e);
+				H.result = { checks, error: H.error };
+			})
+			.finally(() => {
+				H.teardown();
+				H.step = "done";
+				H.done = true;
+			});
+	},
+});

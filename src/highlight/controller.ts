@@ -113,7 +113,9 @@ export class HighlightController implements LayerRenderer {
 
 	/** Turn the current selection into highlights. Returns the new ids. */
 	createFromSelection(color?: string): string[] {
-		if (!this.pending) this.captureSelection();
+		// A live selection is the truth (the cache may lag by the debounce);
+		// fall back to the cache when a tap already cleared it (iOS).
+		if (currentRange(this.host.container) || !this.pending) this.captureSelection();
 		const pending = this.pending;
 		const store = this.host.store();
 		const undo = this.host.undo();

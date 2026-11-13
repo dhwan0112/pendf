@@ -46,6 +46,13 @@ mkdirSync(outDir, { recursive: true });
 
 const EPOCH = new Date("2026-01-01T00:00:00Z");
 
+// Ground truth for highlight tests: where known text lines were drawn
+// (PDF user space, baseline y, advance width from the font metrics).
+const expected = {};
+function expect(file, page, text, x, baseline, size, font) {
+	(expected[file] ??= []).push({ page, text, x, baseline, size, width: font.widthOfTextAtSize(text, size) });
+}
+
 async function newDoc(title) {
 	const doc = await PDFDocument.create();
 	doc.setTitle(title);
@@ -147,7 +154,9 @@ async function rotations() {
 		page.setRotation(degrees(r));
 		const { width, height } = page.getSize();
 		page.drawText(`/Rotate ${r}`, { x: 56, y: height - 72, size: 24, font: bold });
-		page.drawText("This line is near the top-left corner of the unrotated page.", { x: 56, y: height - 104, size: 12, font: helv });
+		const marker = "This line is near the top-left corner of the unrotated page.";
+		page.drawText(marker, { x: 56, y: height - 104, size: 12, font: helv });
+		expect("rotations.pdf", doc.getPageCount(), marker, 56, height - 104, 12, helv);
 		let y = height - 140;
 		for (let i = 0; i < 6; i++) y = paragraph(page, helv, Array.from({ length: 3 }, () => sentence(gen, 11)).join(" "), 56, y, width - 112) - 8;
 		page.drawRectangle({ x: 20, y: 20, width: 40, height: 40, color: rgb(0.9, 0.2, 0.2) });
@@ -165,6 +174,7 @@ async function cropbox() {
 	page.drawRectangle({ x: 0, y: 0, width: 612, height: 792, color: rgb(1, 0.85, 0.85) });
 	page.drawRectangle({ x: 100, y: 150, width: 400, height: 550, color: rgb(1, 1, 1) });
 	page.drawText("Inside the CropBox [100 150 500 700]", { x: 110, y: 680, size: 14, font: helv });
+	expect("cropbox.pdf", 1, "Inside the CropBox [100 150 500 700]", 110, 680, 14, helv);
 	let y = 650;
 	for (let i = 0; i < 10; i++) y = paragraph(page, helv, sentence(gen, 14) + " " + sentence(gen, 9), 110, y, 380) - 8;
 	page.drawText("OUTSIDE (should be cropped)", { x: 10, y: 20, size: 14, font: helv });
@@ -352,4 +362,5 @@ await koreanCMap();
 await koreanEmbedded();
 await links();
 await long300();
+writeFileSync(path.join(outDir, "expected.json"), JSON.stringify(expected, null, 2) + "\n");
 console.log(`→ ${outDir}`);

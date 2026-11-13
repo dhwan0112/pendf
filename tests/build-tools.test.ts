@@ -125,12 +125,20 @@ describe("scope-css", () => {
 		expect(css).not.toMatch(/url\(\s*["']?images\//);
 		// every rule outside @keyframes starts with the scope
 		const selectors: string[] = [];
+		const nested: string[] = [];
 		postcss.parse(css).walkRules((rule) => {
-			const parent = rule.parent as { type: string; name?: string } | undefined;
-			if (parent?.type === "atrule" && /keyframes$/.test(parent.name ?? "")) return;
-			selectors.push(...rule.selectors);
+			let insideRule = false;
+			for (let p = rule.parent as { type: string; name?: string; parent?: unknown } | undefined; p && p.type !== "root"; p = p.parent as typeof p) {
+				if (p.type === "rule") insideRule = true;
+				if (p.type === "atrule" && /keyframes$/.test(p.name ?? "")) return;
+			}
+			(insideRule ? nested : selectors).push(...rule.selectors);
 		});
 		expect(selectors.length).toBeGreaterThan(100);
 		expect(selectors.filter((s) => !s.startsWith(".pdf-ppp-root"))).toEqual([]);
+		// pdf.js 6 uses native CSS nesting: nested rules stay relative to their parent
+		expect(nested.length).toBeGreaterThan(10);
+		expect(nested.filter((s) => s.includes(".pdf-ppp-root"))).toEqual([]);
+		expect(css).toMatch(/\.pdf-ppp-root \.textLayer\s*\{[\s\S]*?> :not\(\.markedContent\)/);
 	});
 });
