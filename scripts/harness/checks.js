@@ -797,14 +797,14 @@
 					await app.plugins.enablePlugin(ID);
 					await waitFor(() => P());
 					const { v } = await openPpp("a4.pdf");
-					await waitText(v, 1);
+					await waitText(v, v.debugSession.viewer.currentPageNumber);
 					const log = P().getLogText();
 					return {
 						mode: /falling back to main-thread/.test(log) ? "main-thread" : "?",
-						rendered: pageView(v, 1).renderingState === 3,
+						rendered: pageView(v, v.debugSession.viewer.currentPageNumber).renderingState === 3,
 						pdfjsWorkerUnchanged: window.pdfjsWorker === workerGlobalBefore,
 						pdfjsLibUnchanged: window.pdfjsLib === globalsBefore.pdfjsLib || window.pdfjsLib?.version !== cfg.ourVersion,
-						ok: /falling back to main-thread/.test(log) && pageView(v, 1).renderingState === 3 && window.pdfjsWorker === workerGlobalBefore,
+						ok: /falling back to main-thread/.test(log) && pageView(v, v.debugSession.viewer.currentPageNumber).renderingState === 3 && window.pdfjsWorker === workerGlobalBefore,
 					};
 				} finally {
 					closeOurs();
@@ -817,9 +817,9 @@
 
 			await check("unload-cleanup", async () => {
 				const { v } = await openPpp("a4.pdf");
-				await waitText(v, 1);
+				await waitText(v, v.debugSession.viewer.currentPageNumber);
 				// a pending (debounced, unsaved) highlight must be written on unload
-				const sp = spans(v, 1);
+				const sp = spans(v, v.debugSession.viewer.currentPageNumber);
 				select(sp[3], 0, sp[3]);
 				const [id] = v.highlights.createFromSelection("#ffd400");
 				const ours = workers.filter((w) => w.url.startsWith("blob:"));

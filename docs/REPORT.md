@@ -2,12 +2,13 @@
 
 세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pdf-ppp`(git init만 하고 원격은 없음, B-02).
 개발 환경: Windows 11, Obsidian 1.15.1(Electron 37 / Chromium 138), Node 22, pnpm 10.
+(하네스 결과 JSON의 `obsidian: 1.10.6`은 user agent에 찍히는 **설치 파일** 버전이다. 앱 버전은 1.15.1이다.)
 
 ## 요약
 
 - 다른 플러그인 없이 동작하는 독립 `FileView` PDF 뷰어와 하이라이트를 구현했다. pdf.js는 6.5.438 **modern 빌드를 번들**한다. 너무 새로운 내장 기능은 빌드 시 모듈 지역 함수로 치환하므로, Obsidian 창의 전역과 내장 객체를 하나도 바꾸지 않는다.
 - `main.js` 3.21 MB(5 MB 미만). 워커, CJK CMap, 표준 글꼴, JBIG2/JPX 디코더를 모두 넣었고, 네트워크 요청은 0건이다.
-- 단위 테스트 122개(vitest)와 실제 Obsidian에서 돌리는 데스크톱 하네스 19개 검사가 모두 통과한다. 18개는 전체 실행으로(`docs/evidence/harness-2026-11-13-modern.json`), 마지막에 추가한 팔레트 검사는 따로 돌렸다. iPad 항목은 `DEVICE_CHECKLIST.md`로 넘겼다.
+- 단위 테스트 122개(vitest)와 실제 Obsidian에서 돌리는 데스크톱 하네스 21개 검사가 마지막 커밋 기준 전체 실행에서 모두 통과한다(`docs/evidence/harness-2026-11-13-modern.json`). 여기에는 엔진 검사, HUD, 모든 명령, 펜 프로브, 파일 메뉴, 설정 탭, 열린 상태에서의 이름 변경이 포함된다. iPad 항목은 `DEVICE_CHECKLIST.md`로 넘겼다.
 - 진행하면서 지시문에 없던 문제 셋을 찾아 고쳤다. (1) pdf.js가 쓰는 CSS 중첩을 스코핑하다가 깨뜨린 문제. (2) Obsidian의 전역 `border-box`가 페이지 안으로 새는 문제. (3) legacy 빌드의 core-js가 공유 창의 내장 객체를 교체하는 문제. 마지막 것 때문에 처음 계획한 legacy 빌드를 버렸다(D-03, D-13).
 
 ## 완료 기준 대조
@@ -27,8 +28,8 @@
 | 기준 | 상태 | 근거 |
 | --- | --- | --- |
 | 여러 줄, 2단 조판, 회전 페이지, 한국어에서 하이라이트가 선택 범위와 일치 | ✅ | `highlight-ground-truth`: `/Rotate` 0·90·180·270 페이지와 CropBox 페이지에서, 저장된 쿼드가 fixture에 그린 위치와 x 기준 0.32 pt 이내로 일치. `highlight-multiline-columns`: 4줄 → 쿼드 4개, 단을 넘지 않음. `highlight-korean`: 임베디드·CMap 한글 모두 IoU 0.6 초과 |
-| 줌·회전·재시작·파일 이름 변경 후에도 위치 유지 | ✅ | 같은 하이라이트를 220%, 80%, 보기 회전 90°·270°에서 다시 재면 화면상 IoU 0.92–1.0. `persist-restart-rename`: 플러그인 재시작과 이름 변경 후 개수 유지, 사이드카가 함께 이동 |
-| 탭하여 색 변경·삭제, 실행 취소 | ✅ | `highlight-menu-undo`(색 변경 → 삭제 → 실행 취소 ×2 → 다시 실행), `highlight-palette`(선택 → 팔레트 → 스와치 → 정확히 1개 생성) |
+| 줌·회전·재시작·파일 이름 변경 후에도 위치 유지 | ✅ | 같은 하이라이트를 220%, 80%, 보기 회전 90°·270°에서 다시 재면 화면상 IoU 0.92–1.0. `persist-restart-rename`: 플러그인 재시작과 이름 변경 후 개수 유지, 사이드카가 함께 이동. `rename-while-open`: 연 채로 이름을 바꾼 뒤 추가한 하이라이트까지 새 사이드카에 저장되고 옛 경로에는 아무것도 남지 않음 |
+| 탭하여 색 변경·삭제, 실행 취소 | ✅ | `highlight-menu-undo`(색 변경 → 삭제 → 실행 취소 ×2 → 다시 실행), `highlight-palette`(선택 → 팔레트 → 스와치 → 정확히 1개 생성), `smoke-ui`(명령으로 하이라이트) |
 | 페이지를 넘는 선택은 그룹 id로 묶음 | ✅ | `highlight-cross-page` |
 | PDF 원래 주석은 표시만 | ✅ | pdf.js 주석 레이어(`AnnotationMode.ENABLE`). 편집기는 끔 |
 
@@ -68,11 +69,13 @@
 - **Obsidian 재시작 후 하네스 1회**(B-04): 개발 중인 SciWiki 창에 legacy 빌드의 core-js 흔적이 남아 있다. 깨끗한 realm 검사는 이미 통과했다. 사용자의 Obsidian은 재시작하지 않았다.
 - **원격 저장소와 릴리스**(B-02): 지시문대로 원격을 설정하지 않았다. 워크플로는 작성했지만 실행되지 않았다.
 - 리스너 누수를 직접 세는 검사(간접 확인만 함).
-- 데스크톱 Obsidian의 오래된 설치 파일(Electron < 122)은 Iterator 헬퍼가 없어 엔진 검사 배너가 뜬다. 데스크톱은 지시문상 개발·디버깅 대상이라 대응하지 않았다.
+- **데스크톱에서도 자동 검증하지 못한 것:** 비밀번호 PDF 입력 창, 핀치 줌(`TouchManager`, 터치 입력 필요), 마우스·손가락으로 실제로 끌어서 하는 선택(하네스는 Range로 선택을 만든다), PDF++를 함께 설치한 볼트에서의 공존(코어 PDF 뷰어와의 공존만 확인함). 모두 DEVICE_CHECKLIST에 있다.
+- 데스크톱 Obsidian의 오래된 설치 파일(Chromium < 122)에는 Iterator 헬퍼가 없어 엔진 검사 배너가 뜬다. 데스크톱은 지시문상 개발·디버깅 대상이라 대응하지 않았다.
 
 ## 남아 있는 것(사용자 환경)
 
-- SciWiki 테스트 볼트에 `.obsidian/plugins/pdf-ppp/`(꺼진 상태, `community-plugins.json`에는 넣지 않음)와 `pdf-ppp-fixtures/` 폴더(fixture PDF 9개)를 남겨 두었다. 데스크톱에서 직접 시험해 볼 때 쓰면 된다. 필요 없으면 두 폴더를 지우면 된다. 탭·심·사이드카·`data.json`은 모두 되돌렸다.
+- SciWiki 테스트 볼트에 `.obsidian/plugins/pdf-ppp/`(꺼진 상태, `community-plugins.json`에는 넣지 않음)와 `pdf-ppp-fixtures/` 폴더(fixture PDF 9개)를 남겨 두었다. 데스크톱에서 직접 시험해 볼 때 쓰면 된다. 필요 없으면 두 폴더를 지우면 된다. 탭, rAF·Worker·`window.open` 심, background throttling 설정, 사이드카, `data.json`, 내보낸 로그·프로브 파일은 모두 되돌리거나 지웠다.
+- **Obsidian을 재시작해야 사라지는 흔적(현재 실행 중인 창에만 있고 파일로는 남지 않음):** 초기 탐색 때 감싼 `console.warn/error/log` 래퍼(동작은 무력화함). `window.__ppp*`, `__dbg`, `__r` 같은 진단용 전역 변수. 개발 중 legacy 빌드를 로드해 생긴 core-js 폴리필.
 
 ## 열린 질문
 

@@ -1,5 +1,5 @@
 {
-  "mainJs": 3361584,
+  "mainJs": 3361719,
   "stylesCss": 174325,
   "assets": {
     "worker": {
@@ -20,13 +20,6 @@
     }
   },
   "ponyfills": {
-    "pdf_viewer.mjs": {
-      ".join": 15,
-      ".getOrInsertComputed": 8,
-      "RegExp.escape": 2,
-      "URL.parse": 2,
-      ".getOrInsert": 1
-    },
     "pdf.mjs": {
       "URL.parse": 8,
       ".join": 39,
@@ -35,6 +28,13 @@
       ".toBase64": 2,
       "Math.sumPrecise": 1,
       "Uint8Array.fromBase64": 1
+    },
+    "pdf_viewer.mjs": {
+      ".join": 15,
+      ".getOrInsertComputed": 8,
+      "RegExp.escape": 2,
+      "URL.parse": 2,
+      ".getOrInsert": 1
     },
     "pdf.worker.mjs": {
       "URL.parse": 3,

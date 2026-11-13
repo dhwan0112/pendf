@@ -72,7 +72,16 @@
 - **주의:** 개발 중 SciWiki 창에는 legacy 빌드를 로드했을 때의 core-js 흔적이 남아 있다. Obsidian을 재시작하면 사라진다.
 
 ## D-14 테스트 도구
-- vitest 5.1, TypeScript 5.9.3(타입 검사; TS 7은 JS API가 없어 도구 연동이 불안정), postcss 8(CSS 스코핑), pdf-lib 1.17.1 + @pdf-lib/fontkit(fixture 생성, 개발 의존성만). 런타임 의존성은 `pdfjs-dist` 하나다.
+- 런타임 의존성은 `pdfjs-dist` 하나다(정확한 버전, check-standalone이 검사). 개발 의존성은 다음과 같다.
+  - esbuild 0.28: 번들, 워커 압축
+  - TypeScript 5.9.3: 타입 검사(TS 7은 JS API가 없어 도구 연동이 불안정)
+  - vitest 5.1, jsdom 26: 테스트(jsdom은 선택 분할 테스트용)
+  - postcss 8: pdf.js CSS 스코핑
+  - acorn 8, acorn-walk 8, magic-string 0.30: pdf.js ponyfill 치환(AST 파싱과 소스 수정)
+  - pdf-lib 1.17.1, @pdf-lib/fontkit 1.1.1: fixture PDF 생성
+  - obsidian 1.14.4: API 타입 정의
+  - @types/node
+  - 모든 개발 의존성은 `.npmrc`의 `save-exact`로 고정된다.
 
 ## D-15 Obsidian Sync와 `.json` 사이드카
 - **결정:** 사이드카 이름은 지시문대로 `<이름>.pdf.ppp.json`을 유지한다.

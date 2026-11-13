@@ -19,19 +19,19 @@ importers:
         specifier: 26.6.6
         version: 26.6.6
       acorn:
-        specifier: ^8.19.0
+        specifier: 8.19.0
         version: 8.19.0
       acorn-walk:
-        specifier: ^8.3.5
+        specifier: 8.3.5
         version: 8.3.5
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
       jsdom:
-        specifier: ^26.1.0
+        specifier: 26.1.0
         version: 26.1.0
       magic-string:
-        specifier: ~0.30.21
+        specifier: 0.30.21
         version: 0.30.21
       obsidian:
         specifier: 1.14.4
@@ -40,7 +40,7 @@ importers:
         specifier: 1.17.1
         version: 1.17.1
       postcss:
-        specifier: ^8.5.32
+        specifier: 8.5.32
         version: 8.5.32
       typescript:
         specifier: 5.9.3

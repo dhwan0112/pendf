@@ -310,8 +310,69 @@
         2
       ],
       "groups": [
-        "3823fcec-df61-4993-ac94-8266a2ab259f"
+        "e92dea0a-82d6-4ec4-af7b-afe5c5b7d981"
       ]
+    },
+    "smoke-ui": {
+      "ok": true,
+      "engine": {
+        "ok": true,
+        "missing": [],
+        "ponyfilled": {
+          "Map#getOrInsertComputed": true,
+          "Math.sumPrecise": true,
+          "Uint8Array#toBase64 / fromBase64 / toHex": true,
+          "Promise.try": true,
+          "RegExp.escape": true,
+          "URL.parse": true
+        }
+      },
+      "errorBanner": false,
+      "hud": "worker: web-worker | rendering: 0 | rendered: 3 | canvases: 3",
+      "hudGone": true,
+      "commands": {
+        "find": true,
+        "zoom-in": true,
+        "zoom-out": true,
+        "fit-width": true,
+        "undo": true,
+        "redo": true,
+        "highlight-selection": true,
+        "export-log": true,
+        "open-current-pdf": true,
+        "open-pdf": true,
+        "open-pen-probe": true
+      },
+      "searchOpened": true,
+      "highlightByCommand": true,
+      "logExported": true,
+      "logHasEngine": true,
+      "openCurrentWorked": true,
+      "modalShown": true,
+      "probeCommandHidden": true,
+      "probe": {
+        "penEvents": 9,
+        "fractional": 1,
+        "coalesced": true
+      },
+      "probeExported": true,
+      "fileMenu": true,
+      "fileMenuOpens": true,
+      "noMenuForMarkdown": true,
+      "settingsItems": 12
+    },
+    "rename-while-open": {
+      "ok": true,
+      "both": true,
+      "oldExists": false,
+      "viewFile": "pdf-ppp-fixtures/cropbox.pdf"
+    },
+    "highlight-palette": {
+      "ok": true,
+      "made": 1,
+      "color": "#2ea8e5",
+      "paletteGone": true,
+      "selectionCleared": true
     },
     "highlight-menu-undo": {
       "ok": true,
@@ -340,8 +401,8 @@
       "maxCanvas": 10,
       "maxLayers": 4,
       "maxRendered": 10,
-      "seconds": 7.8,
-      "heapMB": 253
+      "seconds": 7.9,
+      "heapMB": 287
     },
     "fallback-main-thread": {
       "ok": true,
