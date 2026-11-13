@@ -149,7 +149,11 @@ export class PenProbeView extends ItemView {
 
 	private onDown(e: PointerEvent): void {
 		if (e.pointerType === "pen") e.preventDefault();
-		this.pad.setPointerCapture(e.pointerId);
+		try {
+			this.pad.setPointerCapture(e.pointerId);
+		} catch {
+			// pointer already gone (cancelled, or synthetic); keep measuring
+		}
 		this.record(e, this.st(e.pointerType));
 		this.strokeStart.set(e.pointerId, { t: e.timeStamp, n: 0 });
 		this.lastPt.set(e.pointerId, [e.clientX, e.clientY]);

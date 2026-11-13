@@ -541,6 +541,133 @@
 				return { pages: list.map((a) => a.page), groups: [...new Set(list.map((a) => a.groupId))], ok: list.length === 2 && list[0].page === 1 && list[1].page === 2 && list[0].groupId && list[0].groupId === list[1].groupId };
 			});
 
+			await check("smoke-ui", async () => {
+				const r = {};
+				const p = P();
+				// engine check must not raise a false alarm on this engine
+				r.engine = p.engine;
+				const { v } = await openPpp("a4.pdf");
+				r.errorBanner = !!v.containerEl.querySelector(".ppp-banner.is-error:not(.is-hidden)");
+				// HUD via settings
+				p.settings.debugHud = true;
+				await p.saveSettings();
+				const hud = await waitFor(() => v.containerEl.querySelector(".ppp-hud")?.textContent.includes("rendered") && v.containerEl.querySelector(".ppp-hud").textContent, 5000);
+				r.hud = hud.split("\n").slice(0, 4).join(" | ");
+				p.settings.debugHud = false;
+				await p.saveSettings();
+				r.hudGone = !v.containerEl.querySelector(".ppp-hud");
+				// commands (by id) on the active view
+				const run = (id) => app.commands.executeCommandById(`pdf-ppp:${id}`);
+				r.commands = {};
+				for (const id of ["find", "zoom-in", "zoom-out", "fit-width", "undo", "redo"]) r.commands[id] = run(id);
+				r.searchOpened = !v.searchBar.hasClass("is-hidden");
+				await waitIdle(v); // zoom commands re-render text layers
+				await sleep(500);
+				await waitIdle(v);
+				await waitText(v, v.debugSession.viewer.currentPageNumber);
+				const sp = spans(v, v.debugSession.viewer.currentPageNumber);
+				select(sp[1], 0, sp[1]);
+				const n0 = store(v).all().length;
+				r.commands["highlight-selection"] = run("highlight-selection");
+				r.highlightByCommand = store(v).all().length === n0 + 1;
+				const logsBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-log-")).length;
+				r.commands["export-log"] = run("export-log");
+				const logFile = await waitFor(() => app.vault.getFiles().find((f) => f.name.startsWith("pdf-ppp-log-")), 5000);
+				r.logExported = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-log-")).length === logsBefore + 1;
+				r.logHasEngine = (await app.vault.read(logFile)).includes("engine:");
+				createdPaths.add(logFile.path);
+				// open-current-pdf from the core viewer
+				closeOurs();
+				const core = app.workspace.getLeaf("tab");
+				await core.openFile(file("letter.pdf"));
+				await waitFor(() => app.workspace.getActiveFile()?.path === FIX + "letter.pdf");
+				r.commands["open-current-pdf"] = run("open-current-pdf");
+				r.openCurrentWorked = !!(await waitFor(() => app.workspace.getLeavesOfType(VIEW).find((l) => l.view.file?.name === "letter.pdf"), 5000));
+				closeOurs();
+				// open-pdf modal
+				r.commands["open-pdf"] = run("open-pdf");
+				const modal = await waitFor(() => document.querySelector(".modal-container .prompt"), 3000);
+				r.modalShown = !!modal;
+				document.querySelector(".modal-container")?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+				document.querySelectorAll(".modal-container").forEach((m) => m.remove());
+				// pen probe: command gated by the setting
+				run("open-pen-probe");
+				await sleep(400);
+				r.probeCommandHidden = app.workspace.getLeavesOfType("pdf-ppp-pen-probe").length === 0;
+				p.settings.penProbe = true;
+				await p.saveSettings();
+				r.commands["open-pen-probe"] = run("open-pen-probe");
+				const probe = await waitFor(() => app.workspace.getLeavesOfType("pdf-ppp-pen-probe")[0]?.view, 5000);
+				const pad = probe.containerEl.querySelector(".ppp-probe-pad");
+				const box = pad.getBoundingClientRect();
+				const ev = (type, i) => new PointerEvent(type, { pointerId: 7, pointerType: "pen", pressure: 0.3 + i * 0.05, clientX: box.left + 20.5 + i * 7, clientY: box.top + 30.25 + i * 3, bubbles: true, cancelable: true });
+				pad.dispatchEvent(ev("pointerdown", 0));
+				for (let i = 1; i <= 8; i++) pad.dispatchEvent(ev("pointermove", i));
+				pad.dispatchEvent(ev("pointerup", 9));
+				const summary = JSON.parse(probe.containerEl.querySelector(".ppp-probe-out").textContent);
+				r.probe = { penEvents: summary.types.pen?.events, fractional: summary.types.pen?.fractionalCoordinateShare, coalesced: summary.types.pen?.getCoalescedEvents };
+				const probeFilesBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-pen-probe-")).length;
+				[...probe.containerEl.querySelectorAll("button")].find((b) => b.textContent === "Export JSON").click();
+				const probeFile = await waitFor(() => app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-pen-probe-")).length > probeFilesBefore && app.vault.getFiles().find((f) => f.name.startsWith("pdf-ppp-pen-probe-")), 5000);
+				createdPaths.add(probeFile.path);
+				r.probeExported = JSON.parse(await app.vault.read(probeFile)).types.pen.events === summary.types.pen.events;
+				p.settings.penProbe = false;
+				await p.saveSettings();
+				closeOurs();
+				// file menu entry
+				const items = [];
+				const fakeMenu = {
+					addItem(cb) {
+						const it = { title: "", setTitle(t) { this.title = t; return this; }, setIcon() { return this; }, setSection() { return this; }, onClick(f) { this.click = f; return this; } };
+						cb(it);
+						items.push(it);
+						return this;
+					},
+				};
+				app.workspace.trigger("file-menu", fakeMenu, file("cropbox.pdf"), "file-explorer");
+				const ours = items.find((i) => i.title === "Open in PDF+++");
+				r.fileMenu = !!ours;
+				ours?.click();
+				r.fileMenuOpens = !!(await waitFor(() => app.workspace.getLeavesOfType(VIEW).find((l) => l.view.file?.name === "cropbox.pdf"), 5000));
+				const mdItems = [];
+				app.workspace.trigger("file-menu", { addItem(cb) { const it = { title: "", setTitle(t) { this.title = t; return this; }, setIcon() { return this; }, setSection() { return this; }, onClick() { return this; } }; cb(it); mdItems.push(it); return this; } }, app.vault.getMarkdownFiles()[0], "file-explorer");
+				r.noMenuForMarkdown = !mdItems.some((i) => i.title === "Open in PDF+++");
+				closeOurs();
+				// settings tab renders
+				const tab = app.setting?.pluginTabs?.find((t) => t.plugin === p);
+				if (tab) {
+					tab.display();
+					r.settingsItems = tab.containerEl.querySelectorAll(".setting-item").length;
+					tab.containerEl.empty();
+				}
+				r.ok = p.engine.ok && !r.errorBanner && r.hud && r.hudGone && Object.values(r.commands).every((x) => x !== false) && r.searchOpened && r.highlightByCommand && r.logExported && r.logHasEngine && r.openCurrentWorked && r.modalShown && r.probeCommandHidden && r.probe.penEvents >= 9 && r.probeExported && r.fileMenu && r.fileMenuOpens && r.noMenuForMarkdown && (r.settingsItems ?? 0) >= 8;
+				return r;
+			});
+
+			await check("rename-while-open", async () => {
+				const { v } = await openPpp("cropbox.pdf");
+				await waitText(v, 1);
+				const range1 = await waitFor(() => textRange(v, 1, "Inside the CropBox"));
+				selectRange(range1);
+				const [id1] = v.highlights.createFromSelection("#ffd400");
+				await app.fileManager.renameFile(file("cropbox.pdf"), FIX + "cropbox-renamed.pdf");
+				await sleep(300);
+				// keep annotating the renamed, still-open document
+				const sp = spans(v, 1);
+				select(sp[sp.length - 1], 0, sp[sp.length - 1]);
+				const [id2] = v.highlights.createFromSelection("#2ea8e5");
+				await v.flush();
+				await sleep(300);
+				const newPath = FIX + "cropbox-renamed.pdf.ppp.json";
+				const oldPath = FIX + "cropbox.pdf.ppp.json";
+				const saved = (await ad.exists(newPath)) ? JSON.parse(await ad.read(newPath)).annotations.map((a) => a.id) : [];
+				const oldExists = await ad.exists(oldPath);
+				closeOurs();
+				await app.fileManager.renameFile(file("cropbox-renamed.pdf"), FIX + "cropbox.pdf");
+				await waitFor(() => ad.exists(oldPath), 5000).catch(() => {});
+				return { both: saved.includes(id1) && saved.includes(id2), oldExists, viewFile: v.file?.path, ok: saved.includes(id1) && saved.includes(id2) && !oldExists };
+			});
+
 			await check("highlight-palette", async () => {
 				// the real UI path: select → palette appears → swatch → highlight
 				const { v } = await openPpp("two-column.pdf");
