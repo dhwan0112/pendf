@@ -1,0 +1,51 @@
+{
+  "mainJs": 3361584,
+  "stylesCss": 174325,
+  "assets": {
+    "worker": {
+      "raw": 1228915,
+      "embedded": 513552
+    },
+    "cMapUrl": {
+      "raw": 1165667,
+      "embedded": 1309688
+    },
+    "standardFontDataUrl": {
+      "raw": 774339,
+      "embedded": 719784
+    },
+    "wasmUrl": {
+      "raw": 324488,
+      "embedded": 149756
+    }
+  },
+  "ponyfills": {
+    "pdf_viewer.mjs": {
+      ".join": 15,
+      ".getOrInsertComputed": 8,
+      "RegExp.escape": 2,
+      "URL.parse": 2,
+      ".getOrInsert": 1
+    },
+    "pdf.mjs": {
+      "URL.parse": 8,
+      ".join": 39,
+      ".getOrInsertComputed": 22,
+      "Promise.try": 4,
+      ".toBase64": 2,
+      "Math.sumPrecise": 1,
+      "Uint8Array.fromBase64": 1
+    },
+    "pdf.worker.mjs": {
+      "URL.parse": 3,
+      ".join": 73,
+      ".getOrInsertComputed": 18,
+      "Math.sumPrecise": 17,
+      ".getOrInsert": 1,
+      "Uint8Array.fromBase64": 1,
+      ".toHex": 2,
+      "Promise.try": 4
+    }
+  },
+  "limit": 5242880
+}

@@ -59,6 +59,17 @@
 		// dispatched in the rendering step, like rAF). Emulate the browser:
 		// fire one whenever a viewer container's scroll position changed.
 		const scrollPos = new WeakMap();
+		// Hidden for >5 min, Chromium also throttles chained timers to 1/min.
+		// Lift Electron's background throttling for the run (restored below).
+		let webContents = null;
+		let throttlingBefore = true;
+		try {
+			webContents = require("@electron/remote").getCurrentWebContents();
+			throttlingBefore = webContents.getBackgroundThrottling ? webContents.getBackgroundThrottling() : true;
+			webContents.setBackgroundThrottling(false);
+		} catch (e) {
+			console.warn("harness: cannot lift background throttling", e);
+		}
 		const scrollPump = setInterval(() => {
 			for (const c of document.querySelectorAll(".ppp-container")) {
 				const pos = c.scrollTop + "," + c.scrollLeft;
@@ -73,6 +84,11 @@
 			if (tornDown) return;
 			tornDown = true;
 			clearInterval(scrollPump);
+			try {
+				webContents?.setBackgroundThrottling(throttlingBefore);
+			} catch (e) {
+				console.error(e);
+			}
 			try {
 				app.workspace.iterateAllLeaves((l) => {
 					if (!leavesBefore.has(l)) l.detach();
@@ -523,6 +539,23 @@
 				const ids = v.highlights.createFromSelection("#ff6680");
 				const list = ids.map((id) => hlById(v, id));
 				return { pages: list.map((a) => a.page), groups: [...new Set(list.map((a) => a.groupId))], ok: list.length === 2 && list[0].page === 1 && list[1].page === 2 && list[0].groupId && list[0].groupId === list[1].groupId };
+			});
+
+			await check("highlight-palette", async () => {
+				// the real UI path: select → palette appears → swatch → highlight
+				const { v } = await openPpp("two-column.pdf");
+				await waitText(v, 1);
+				const sp = spans(v, 1);
+				select(sp[4], 0, sp[5]);
+				const palette = await waitFor(() => v.containerEl.querySelector(".ppp-palette"), 5000);
+				const swatches = palette.querySelectorAll(".ppp-swatch");
+				const before = store(v).all().length;
+				swatches[2].dispatchEvent(new PointerEvent("pointerup", { bubbles: true, cancelable: true }));
+				swatches[2].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })); // must not double-create
+				const after = store(v).all();
+				const made = after.length - before;
+				const a = after[after.length - 1];
+				return { made, color: a?.color, paletteGone: !v.containerEl.querySelector(".ppp-palette"), selectionCleared: getSelection().isCollapsed, ok: made === 1 && a.color === P().settings.colors[2].hex && !v.containerEl.querySelector(".ppp-palette") };
 			});
 
 			await check("highlight-menu-undo", async () => {

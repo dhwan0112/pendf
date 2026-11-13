@@ -166,9 +166,12 @@ export class HighlightController implements LayerRenderer {
 		if (!p) return;
 		if (!this.palette) {
 			const el = this.host.root.createDiv({ cls: "ppp-palette ppp-floating" });
-			// Keep the selection alive on mouse/pen down (desktop); iOS clears
-			// selections on tap anyway, which is why `pending` is cached.
+			// Keep the selection alive while the palette is touched: mouse/pen
+			// down (desktop) and touchstart (iOS collapses the selection on
+			// touchstart otherwise). With touchstart's default prevented iOS
+			// sends no click, so swatches act on pointerup.
 			el.addEventListener("pointerdown", (e) => e.preventDefault());
+			el.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
 			this.palette = el;
 		}
 		const el = this.palette;
@@ -176,11 +179,15 @@ export class HighlightController implements LayerRenderer {
 		this.host.colors().forEach((c) => {
 			const b = el.createEl("button", { cls: "ppp-swatch", attr: { "aria-label": `Highlight ${c.name}`, title: c.name } });
 			b.style.setProperty("--ppp-swatch", c.hex);
-			b.addEventListener("click", (e) => {
+			const apply = (e: Event) => {
 				e.preventDefault();
 				e.stopPropagation();
-				this.createFromSelection(c.hex);
-			});
+				// pointerup and a later click both land here; the second finds
+				// nothing selected and does nothing
+				if (this.pending) this.createFromSelection(c.hex);
+			};
+			b.addEventListener("pointerup", apply);
+			b.addEventListener("click", apply);
 		});
 		this.place(el, p.anchor, p.first);
 	}
