@@ -38,6 +38,8 @@ export interface InkSettings {
 	 * (fallback for devices where the Pencil would otherwise scroll the page).
 	 */
 	input: "stylus" | "exclusive";
+	/** the Apple Pencil writes whenever it touches a page, without turning on ink mode */
+	pencilAlways: boolean;
 }
 
 export const PEN_COLORS = ["#1f1f1f", "#1f5fbf", "#c62828", "#2e7d32"];
@@ -57,7 +59,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	penProbe: false,
 	rememberPosition: true,
 	positions: {},
-	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus" },
+	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
 };
 
 export const MAX_POSITIONS = 300;
@@ -72,6 +74,7 @@ const TEXT = {
 	invertPages: ["Invert page colors", "Dark reading mode: inverts the rendered pages (not your highlights)."],
 	rememberPosition: ["Remember position", "Reopen each PDF at the page and zoom you left it."],
 	handwriting: "Handwriting",
+	inkPencilAlways: ["Apple Pencil always writes", "The Pencil writes whenever it touches a page, with the last tool you picked (pen, highlighter or eraser); fingers scroll and select text. Off: the Pencil writes only in ink mode (toolbar pen button)."],
 	inkInput: ["Pencil and finger", "Default: the Pencil writes, fingers scroll and select text. If the Pencil scrolls the page instead of writing on your device, choose “Everything writes” (then leave ink mode to scroll)."],
 	diagnostics: "Diagnostics",
 	debugHud: ["Debug overlay", "Shows pages being rendered, render time, canvas count and annotation count."],
@@ -117,6 +120,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 				type: "group",
 				heading: TEXT.handwriting,
 				items: [
+					{ name: TEXT.inkPencilAlways[0], desc: TEXT.inkPencilAlways[1], control: { type: "toggle", key: "inkPencilAlways" } },
 					{
 						name: TEXT.inkInput[0],
 						desc: TEXT.inkInput[1],
@@ -134,6 +138,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 		if (m) return s.colors[Number(m[1])]?.[m[2] as "name" | "hex"];
 		if (key === "defaultColor") return String(s.defaultColor);
 		if (key === "inkInput") return s.ink.input;
+		if (key === "inkPencilAlways") return s.ink.pencilAlways;
 		return s[key as BoolKey];
 	}
 
@@ -154,6 +159,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 			else c.hex = String(value);
 		} else if (key === "defaultColor") {
 			s.defaultColor = Number(value);
+		} else if (key === "inkPencilAlways") {
+			s.ink = { ...s.ink, pencilAlways: Boolean(value) };
 		} else if (key === "inkInput") {
 			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
 		} else {
@@ -199,6 +206,10 @@ export class PenDFSettingTab extends PluginSettingTab {
 		toggle("invertPages");
 		toggle("rememberPosition");
 		new Setting(containerEl).setName(TEXT.handwriting).setHeading();
+		new Setting(containerEl)
+			.setName(TEXT.inkPencilAlways[0])
+			.setDesc(TEXT.inkPencilAlways[1])
+			.addToggle((t) => t.setValue(s.ink.pencilAlways).onChange((v) => set("inkPencilAlways", v)));
 		new Setting(containerEl)
 			.setName(TEXT.inkInput[0])
 			.setDesc(TEXT.inkInput[1])

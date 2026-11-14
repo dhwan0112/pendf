@@ -50,9 +50,10 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Bookmarks**
   (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
   rename, move up/down, copy link, delete) and **Annotations**.
-- Handwriting: toolbar pen button (or **Toggle handwriting**) shows the ink bar: pen, highlighter,
-  stroke eraser, colors, widths, **Done**. With the Apple Pencil you write while fingers still
-  scroll and select text. If on your device the Pencil scrolls the page instead, set
+- Handwriting: the Apple Pencil writes as soon as it touches a page (**Settings → penDF → Apple
+  Pencil always writes**, on by default); fingers always scroll and select text. The toolbar pen
+  button (or **Toggle handwriting**) shows the ink bar to pick pen, highlighter or stroke eraser,
+  colors and widths; turn the setting off to write only while the ink bar is open. If on your device the Pencil scrolls the page instead, set
   **Settings → penDF → Pencil and finger → Everything writes**. Undo/redo cover strokes too.
 - ⌘/Ctrl+F searches.
 

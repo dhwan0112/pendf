@@ -1111,6 +1111,20 @@
 					s.layers.refresh(1);
 					v.toggleInk(true);
 					res.touch = await drawPdf(v, 1, [[100, 500], [200, 520]], "touch");
+					// outside ink mode: the Pencil writes only with "Apple Pencil always writes"
+					v.toggleInk(false);
+					pl.settings.ink = { ...pl.settings.ink, pencilAlways: true };
+					const always = await drawPdf(v, 1, [[120, 450], [220, 460]]);
+					const mouseOff = await drawPdf(v, 1, [[120, 420], [220, 425]], "mouse");
+					pl.settings.ink = { ...pl.settings.ink, pencilAlways: false };
+					const off = await drawPdf(v, 1, [[120, 430], [220, 440]]);
+					res.pencilAlways = { writesWhenOn: !!always, mouseIgnored: mouseOff === null, ignoredWhenOff: off === null, inkModeOff: !v.debugSession.ink.active };
+					if (always) {
+						s.store.remove(always.id);
+						s.layers.refresh(1);
+					}
+					pl.settings.ink = { ...pl.settings.ink, pencilAlways: true };
+					v.toggleInk(true);
 					const across = await drawPdf(v, 1, [[80, 600], [250, 600], [420, 600]]);
 					res.menuAfterStroke = !!s.viewerRoot?.querySelector?.(".pendf-hl-menu") || !!document.querySelector(".pendf-hl-menu");
 					const dot = await drawPdf(v, 1, [[300, 300]]);
@@ -1170,6 +1184,7 @@
 					res.ok =
 						g.length === 6 && g.every((x) => x.errPt < 0.5) && g.filter((x) => "svg" in x).every((x) => x.svg) &&
 						res.touch === null && !res.menuAfterStroke &&
+						res.pencilAlways.writesWhenOn && res.pencilAlways.mouseIgnored && res.pencilAlways.ignoredWhenOff && res.pencilAlways.inkModeOff &&
 						!!res.dot && res.dot.n === 2 && res.dot.svg &&
 						res.beforeErase === 2 && res.afterErase === 1 && res.erasedLong && res.afterUndo === 2 &&
 						res.stress.paths === 1500 && res.stress.sidecarBytes > 0 && res.stress.sidecarBytes < 2e6 &&

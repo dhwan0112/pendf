@@ -210,7 +210,7 @@ export class PenDFView extends FileView {
 		const tools = tb.createDiv({ cls: "pendf-group" });
 		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
 		this.button(tools, "bookmark-plus", "Bookmark this spot", () => void this.addBookmark());
-		this.inkButton = this.button(tools, "pen-line", "Handwriting (Pencil writes, finger scrolls)", () => this.toggleInk());
+		this.inkButton = this.button(tools, "pen-line", "Handwriting tools (pen, highlighter, eraser)", () => this.toggleInk());
 		this.noteButton = this.button(tools, "message-square-plus", "Add note (then tap the page)", () => {
 			const n = this.session?.notes;
 			if (n) n.setPlacing(!n.placing);
@@ -435,6 +435,7 @@ export class PenDFView extends FileView {
 				this.inkBar.toggleClass("is-hidden", !on);
 				if (on) this.renderInkBar();
 			},
+			busy: () => session.notes?.placing ?? false,
 			quietly: (fn) => {
 				this.quiet = true;
 				try {

@@ -44,6 +44,8 @@ export interface InkHost {
 	onActiveChange?: (on: boolean) => void;
 	/** run a store edit without the panel re-render a normal edit triggers */
 	quietly?: (fn: () => void) => void;
+	/** another tool owns the next tap (e.g. placing a note): do not draw */
+	busy?: () => boolean;
 }
 
 interface Stroke {
@@ -98,7 +100,7 @@ export class InkController implements LayerRenderer {
 		c.addEventListener(
 			"touchstart",
 			(e) => {
-				if (!this._active || this.host.settings().input !== "stylus") return;
+				if (!this.pencilWrites() || this.host.settings().input !== "stylus" || this.host.busy?.()) return;
 				for (const t of Array.from(e.changedTouches)) {
 					if ((t as Touch & { touchType?: string }).touchType === "stylus") {
 						e.preventDefault();
@@ -179,11 +181,23 @@ export class InkController implements LayerRenderer {
 
 	// ----------------------------------------------------------------- input
 
+	/** the Pencil writes now: in ink mode, or always when "Apple Pencil always writes" is on */
+	private pencilWrites(): boolean {
+		return this._active || this.host.settings().pencilAlways;
+	}
+
 	private draws(e: PointerEvent): boolean {
+		if (this.host.busy?.()) return false;
+		if (e.pointerType === "pen") return this.pencilWrites() && this.writable();
 		if (!this._active) return false;
 		if (e.pointerType === "touch") return this.host.settings().input === "exclusive";
 		if (e.pointerType === "mouse") return e.button === 0;
-		return true; // pen
+		return false;
+	}
+
+	private writable(): boolean {
+		const store = this.host.store();
+		return !!store && store.writable;
 	}
 
 	private pageAt(clientX: number, clientY: number): HTMLElement | null {
@@ -295,6 +309,7 @@ export class InkController implements LayerRenderer {
 			if (!cancelled) this.commitStroke(s);
 			this.clearCanvas();
 			this.suppressClickUntil = Date.now() + CLICK_GRACE_MS;
+			this.releaseLater();
 			return;
 		}
 		const er = this.erase;
@@ -357,6 +372,18 @@ export class InkController implements LayerRenderer {
 		const r = this.rootRect;
 		if (this.ctx && r) this.ctx.clearRect(0, 0, r.width, r.height);
 		this.canvas.removeClass("is-drawing");
+	}
+
+	private releaseTimer: number | null = null;
+
+	/** Outside ink mode (Pencil-always writing), free the canvas after a quiet spell. */
+	private releaseLater(): void {
+		if (this._active) return;
+		if (this.releaseTimer !== null) window.clearTimeout(this.releaseTimer);
+		this.releaseTimer = window.setTimeout(() => {
+			this.releaseTimer = null;
+			if (!this._active && !this.isDrawing) this.releaseCanvas();
+		}, 10_000);
 	}
 
 	/** Free the canvas memory when ink mode is off. */
@@ -433,6 +460,7 @@ export class InkController implements LayerRenderer {
 	}
 
 	destroy(): void {
+		if (this.releaseTimer !== null) window.clearTimeout(this.releaseTimer);
 		this.ac.abort();
 		this.cancelGesture();
 		this.releaseCanvas();
