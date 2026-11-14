@@ -121,7 +121,7 @@ export class HighlightController implements LayerRenderer {
 		const undo = this.host.undo();
 		if (!pending || !store || !undo) return [];
 		if (!store.writable) {
-			this.host.notice("PDF+++: annotations for this PDF are read-only (see the banner).");
+			this.host.notice("penDF: annotations for this PDF are read-only (see the banner).");
 			return [];
 		}
 		const hex = color ?? this.host.colors()[this.host.defaultColor()]?.hex ?? "#ffd400";

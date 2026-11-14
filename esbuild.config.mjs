@@ -103,7 +103,7 @@ const pdfjsStandalone = {
 function buildCss() {
 	const pdfCss = scopeCss(readFileSync(CSS, "utf8"), ".pdf-ppp-root");
 	const own = readFileSync(path.join(root, "src", "styles.css"), "utf8");
-	const header = "/* PDF+++ styles. The pdf.js viewer CSS below is scoped to .pdf-ppp-root (Apache-2.0, Mozilla Foundation). */\n";
+	const header = "/* penDF styles. The pdf.js viewer CSS below is scoped to .pdf-ppp-root (Apache-2.0, Mozilla Foundation). */\n";
 	writeFileSync(path.join(root, "styles.css"), header + own + "\n/* ---- pdf.js viewer (scoped) ---- */\n" + pdfCss);
 }
 
@@ -120,7 +120,7 @@ const ctx = await esbuild.context({
 	minify: prod,
 	treeShaking: true,
 	legalComments: "none",
-	banner: { js: "/* PDF+++ — bundles pdf.js (Apache-2.0, Mozilla Foundation). See LICENSE and THIRD_PARTY_NOTICES.md. */" },
+	banner: { js: "/* penDF — bundles pdf.js (Apache-2.0, Mozilla Foundation). See LICENSE and THIRD_PARTY_NOTICES.md. */" },
 	outfile: path.join(root, "main.js"),
 	plugins: [pdfjsStandalone],
 });

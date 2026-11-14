@@ -625,13 +625,13 @@
 					},
 				};
 				app.workspace.trigger("file-menu", fakeMenu, file("cropbox.pdf"), "file-explorer");
-				const ours = items.find((i) => i.title === "Open in PDF+++");
+				const ours = items.find((i) => i.title === "Open in penDF");
 				r.fileMenu = !!ours;
 				ours?.click();
 				r.fileMenuOpens = !!(await waitFor(() => app.workspace.getLeavesOfType(VIEW).find((l) => l.view.file?.name === "cropbox.pdf"), 5000));
 				const mdItems = [];
 				app.workspace.trigger("file-menu", { addItem(cb) { const it = { title: "", setTitle(t) { this.title = t; return this; }, setIcon() { return this; }, setSection() { return this; }, onClick() { return this; } }; cb(it); mdItems.push(it); return this; } }, app.vault.getMarkdownFiles()[0], "file-explorer");
-				r.noMenuForMarkdown = !mdItems.some((i) => i.title === "Open in PDF+++");
+				r.noMenuForMarkdown = !mdItems.some((i) => i.title === "Open in penDF");
 				closeOurs();
 				// settings tab renders
 				const tab = app.setting?.pluginTabs?.find((t) => t.plugin === p);

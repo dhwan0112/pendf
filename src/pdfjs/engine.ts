@@ -27,7 +27,7 @@ const iterProto = (): unknown => {
 	return it?.prototype ?? Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()));
 };
 
-/** Required natively by pdf.js 6.5 (modern) or by PDF+++ itself. */
+/** Required natively by pdf.js 6.5 (modern) or by penDF itself. */
 const REQUIRED: Probe[] = [
 	["Promise.withResolvers", () => has(Promise, "withResolvers")],
 	["Iterator helpers (filter/map/toArray…)", () => ["map", "filter", "toArray", "flatMap", "some", "every", "find", "forEach"].every((k) => has(iterProto(), k))],

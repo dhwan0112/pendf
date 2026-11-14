@@ -6,8 +6,8 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pdf_ppp`를 설치한다(`0.1.0` 릴리스가 생긴 뒤). 릴리스가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pdf-ppp/`에 복사한다.
 2. `pnpm fixtures`로 만든 `fixtures/out/*.pdf`를 볼트의 `pdf-ppp-fixtures/` 폴더에 넣는다.
-3. 설정 → PDF+++에서 **Debug overlay**를 켠다. 펜 프로브 항목을 확인할 때는 **Pen probe**도 켠다.
-4. 문제가 생기면 명령 팔레트 → **PDF+++: Export log to vault**를 실행해 만들어지는 `pdf-ppp-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
+3. 설정 → penDF에서 **Debug overlay**를 켠다. 펜 프로브 항목을 확인할 때는 **Pen probe**도 켠다.
+4. 문제가 생기면 명령 팔레트 → **penDF: Export log to vault**를 실행해 만들어지는 `pdf-ppp-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
 
 모든 항목은 **확인 절차 / 기대 결과 / 실패 시 의심 지점** 순서다.
 
@@ -15,7 +15,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |
-| 0-1 | 아무 PDF나 PDF+++로 연 뒤 로그를 내보내고 `engine:` 줄을 본다 | `"ok":true`, `missing: []` | 빌드 시 대체(ponyfill)하지 않은 최신 내장 기능이 iPadOS WebKit에 없음. `src/pdfjs/engine.ts`의 REQUIRED 목록, 화면 상단 빨간 배너 |
+| 0-1 | 아무 PDF나 penDF로 연 뒤 로그를 내보내고 `engine:` 줄을 본다 | `"ok":true`, `missing: []` | 빌드 시 대체(ponyfill)하지 않은 최신 내장 기능이 iPadOS WebKit에 없음. `src/pdfjs/engine.ts`의 REQUIRED 목록, 화면 상단 빨간 배너 |
 | 0-2 | 같은 로그에서 `web worker ready` 또는 `falling back to main-thread`를 찾는다 | `web worker ready (blob URL, module)` | Blob URL module worker가 iOS에서 막힘. 폴백으로도 렌더링은 되지만 큰 PDF에서 UI가 끊긴다. `src/pdfjs/index.ts`의 `createWorker()` |
 | 0-3 | 같은 로그의 `ponyfilled` 항목을 기록한다(정보용) | 어떤 값이든 괜찮음. iPadOS가 기본 지원하는 기능 목록 | 해당 없음 |
 
@@ -23,7 +23,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |
-| 1-1 | 파일 목록에서 `a4.pdf`를 길게 눌러 **Open in PDF+++** | 페이지가 렌더링되고 툴바에 `/ 3`이 보인다 | 0-1, 0-2 |
+| 1-1 | 파일 목록에서 `a4.pdf`를 길게 눌러 **Open in penDF** | 페이지가 렌더링되고 툴바에 `/ 3`이 보인다 | 0-1, 0-2 |
 | 1-2 | `long-300.pdf`를 열고 손가락으로 끝까지 빠르게 스크롤, 중간중간 핀치 줌(50%~300%), 다시 처음으로 | 앱이 종료되지 않는다. HUD의 `canvases`가 대략 10~20 사이를 유지한다 | 캔버스 메모리. `PdfView.ts`의 `maxCanvasPixels`(모바일 2^23)를 낮춘다 |
 | 1-3 | 1-2 직후 HUD의 `renderMs`와 체감 속도를 기록한다 | 한 페이지가 1초 안에 그려진다 | 0-2 폴백 여부 |
 | 1-4 | `korean-cmap.pdf`(글꼴 미포함, CMap 필요)와 `korean-embedded.pdf`를 연다 | 두 파일 모두 한글이 깨지지 않는다 | CMap 임베드(`ppp:assets`) 또는 iOS의 CJK 대체 글꼴 |
@@ -34,11 +34,11 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | 1-9 | `links.pdf`의 "External" 링크를 탭 | 시스템 브라우저(또는 Obsidian 내장 브라우저)가 열린다 | iOS의 `window.open` 처리. 열리지 않으면 BLOCKERS에 기록 |
 | 1-10 | `a4.pdf`를 3쪽·150%로 두고 탭을 닫았다가 다시 연다. 앱을 완전히 종료했다 다시 켠다 | 3쪽·150%로 다시 열린다 | `positions`(플러그인 data.json), 작업 공간 상태 |
 | 1-11 | 설정에서 **Invert page colors**를 켠다 | 페이지만 반전되고 하이라이트 색은 유지된다 | CSS 필터 |
-| 1-12 | PDF+++ 탭을 연 채로 플러그인을 끈다 | 화면에 PDF+++ 요소가 남지 않는다 | `onunload` / `closeSession()` |
+| 1-12 | penDF 탭을 연 채로 플러그인을 끈다 | 화면에 penDF 요소가 남지 않는다 | `onunload` / `closeSession()` |
 
 ## Phase 1 — 펜 프로브
 
-설정에서 **Pen probe**를 켜고, 명령 팔레트에서 **PDF+++: Open pen probe (diagnostics)**를 실행한다. `touch-action` 값마다 Pencil로 한 번, 손가락으로 한 번씩 상자 안에 긴 획을 긋고, 마지막에 **Export JSON**을 누른다.
+설정에서 **Pen probe**를 켜고, 명령 팔레트에서 **penDF: Open pen probe (diagnostics)**를 실행한다. `touch-action` 값마다 Pencil로 한 번, 손가락으로 한 번씩 상자 안에 긴 획을 긋고, 마지막에 **Export JSON**을 누른다.
 
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |
@@ -65,8 +65,8 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | # | 확인 절차 | 기대 결과 |
 | --- | --- | --- |
 | C-1 | PDF++를 설치·활성화한 볼트에서 위 Phase 1·2 항목을 반복한다 | 결과가 같다 |
-| C-2 | PDF+++를 켜기 전과 후에 PDF++의 하이라이트·백링크 기능을 비교한다 | 바뀐 것이 없다 |
-| C-3 | PDF+++를 제거한 뒤 볼트를 살펴본다 | `*.pdf.ppp.json` 사이드카만 남는다 |
+| C-2 | penDF를 켜기 전과 후에 PDF++의 하이라이트·백링크 기능을 비교한다 | 바뀐 것이 없다 |
+| C-3 | penDF를 제거한 뒤 볼트를 살펴본다 | `*.pdf.ppp.json` 사이드카만 남는다 |
 
 ## Phase 6 — 필기 (지금은 측정만)
 

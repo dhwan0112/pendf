@@ -29,7 +29,7 @@ export function getAsset(kind: AssetKind, filename: string): Promise<Uint8Array>
 	let p = cache.get(key);
 	if (!p) {
 		const enc = ASSETS_GZ[key];
-		if (enc === undefined) return Promise.reject(new Error(`PDF+++: no embedded asset ${key}`));
+		if (enc === undefined) return Promise.reject(new Error(`penDF: no embedded asset ${key}`));
 		p = gunzip(base64ToBytes(enc));
 		cache.set(key, p);
 	}

@@ -39,7 +39,7 @@
 - **되돌리기:** `createWorker()`에서 `GlobalWorkerOptions.workerSrc`만 두고 `new PDFWorker()`를 쓴다.
 
 ## D-07 워커 하나를 공유, 유휴 60초 후 종료
-- **결정:** 모든 PDF+++ 뷰가 워커 하나를 공유한다. 참조가 0이 되면 60초 뒤 종료하고, 플러그인을 끄면 즉시 종료한다.
+- **결정:** 모든 penDF 뷰가 워커 하나를 공유한다. 참조가 0이 되면 60초 뒤 종료하고, 플러그인을 끄면 즉시 종료한다.
 - **근거:** iPad 메모리. 워커마다 pdf.js 코드 사본(수 MB)이 든다. 탭 사이를 오갈 때마다 압축을 풀고 파싱하지 않도록 잠깐 살려 둔다.
 - **대안:** 뷰를 닫는 즉시 종료(지시문 문구에 더 가까움).
 - **되돌리기:** `src/pdfjs/index.ts`의 `IDLE_MS`를 0으로 둔다.
@@ -63,7 +63,7 @@
 - **근거:** iOS에서는 버튼을 탭하는 순간 선택이 사라질 수 있다.
 
 ## D-12 매니페스트
-- **결정:** id `pdf-ppp`, 이름 `PDF+++`(D-18에서 확정), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
+- **결정:** id `pdf-ppp`, 이름 `penDF`(D-19에서 확정), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
 - **근거:** 기존 플러그인(Wikiwurzel 등)과 같은 표기. 쓰는 API(`FileView`, `Scope`, `Platform`, `setIcon`)는 1.5 이전부터 공개되어 있다.
 
 ## D-13 내장 객체 무변경을 검증 기준으로 삼음
@@ -100,6 +100,11 @@
 - **환경 제약:** 창이 숨어 있을 때의 Chromium 동작(rAF 정지, scroll 이벤트 없음, intensive timer throttling)은 INVESTIGATION 11절에 정리했다.
 
 ## D-18 이름 `PDF+++`, 저장소 `pdf_ppp`, id `pdf-ppp` (2026-11-14, 사용자 결정)
-- **결정:** 표시 이름은 `PDF+++`로 확정한다. GitHub 저장소는 공개 `dhwan0112/pdf_ppp`다. plugin id와 볼트 안 폴더 이름은 `pdf-ppp`로 둔다.
+- **결정:** 표시 이름은 `PDF+++`로 정했다(D-19에서 `penDF`로 대체). GitHub 저장소는 공개 `dhwan0112/pdf_ppp`다. plugin id와 볼트 안 폴더 이름은 `pdf-ppp`로 둔다.
 - **근거:** GitHub 저장소 이름에는 `+`를 쓸 수 없다(`pdf_+++`는 `pdf_---`가 된다). Obsidian 커뮤니티 목록은 id에 소문자·숫자·하이픈을 권장하고, id를 바꾸면 이미 설치한 볼트의 설정(`data.json`) 위치가 바뀐다.
 - **되돌리기:** `gh repo rename`. id를 바꾸려면 `manifest.json`, `install-dev.mjs`, 하네스, 문서의 `pdf-ppp`를 함께 고친다.
+
+## D-19 표시 이름 `penDF` (2026-11-14, 사용자 결정, D-18 대체)
+- **결정:** 표시 이름을 `penDF`로 바꾼다. id `pdf-ppp`와 저장소 `dhwan0112/pdf_ppp`는 그대로 둔다. 로그 접두사도 `[penDF:…]`가 된다.
+- **근거:** Obsidian 커뮤니티 등록 페이지가 `PDF+++`를 "An entry with this name already exists"로 막았다. 기호를 빼면 기존 `PDF++`(id `pdf-plus`)와 같은 `pdf`가 되기 때문으로 보인다. `penDF`는 2026-11-14 기준 community-plugins.json(10,375개)의 이름·id 어디와도 겹치지 않는다.
+- **되돌리기:** `manifest.json`의 `name`과 소스·문서의 표시 문자열을 바꾼다. 사이드카 형식과 설정에는 이름이 들어가지 않는다.

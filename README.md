@@ -1,4 +1,4 @@
-# PDF+++
+# penDF
 
 A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
@@ -29,8 +29,8 @@ from a [release](https://github.com/dhwan0112/pdf_ppp/releases) into
 
 ## Use
 
-- File menu on a PDF → **Open in PDF+++**
-- Command palette → **PDF+++: Open current PDF in PDF+++** / **Open a PDF…**
+- File menu on a PDF → **Open in penDF**
+- Command palette → **penDF: Open current PDF in penDF** / **Open a PDF…**
 - Select text → pick a color from the palette that appears. Tap a highlight to
   recolor, copy or delete it. ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z undo/redo.
 - ⌘/Ctrl+F searches.

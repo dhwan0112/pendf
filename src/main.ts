@@ -33,7 +33,7 @@ export default class PdfPppPlugin extends Plugin {
 				if (!(file instanceof TFile) || file.extension !== "pdf") return;
 				menu.addItem((item) =>
 					item
-						.setTitle("Open in PDF+++")
+						.setTitle("Open in penDF")
 						.setIcon("book-open-text")
 						.setSection("open")
 						.onClick(() => void this.openPdf(file)),
@@ -43,7 +43,7 @@ export default class PdfPppPlugin extends Plugin {
 
 		this.addCommand({
 			id: "open-current-pdf",
-			name: "Open current PDF in PDF+++",
+			name: "Open current PDF in penDF",
 			checkCallback: (checking) => {
 				const f = this.app.workspace.getActiveFile();
 				if (!f || f.extension !== "pdf") return false;
@@ -171,7 +171,7 @@ export default class PdfPppPlugin extends Plugin {
 			if (r === "moved") log.info(`moved sidecar ${sidecarPathFor(oldPath)} → ${sidecarPathFor(file.path)}`);
 			if (r === "target-exists") {
 				log.warn(`not moving sidecar: ${sidecarPathFor(file.path)} already exists`);
-				new Notice(`PDF+++: ${sidecarPathFor(file.path)} already exists; annotations stayed in ${sidecarPathFor(oldPath)}.`);
+				new Notice(`penDF: ${sidecarPathFor(file.path)} already exists; annotations stayed in ${sidecarPathFor(oldPath)}.`);
 			}
 		} catch (e) {
 			log.error(`moving sidecar for ${oldPath} failed`, e);
@@ -222,15 +222,15 @@ export default class PdfPppPlugin extends Plugin {
 		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 		const path = normalizePath(`pdf-ppp-log-${stamp}.md`);
 		const body = "```\n" + formatLog() + "\n```\n";
-		await this.app.vault.create(path, `# PDF+++ log ${stamp}\n\n${body}`);
-		new Notice(`PDF+++ log saved to ${path}`);
+		await this.app.vault.create(path, `# penDF log ${stamp}\n\n${body}`);
+		new Notice(`penDF log saved to ${path}`);
 	}
 }
 
 class PdfSuggestModal extends FuzzySuggestModal<TFile> {
 	constructor(app: App, private readonly onPick: (f: TFile) => void) {
 		super(app);
-		this.setPlaceholder("Open a PDF in PDF+++");
+		this.setPlaceholder("Open a PDF in penDF");
 	}
 	getItems(): TFile[] {
 		return this.app.vault.getFiles().filter((f) => f.extension === "pdf");

@@ -1,6 +1,6 @@
-# PDF+++ sidecar format, schema v1
+# penDF sidecar format, schema v1
 
-PDF+++ never modifies your PDFs. Annotations live in a JSON *sidecar* next to
+penDF never modifies your PDFs. Annotations live in a JSON *sidecar* next to
 the PDF, so they survive without the plugin and can be read by any tool.
 
 ```
@@ -95,7 +95,7 @@ upper-left, upper-right, lower-left, lower-right, flattened as
 
 ## Merging (sync conflicts)
 
-When the file changed on disk since PDF+++ last read it (another device, a sync
+When the file changed on disk since penDF last read it (another device, a sync
 client), the two versions are merged per annotation `id`:
 
 1. union of all ids

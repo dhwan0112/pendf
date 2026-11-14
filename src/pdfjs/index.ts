@@ -61,7 +61,7 @@ class EmbeddedBinaryDataFactory {
 }
 
 // ---------------------------------------------------------------------------
-// Worker: one shared web worker for all open PDF+++ views, created from a
+// Worker: one shared web worker for all open penDF views, created from a
 // Blob URL holding the embedded worker module. Reference counted and torn down
 // after a short idle period and on plugin unload.
 
@@ -142,7 +142,7 @@ async function createWorker(): Promise<PDFWorker> {
 }
 
 async function acquireWorker(): Promise<{ worker: PDFWorker; gen: number }> {
-	if (shutDown) throw new Error("PDF+++ is unloading");
+	if (shutDown) throw new Error("penDF is unloading");
 	refCount++;
 	if (idleTimer !== null) {
 		window.clearTimeout(idleTimer);

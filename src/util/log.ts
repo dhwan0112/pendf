@@ -26,9 +26,9 @@ function push(level: LogLevel, scope: string, parts: unknown[]): void {
 	}
 	if (consoleEcho && (level === "warn" || level === "error")) {
 		const fn = level === "warn" ? console.warn : console.error;
-		fn(`[PDF+++:${scope}]`, msg);
+		fn(`[penDF:${scope}]`, msg);
 	} else if (consoleEcho && level === "info") {
-		console.debug(`[PDF+++:${scope}]`, msg);
+		console.debug(`[penDF:${scope}]`, msg);
 	}
 }
 

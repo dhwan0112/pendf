@@ -14,7 +14,7 @@ export const MIGRATIONS: Record<number, Step> = {
 
 export class NewerSchemaError extends Error {
 	constructor(readonly found: number) {
-		super(`sidecar schemaVersion ${found} is newer than this plugin supports (${SCHEMA_VERSION}); update PDF+++`);
+		super(`sidecar schemaVersion ${found} is newer than this plugin supports (${SCHEMA_VERSION}); update penDF`);
 		this.name = "NewerSchemaError";
 	}
 }

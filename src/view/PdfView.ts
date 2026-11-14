@@ -1,4 +1,4 @@
-// The PDF+++ view: an independent FileView rendering PDFs with the bundled
+// The penDF view: an independent FileView rendering PDFs with the bundled
 // pdf.js. It never touches Obsidian's core PDF viewer or its DOM.
 
 import { FileView, Modal, Notice, Platform, Scope, Setting, TFile, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
@@ -101,7 +101,7 @@ export class PdfPppView extends FileView {
 	}
 
 	getDisplayText(): string {
-		return this.file?.basename ?? "PDF+++";
+		return this.file?.basename ?? "penDF";
 	}
 
 	getIcon(): string {
@@ -635,7 +635,7 @@ export class PdfPppView extends FileView {
 			}
 		} catch (e) {
 			log.error("saving annotations on close failed", e);
-			new Notice("PDF+++: could not save annotations — see the log (command: Export log).");
+			new Notice("penDF: could not save annotations — see the log (command: Export log).");
 		}
 		s.highlights.destroy();
 		s.layers.destroy();

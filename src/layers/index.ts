@@ -213,7 +213,7 @@ export class LayerManager {
 			try {
 				r.renderPage(layer);
 			} catch (e) {
-				console.error("PDF+++ layer renderer failed", e);
+				console.error("penDF layer renderer failed", e);
 			}
 		}
 	}

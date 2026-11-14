@@ -73,7 +73,7 @@ export class PenProbeView extends ItemView {
 		return PEN_PROBE_VIEW;
 	}
 	getDisplayText(): string {
-		return "PDF+++ pen probe";
+		return "penDF pen probe";
 	}
 	getIcon(): string {
 		return "pen-tool";
