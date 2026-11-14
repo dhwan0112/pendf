@@ -8,6 +8,7 @@ import { moveSidecar, type SidecarStore } from "./store/sidecar";
 import { adapterFs } from "./store/obsidianFs";
 import { sidecarPathFor } from "./store/schema";
 import { formatLog, logger } from "./util/log";
+import { describePlatform } from "./util/platform";
 
 const log = logger("plugin");
 
@@ -20,7 +21,7 @@ export default class PenDFPlugin extends Plugin {
 	async onload(): Promise<void> {
 		await this.loadSettings();
 		this.engine = checkEngine();
-		log.info(`engine: ${navigator.userAgent} → ${JSON.stringify(this.engine)}`);
+		log.info(`engine: ${JSON.stringify(describePlatform())} → ${JSON.stringify(this.engine)}`);
 		if (!this.engine.ok) log.warn(`missing JavaScript features: ${this.engine.missing.join(", ")}`);
 		this.registerView(VIEW_TYPE, (leaf) => new PenDFView(leaf, this));
 		this.registerView(PEN_PROBE_VIEW, (leaf) => new PenProbeView(leaf));
@@ -43,7 +44,7 @@ export default class PenDFPlugin extends Plugin {
 
 		this.addCommand({
 			id: "open-current-pdf",
-			name: "Open current PDF in penDF",
+			name: "Open current PDF",
 			checkCallback: (checking) => {
 				const f = this.app.workspace.getActiveFile();
 				if (!f || f.extension !== "pdf") return false;
@@ -107,13 +108,19 @@ export default class PenDFPlugin extends Plugin {
 		);
 
 		// Flush annotation writes when the app goes to the background (iPad).
-		this.registerDomEvent(document, "visibilitychange", () => {
-			if (document.visibilityState === "hidden") void this.flushAll();
+		const doc = activeDocument;
+		this.registerDomEvent(doc, "visibilitychange", () => {
+			if (doc.visibilityState === "hidden") void this.flushAll();
 		});
 		this.registerDomEvent(window, "pagehide", () => void this.flushAll());
 	}
 
-	async onunload(): Promise<void> {
+	onunload(): void {
+		// Obsidian does not await onunload; the work is async, so run it detached.
+		void this.shutdown();
+	}
+
+	private async shutdown(): Promise<void> {
 		// Close every open document (saves annotations) before the worker goes
 		// away; Obsidian detaches the leaves afterwards.
 		const views = this.app.workspace

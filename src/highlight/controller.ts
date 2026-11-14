@@ -200,8 +200,8 @@ export class HighlightController implements LayerRenderer {
 	/** Place a floating element below `below` (or above `above` if no room). */
 	private place(el: HTMLElement, below: DOMRect, above: DOMRect): void {
 		const root = this.host.root.getBoundingClientRect();
-		el.style.left = "0px";
-		el.style.top = "0px";
+		// measure at the origin so the width is not squeezed by the right edge
+		el.setCssProps({ "--pendf-x": "0px", "--pendf-y": "0px" });
 		const w = el.offsetWidth;
 		const h = el.offsetHeight;
 		const gap = 10;
@@ -210,8 +210,7 @@ export class HighlightController implements LayerRenderer {
 		if (top + h > root.height - 4) top = above.top - root.top - h - gap;
 		left = Math.max(4, Math.min(left, root.width - w - 4));
 		top = Math.max(4, Math.min(top, root.height - h - 4));
-		el.style.left = `${Math.round(left)}px`;
-		el.style.top = `${Math.round(top)}px`;
+		el.setCssProps({ "--pendf-x": `${Math.round(left)}px`, "--pendf-y": `${Math.round(top)}px` });
 	}
 
 	// -------------------------------------------------------------------- tap

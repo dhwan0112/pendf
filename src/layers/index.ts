@@ -155,13 +155,11 @@ export class LayerManager {
 			}
 			const geom = this.geometry(n);
 			if (!geom) return;
-			const host = document.createElement("div");
-			host.className = "pendf-layer-host";
-			host.dataset.page = String(n);
-			const svg = document.createElementNS(SVG_NS, "svg");
+			const host = createDiv({ cls: "pendf-layer-host", attr: { "data-page": String(n) } });
+			const svg = host.doc.createElementNS(SVG_NS, "svg");
 			svg.classList.add("pendf-layer-svg");
 			svg.setAttribute("preserveAspectRatio", "none");
-			const group = document.createElementNS(SVG_NS, "g");
+			const group = host.doc.createElementNS(SVG_NS, "g");
 			svg.appendChild(group);
 			host.appendChild(svg);
 			layer = { pageNumber: n, host, svg, geom, group };
@@ -262,7 +260,7 @@ export function pageContentRect(pageDiv: HTMLElement): DOMRect {
 }
 
 export function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number> = {}): SVGElementTagNameMap[K] {
-	const el = document.createElementNS(SVG_NS, tag);
+	const el = activeDocument.createElementNS(SVG_NS, tag);
 	for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
 	return el;
 }

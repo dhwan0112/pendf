@@ -119,3 +119,8 @@
 - **결정:** `release.yml`이 `actions/attest@v4`로 `main.js`·`manifest.json`·`styles.css`에 SLSA build provenance를 서명해 붙인다. 확인: `gh attestation verify main.js --repo dhwan0112/pendf`. 0.1.0에는 없고 0.1.1부터 붙는다.
 - **근거:** Obsidian 커뮤니티 등록 검토가 "Missing GitHub artifact attestations for release assets"를 권고했다. 공개 저장소에서는 무료다.
 - **함께:** 액션을 현재 메이저(checkout v7, setup-node v7, pnpm/action-setup v6)로 올려 Node 20 경고를 없앴다. `main` push마다 도는 `ci.yml`(빌드·테스트·lint)을 추가했다. `versions.json`(버전 → minAppVersion)을 추가하고, 릴리스 워크플로가 태그·manifest·versions.json 일치를 검사한다.
+
+## D-22 커뮤니티 스캐너 소스 검사 대응 (2026-11-14, 0.1.2)
+- **결정:** 스캐너가 쓰는 `eslint-plugin-obsidianmd` 0.5.1의 recommended 설정을 `eslint.config.mjs`로 넣고 `pnpm lint`(따라서 CI)에 포함했다. 검토가 지적한 항목을 모두 고쳐 0건이다.
+- **변경:** 떠 있는 팔레트·메뉴 위치를 인라인 style 대신 CSS 변수(`--pendf-x/y`, `setCssProps`)로 준다. 로그와 펜 프로브는 `navigator.userAgent` 대신 `Platform` 플래그와 `apiVersion`을 기록한다(그래서 WebKit 버전은 더 이상 기록되지 않는다). `minAppVersion`을 `View.scope`가 생긴 1.5.7로 올렸다. 설정 탭은 1.13+에서 `getSettingDefinitions()`로 그려져 설정 검색에 나오고, 더 낮은 버전은 기존 `display()`를 쓴다. 명령 이름에서 플러그인 이름을 뺐다("Open current PDF"). `document`/`globalThis`/전역 타이머 대신 요소의 문서·`activeDocument`·`window` 타이머를 쓴다. `onunload`는 동기 함수가 되고 비동기 정리를 분리해 실행한다(Obsidian은 원래 기다리지 않는다).
+- **검증:** 테스트 122개, 데스크톱 하네스 21/21(`docs/evidence/harness-2026-11-14-0.1.2.json`), Obsidian 1.15에서 선언형 설정 탭 렌더링 확인.

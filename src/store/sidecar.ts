@@ -63,8 +63,8 @@ export class SidecarStore {
 	) {
 		this.sidecar = emptySidecar(fingerprint);
 		this.debounceMs = opts.debounceMs ?? 1000;
-		this.setT = opts.setTimeout ?? ((fn, ms) => setTimeout(fn, ms));
-		this.clearT = opts.clearTimeout ?? ((h) => clearTimeout(h as ReturnType<typeof setTimeout>));
+		this.setT = opts.setTimeout ?? ((fn, ms) => window.setTimeout(fn, ms));
+		this.clearT = opts.clearTimeout ?? ((h) => window.clearTimeout(h as number));
 	}
 
 	get path(): string {
@@ -158,7 +158,7 @@ export class SidecarStore {
 	/** Insert or replace by id. Stamps updatedAt. */
 	upsert(a: Annotation): Annotation {
 		this.assertWritable();
-		const stamped = { ...a, updatedAt: Math.max(this.now(), a.updatedAt) } as Annotation;
+		const stamped: Annotation = { ...a, updatedAt: Math.max(this.now(), a.updatedAt) };
 		const i = this.sidecar.annotations.findIndex((x) => x.id === a.id);
 		if (i >= 0) this.sidecar.annotations[i] = stamped;
 		else this.sidecar.annotations.push(stamped);
@@ -181,7 +181,7 @@ export class SidecarStore {
 		this.assertWritable();
 		const cur = this.get(a.id);
 		const updatedAt = Math.max(this.now(), (cur?.updatedAt ?? 0) + 1);
-		return this.upsert({ ...a, updatedAt } as Annotation);
+		return this.upsert({ ...a, updatedAt });
 	}
 
 	private assertWritable(): void {

@@ -167,7 +167,7 @@ describe("sidecar store", () => {
 	it("checkExternal pulls in changes and reports them", async () => {
 		const fs = new MemFs();
 		const changes: string[] = [];
-		const s = new SidecarStore(fs, PDF, FP, { onChange: (src) => changes.push(src) });
+		const s = new SidecarStore(fs, PDF, FP, { ...manualTimers(), onChange: (src) => changes.push(src) });
 		await s.load();
 		expect(await s.checkExternal()).toBe(false);
 		fs.externalWrite(SIDE, serializeSidecar({ schemaVersion: 1, pdfFingerprint: FP, annotations: [hl(9, [])] }));
@@ -245,7 +245,7 @@ describe("undo / redo", () => {
 	it("undo of a create tombstones it, redo brings it back, both win merges", async () => {
 		const fs = new MemFs();
 		let now = 100;
-		const s = new SidecarStore(fs, PDF, FP, { now: () => now });
+		const s = new SidecarStore(fs, PDF, FP, { ...manualTimers(), now: () => now });
 		await s.load();
 		const u = new UndoStack(s);
 		const a = hl(1, []);
@@ -262,7 +262,7 @@ describe("undo / redo", () => {
 
 	it("undo of a recolor restores the old color", async () => {
 		const fs = new MemFs();
-		const s = new SidecarStore(fs, PDF, FP);
+		const s = new SidecarStore(fs, PDF, FP, manualTimers());
 		await s.load();
 		const u = new UndoStack(s);
 		const a = s.upsert(hl(1, []));

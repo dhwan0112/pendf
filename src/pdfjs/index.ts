@@ -278,7 +278,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | void> {
 			},
 			(e) => {
 				window.clearTimeout(timer);
-				reject(e);
+				reject(e instanceof Error ? e : new Error(String(e)));
 			},
 		);
 	});

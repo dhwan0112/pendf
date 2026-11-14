@@ -20,7 +20,7 @@ const has = (o: unknown, k: string): boolean => {
 		return false;
 	}
 };
-const g = globalThis as unknown as Record<string, unknown>;
+const g = window as unknown as Record<string, unknown>;
 const proto = (name: string): unknown => (g[name] as { prototype?: unknown } | undefined)?.prototype;
 const iterProto = (): unknown => {
 	const it = g.Iterator as { prototype?: unknown } | undefined;

@@ -25,7 +25,8 @@ export function piecesFromRange(range: Range, root: HTMLElement): PagePiece[] {
 	if (ancestor.nodeType === Node.TEXT_NODE && ancestor.parentNode) ancestor = ancestor.parentNode;
 	if (!root.contains(ancestor) && ancestor !== root && !ancestor.contains(root)) return [];
 	const scope = root.contains(ancestor) ? ancestor : root;
-	const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+	const doc = root.ownerDocument;
+	const walker = doc.createTreeWalker(scope, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
 		acceptNode(n) {
 			if (n.nodeType === Node.ELEMENT_NODE) return (n as Element).tagName === "BR" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
 			return range.intersectsNode(n) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
@@ -44,7 +45,7 @@ export function piecesFromRange(range: Range, root: HTMLElement): PagePiece[] {
 		const start = text === range.startContainer ? range.startOffset : 0;
 		const end = text === range.endContainer ? range.endOffset : text.data.length;
 		if (end <= start) continue;
-		const sub = document.createRange();
+		const sub = doc.createRange();
 		sub.setStart(text, start);
 		sub.setEnd(text, end);
 		let piece = pieces.get(where.pageNumber);

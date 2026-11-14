@@ -644,7 +644,7 @@ export class PenDFView extends FileView {
 		s.eventBus.dispatch("findbarclose", { source: this });
 		try {
 			s.viewer.cleanup();
-			s.viewer.setDocument(null as never);
+			s.viewer.setDocument(null);
 			s.linkService.setDocument(null, null);
 		} catch (e) {
 			log.debug("viewer cleanup", e);

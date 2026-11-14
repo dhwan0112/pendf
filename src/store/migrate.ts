@@ -41,7 +41,7 @@ export function migrate(input: unknown, migrations: Record<number, Step> = MIGRA
 		raw = step(raw);
 		const next = raw.schemaVersion;
 		if (next !== v + 1) throw new Error(`migration ${v} produced schemaVersion ${String(next)}`);
-		v = next as number;
+		v = next;
 	}
 	return raw;
 }

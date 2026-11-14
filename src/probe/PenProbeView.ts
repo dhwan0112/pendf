@@ -7,6 +7,7 @@
 //   touch-action value. Results can be exported as JSON into the vault.
 
 import { ItemView, Notice, normalizePath, type WorkspaceLeaf } from "obsidian";
+import { describePlatform } from "../util/platform";
 
 export const PEN_PROBE_VIEW = "pendf-pen-probe";
 
@@ -266,7 +267,7 @@ export class PenProbeView extends ItemView {
 		return {
 			probe: "pendf pen probe v1",
 			at: new Date().toISOString(),
-			userAgent: navigator.userAgent,
+			...describePlatform(),
 			devicePixelRatio: window.devicePixelRatio,
 			maxTouchPoints: navigator.maxTouchPoints,
 			pointerEvents: typeof PointerEvent !== "undefined",
