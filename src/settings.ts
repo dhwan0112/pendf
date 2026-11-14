@@ -1,4 +1,4 @@
-import { type App, PluginSettingTab, Setting, type SettingDefinition, type SettingDefinitionItem } from "obsidian";
+import { type App, PluginSettingTab, Setting, requireApiVersion, type SettingDefinition, type SettingDefinitionItem } from "obsidian";
 import type PenDFPlugin from "./main";
 
 export interface HighlightColor {
@@ -98,8 +98,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		this.apply(key, value);
 		await this.plugin.saveSettings();
-		// color names feed the default-color dropdown
-		if (key.endsWith(".name")) this.update();
+		// color names feed the default-color dropdown (update() is 1.13+, like this method)
+		if (key.endsWith(".name") && requireApiVersion("1.13.0")) this.update();
 	}
 
 	private apply(key: string, value: unknown): void {
@@ -140,7 +140,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 			.setName(TEXT.defaultColor[0])
 			.setDesc(TEXT.defaultColor[1])
 			.addDropdown((d) => {
-				s.colors.forEach((c, i) => d.addOption(String(i), c.name));
+				for (const [i, c] of s.colors.entries()) d.addOption(String(i), c.name);
 				d.setValue(String(s.defaultColor)).onChange((v) => set("defaultColor", v));
 			});
 

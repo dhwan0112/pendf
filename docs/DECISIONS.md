@@ -124,3 +124,4 @@
 - **결정:** 스캐너가 쓰는 `eslint-plugin-obsidianmd` 0.5.1의 recommended 설정을 `eslint.config.mjs`로 넣고 `pnpm lint`(따라서 CI)에 포함했다. 검토가 지적한 항목을 모두 고쳐 0건이다.
 - **변경:** 떠 있는 팔레트·메뉴 위치를 인라인 style 대신 CSS 변수(`--pendf-x/y`, `setCssProps`)로 준다. 로그와 펜 프로브는 `navigator.userAgent` 대신 `Platform` 플래그와 `apiVersion`을 기록한다(그래서 WebKit 버전은 더 이상 기록되지 않는다). `minAppVersion`을 `View.scope`가 생긴 1.5.7로 올렸다. 설정 탭은 1.13+에서 `getSettingDefinitions()`로 그려져 설정 검색에 나오고, 더 낮은 버전은 기존 `display()`를 쓴다. 명령 이름에서 플러그인 이름을 뺐다("Open current PDF"). `document`/`globalThis`/전역 타이머 대신 요소의 문서·`activeDocument`·`window` 타이머를 쓴다. `onunload`는 동기 함수가 되고 비동기 정리를 분리해 실행한다(Obsidian은 원래 기다리지 않는다).
 - **검증:** 테스트 122개, 데스크톱 하네스 21/21(`docs/evidence/harness-2026-11-14-0.1.2.json`), Obsidian 1.15에서 선언형 설정 탭 렌더링 확인.
+- **0.1.3 후속:** 스캐너가 0.1.2에서 두 건을 더 찾았다(로컬 0.5.1 규칙으로는 재현되지 않음, 스캐너의 규칙이 더 새로움). `setControlValue`의 `this.update()`(1.13 API)를 `requireApiVersion("1.13.0")`로 감쌌고, `display()`의 `forEach` 화살표가 체인 결과를 돌려주던 것을 `for…of`로 바꿨다.
