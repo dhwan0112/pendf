@@ -1,0 +1,495 @@
+{
+  "env": {
+    "obsidian": "1.10.6",
+    "chrome": "138.0.7204.251",
+    "electron": "37.10.2"
+  },
+  "checks": {
+    "fixtures-render": {
+      "ok": true,
+      "out": {
+        "a4.pdf": {
+          "pages": 3,
+          "chars": 2505,
+          "sample": "A4 fixture — page 1Whose spectra electro"
+        },
+        "letter.pdf": {
+          "pages": 2,
+          "chars": 1965,
+          "sample": "US Letter — page 1Quick at peaks seven f"
+        },
+        "rotations.pdf": {
+          "pages": 4,
+          "chars": 1368,
+          "sample": "/Rotate 0This line is near the top-left "
+        },
+        "cropbox.pdf": {
+          "pages": 1,
+          "chars": 1621,
+          "sample": "Inside the CropBox [100 150 500 700]Wiza"
+        },
+        "two-column.pdf": {
+          "pages": 2,
+          "chars": 3378,
+          "sample": "Two-column layout — page 1[1.1.1] A with"
+        },
+        "korean-cmap.pdf": {
+          "pages": 2,
+          "chars": 136,
+          "sample": "1-1. 한국어 CMap 테스트 문서입니다.1-2. 이 글꼴은 PDF에 "
+        },
+        "korean-embedded.pdf": {
+          "pages": 2,
+          "chars": 913,
+          "sample": "한국어 임베디드 글꼴 — 1쪽물리화학은 분자의 구조와 에너지, 그리고 반"
+        },
+        "links.pdf": {
+          "pages": 3,
+          "chars": 75,
+          "sample": "Links fixture — page 1Go to page 2Go to "
+        },
+        "long-300.pdf": {
+          "pages": 300,
+          "chars": 592,
+          "sample": "300-page fixture — contentsChapter 1 … p"
+        }
+      }
+    },
+    "search": {
+      "ok": true,
+      "first": "1 / 24",
+      "second": "2 / 24",
+      "highlighted": 17,
+      "none": "No matches"
+    },
+    "links": {
+      "ok": true,
+      "jumped": 2,
+      "external": [
+        "https://example.com/"
+      ],
+      "tocJump": 92
+    },
+    "state-restore": {
+      "ok": true,
+      "savedState": {
+        "page": 3,
+        "scale": "1.5"
+      },
+      "restored": {
+        "page": 3,
+        "scale": 1.5
+      },
+      "remembered": {
+        "page": 3,
+        "scale": 1.5
+      }
+    },
+    "coexistence-core-first": {
+      "ok": true,
+      "coreVersion": "5.3.34",
+      "ourVersion": "6.5.438",
+      "sameLib": true,
+      "sameVersion": true,
+      "pdfjsWorkerUnchanged": true,
+      "pdfjsViewerBefore": "object",
+      "coreCanvasesBefore": 1,
+      "coreCanvasesAfter": 1,
+      "pendfCanvases": 2
+    },
+    "coexistence-pendf-first": {
+      "ok": true,
+      "diag": {
+        "cur": 1,
+        "scale": 0.8,
+        "states": [
+          3,
+          3
+        ],
+        "canvases": 2,
+        "size": [
+          393,
+          903
+        ],
+        "visible": true
+      },
+      "coreVersion": "5.3.34",
+      "libUntouchedByUs": true,
+      "coreCanvases": 2,
+      "pendfStillRenders": true
+    },
+    "css-inward": {
+      "ok": true,
+      "pageBorder": "9px solid",
+      "boxSizing": {
+        "page": "content-box",
+        "textLayer": "content-box",
+        "span": "content-box",
+        "canvasWrapper": "content-box",
+        "annotationLayer": "content-box"
+      },
+      "sizes": {
+        "text": [
+          1349,
+          1908
+        ],
+        "canvas": [
+          1349,
+          1908
+        ],
+        "page": [
+          1367,
+          1926
+        ]
+      },
+      "aligned": true,
+      "spanTransform": "matrix(1.06661, 0, 0, 1, 0, 0)",
+      "foreign": {
+        "textLayer": [
+          ".textLayer  {position: absolute; text-align: initial; inset: 0px; overflow: clip; opacity: 1; line-heig}  @app://obsidian.md/app.css",
+          ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+          "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+          "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+          "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+        ],
+        "span": [
+          ".textLayer span, .textLayer br  {color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: }  @app://obsidian.md/app.css",
+          ".textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent)  {z-index: 1;}  @app://obsidian.md/app.css",
+          ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+          "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+          "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+          "body, [dir=\"ltr\"]  {--direction: 1; --inset-start: left; --inset-end: right; --safe-area-inline-start: var(--s}  @app://obsidian.md/app.css",
+          "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+        ],
+        "annotationLayer": [
+          ".annotationLayer  {--csstools-color-scheme--dark: ; color-scheme: light only; --annotation-unfocused-field-ba}  @app://obsidian.md/app.css",
+          ".annotationLayer  {--input-focus-border-color: CanvasText; --input-unfocused-border-color: ActiveText; --inpu}  @app://obsidian.md/app.css",
+          ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+          "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+          "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+          "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+        ],
+        "page": [
+          ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+          ".pdfViewer .page  {--user-unit: 1; --total-scale-factor: calc(var(--scale-factor) * var(--user-unit)); --scal}  @app://obsidian.md/app.css",
+          "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+          "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+          "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+        ],
+        "canvasWrapper": [
+          ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+          ".pdfViewer .canvasWrapper  {overflow: hidden; width: 100%; height: 100%;}  @app://obsidian.md/app.css",
+          "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+          "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+          "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+        ]
+      }
+    },
+    "highlight-ground-truth": {
+      "ok": true,
+      "out": [
+        {
+          "file": "rotations.pdf",
+          "page": 1,
+          "quads": 1,
+          "dxStart": 0.01,
+          "dxEnd": -0.32,
+          "topAboveBaseline": 1.06,
+          "bottomBelowBaseline": 0.37,
+          "heightRatio": 1.43,
+          "ok": true,
+          "ious": [
+            1,
+            0.93,
+            0.93,
+            0.96,
+            0.96
+          ]
+        },
+        {
+          "file": "rotations.pdf",
+          "page": 2,
+          "quads": 1,
+          "dxStart": 0.01,
+          "dxEnd": -0.32,
+          "topAboveBaseline": 1.06,
+          "bottomBelowBaseline": 0.37,
+          "heightRatio": 1.43,
+          "ok": true,
+          "ious": [
+            1,
+            0.93,
+            0.93,
+            0.96,
+            0.96
+          ]
+        },
+        {
+          "file": "rotations.pdf",
+          "page": 3,
+          "quads": 1,
+          "dxStart": 0,
+          "dxEnd": -0.2,
+          "topAboveBaseline": 1.05,
+          "bottomBelowBaseline": 0.34,
+          "heightRatio": 1.39,
+          "ok": true,
+          "ious": [
+            1,
+            0.92,
+            0.92,
+            0.93,
+            0.93
+          ]
+        },
+        {
+          "file": "rotations.pdf",
+          "page": 4,
+          "quads": 1,
+          "dxStart": 0.01,
+          "dxEnd": -0.03,
+          "topAboveBaseline": 1.06,
+          "bottomBelowBaseline": 0.37,
+          "heightRatio": 1.43,
+          "ok": true,
+          "ious": [
+            1,
+            0.93,
+            0.93,
+            0.96,
+            0.96
+          ]
+        },
+        {
+          "file": "cropbox.pdf",
+          "page": 1,
+          "quads": 1,
+          "dxStart": -0.01,
+          "dxEnd": 0.3,
+          "topAboveBaseline": 1.05,
+          "bottomBelowBaseline": 0.41,
+          "heightRatio": 1.46,
+          "ok": true,
+          "ious": [
+            1,
+            0.99,
+            0.99,
+            0.94,
+            0.94
+          ]
+        }
+      ]
+    },
+    "highlight-multiline-columns": {
+      "ok": true,
+      "lines": 4,
+      "inLeftColumn": true,
+      "crossColumnQuads": 4,
+      "noBridge": true,
+      "text": "[1.1.1] A with through positions whose fox brown precision t"
+    },
+    "highlight-korean": {
+      "ok": true,
+      "res": {
+        "korean-embedded.pdf": {
+          "text": "상호작용을 통해 분자의 성질을 밝혀낸다. 이 문단은 여",
+          "quads": 1,
+          "iou": 1
+        },
+        "korean-cmap.pdf": {
+          "text": "문서입니다.",
+          "quads": 1,
+          "iou": 1
+        }
+      }
+    },
+    "highlight-cross-page": {
+      "ok": true,
+      "pages": [
+        1,
+        2
+      ],
+      "groups": [
+        "2efd204b-45e0-4501-94b1-63fe3a835c20"
+      ]
+    },
+    "smoke-ui": {
+      "ok": true,
+      "engine": {
+        "ok": true,
+        "missing": [],
+        "ponyfilled": {
+          "Map#getOrInsertComputed": false,
+          "Math.sumPrecise": true,
+          "Uint8Array#toBase64 / fromBase64 / toHex": true,
+          "Promise.try": true,
+          "RegExp.escape": true,
+          "URL.parse": true
+        }
+      },
+      "errorBanner": false,
+      "hud": "worker: web-worker | rendering: 0 | rendered: 3 | canvases: 3",
+      "hudGone": true,
+      "commands": {
+        "find": true,
+        "zoom-in": true,
+        "zoom-out": true,
+        "fit-width": true,
+        "undo": true,
+        "redo": true,
+        "highlight-selection": true,
+        "export-log": true,
+        "open-current-pdf": true,
+        "open-pdf": true,
+        "open-pen-probe": true
+      },
+      "searchOpened": true,
+      "highlightByCommand": true,
+      "logExported": true,
+      "logHasEngine": true,
+      "openCurrentWorked": true,
+      "modalShown": true,
+      "probeCommandHidden": true,
+      "probe": {
+        "penEvents": 9,
+        "fractional": 1,
+        "coalesced": true
+      },
+      "probeExported": true,
+      "fileMenu": true,
+      "fileMenuOpens": true,
+      "noMenuForMarkdown": true,
+      "settingsItems": 12
+    },
+    "rename-while-open": {
+      "ok": true,
+      "both": true,
+      "oldExists": false,
+      "viewFile": "pendf-fixtures/cropbox.pdf"
+    },
+    "highlight-palette": {
+      "ok": true,
+      "made": 1,
+      "color": "#2ea8e5",
+      "paletteGone": true,
+      "selectionCleared": true
+    },
+    "highlight-menu-undo": {
+      "ok": true,
+      "recolored": "#5fb236",
+      "deleted": true,
+      "polyGone": true,
+      "back": true,
+      "colorBack": "#ffd400"
+    },
+    "persist-restart-rename": {
+      "ok": true,
+      "saved": 8,
+      "afterRestart": 8,
+      "moved": true,
+      "oldGone": true,
+      "afterRename": 8
+    },
+    "fingerprint-mismatch": {
+      "ok": true,
+      "status": "fingerprint-mismatch",
+      "banner": "Annotations hidden: pendf-fixtures/letter.pdf.pendf.json belongs to a different ",
+      "untouched": true
+    },
+    "long-300-memory": {
+      "ok": true,
+      "maxCanvas": 10,
+      "maxLayers": 4,
+      "maxRendered": 10,
+      "seconds": 7.5,
+      "heapMB": 202
+    },
+    "fallback-main-thread": {
+      "ok": true,
+      "mode": "main-thread",
+      "rendered": true,
+      "pdfjsWorkerUnchanged": true,
+      "pdfjsLibUnchanged": true
+    },
+    "unload-cleanup": {
+      "ok": true,
+      "leaves": 1,
+      "leftovers": 0,
+      "workers": 3,
+      "allTerminated": true,
+      "blobRevoked": [
+        true,
+        true,
+        true
+      ],
+      "pendingHighlightSaved": true,
+      "styleLeft": false
+    },
+    "pdfjs-footprint": {
+      "ok": true,
+      "viaWorker": {
+        "a4.pdf": {
+          "pages": 3,
+          "fingerprint": "50aba7a1184b3bd858f8a121abc4e624",
+          "text": 122,
+          "ops": 959,
+          "rendered": 3
+        },
+        "korean-embedded.pdf": {
+          "pages": 2,
+          "fingerprint": "b30223ae5e79e310b64681973974f170",
+          "text": 44,
+          "ops": 422,
+          "rendered": 2
+        },
+        "rotations.pdf": {
+          "pages": 4,
+          "fingerprint": "6d3dada6806c176373a41ec3a8790640",
+          "text": 72,
+          "ops": 663,
+          "rendered": 3
+        },
+        "cropbox.pdf": {
+          "pages": 1,
+          "fingerprint": "7b2b970ce8bc197e597b59ef9f65184e",
+          "text": 29,
+          "ops": 309,
+          "rendered": 1
+        }
+      },
+      "viaMainThread": {
+        "a4.pdf": {
+          "pages": 3,
+          "fingerprint": "50aba7a1184b3bd858f8a121abc4e624",
+          "text": 122,
+          "ops": 959,
+          "rendered": 3
+        },
+        "korean-embedded.pdf": {
+          "pages": 2,
+          "fingerprint": "b30223ae5e79e310b64681973974f170",
+          "text": 44,
+          "ops": 422,
+          "rendered": 2
+        },
+        "rotations.pdf": {
+          "pages": 4,
+          "fingerprint": "6d3dada6806c176373a41ec3a8790640",
+          "text": 72,
+          "ops": 663,
+          "rendered": 3
+        },
+        "cropbox.pdf": {
+          "pages": 1,
+          "fingerprint": "7b2b970ce8bc197e597b59ef9f65184e",
+          "text": 29,
+          "ops": 309,
+          "rendered": 1
+        }
+      },
+      "added": [],
+      "replaced": [],
+      "removed": []
+    }
+  }
+}
