@@ -218,6 +218,8 @@ export class PenProbeView extends ItemView {
 			this.scrollByType.set(type, byTa);
 			this.render();
 		}, 300);
+		// stroke stats now; the scroll verdict follows in 300 ms
+		this.render();
 	}
 
 	private onTouch(e: TouchEvent): void {

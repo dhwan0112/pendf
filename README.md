@@ -47,7 +47,9 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Links: the link button in a highlight's menu, a note's popover, the selection palette or the
   toolbar (current page) copies an Obsidian link; paste it into any note. Clicking it opens penDF
   at that spot. Commands: **Copy link to current page**, **Copy link to selection**.
-- Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Bookmarks**
+- Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Pages**
+  (thumbnails; tap to jump), **Search** (every match in the document with its context; tap to
+  jump and flash it — commands **Show page thumbnails**, **Search the whole PDF**), **Bookmarks**
   (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
   rename, move up/down, copy link, delete) and **Annotations**.
 - Handwriting: the Apple Pencil writes as soon as it touches a page (**Settings → penDF → Apple

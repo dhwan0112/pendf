@@ -126,6 +126,8 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "export-log", name: "Export log to vault", callback: () => void this.exportLog() });
 		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel("annotations") });
 		this.addCommand({ id: "show-outline", name: "Show outline", callback: () => void this.showAnnotationsPanel("outline") });
+		this.addCommand({ id: "show-pages", name: "Show page thumbnails", callback: () => void this.showAnnotationsPanel("pages") });
+		this.addCommand({ id: "search-all", name: "Search the whole PDF", callback: () => void this.showAnnotationsPanel("search") });
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
 		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
 		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });

@@ -1194,6 +1194,76 @@
 					pl.settings.ink = inkBefore;
 				}
 			});
+			await check("pages-search", async () => {
+				// side panel: page thumbnails (virtualized) and whole-document search
+				const res = {};
+				const { v } = await openPenDF("long-300.pdf");
+				const s = v.debugSession;
+				await P().showAnnotationsPanel("pages");
+				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
+				await waitFor(() => panel.contentEl.querySelectorAll(".pendf-thumb").length === 300, 8000);
+				res.cells = panel.contentEl.querySelectorAll(".pendf-thumb").length;
+				await waitFor(() => panel.contentEl.querySelectorAll(".pendf-thumb.is-rendered").length >= 4, 15000).catch(() => {});
+				const rendered = [...panel.contentEl.querySelectorAll(".pendf-thumb.is-rendered")];
+				res.rendered = rendered.length;
+				res.canvases = panel.contentEl.querySelectorAll("canvas").length;
+				// each thumbnail stays inside its frame (≈104 px wide)
+				const cr = rendered[0]?.querySelector("canvas")?.getBoundingClientRect();
+				res.thumbCssWidth = cr ? Math.round(cr.width) : null;
+				// the thumbnail really shows the page: some dark (text) pixels on white
+				const cv = rendered[0]?.querySelector("canvas");
+				if (cv) {
+					const d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data;
+					let dark = 0;
+					for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 0 && d[i] + d[i + 1] + d[i + 2] < 700) dark++; // ink of any color on white
+					res.darkPixelShare = +(dark / (d.length / 4)).toFixed(4);
+				}
+				// scroll the grid to the end: far canvases are released, new ones drawn
+				panel.contentEl.scrollTop = panel.contentEl.scrollHeight;
+				await sleep(300);
+				await waitFor(() => panel.contentEl.querySelector('.pendf-thumb[data-page="300"].is-rendered'), 15000).catch(() => {});
+				res.lastRendered = !!panel.contentEl.querySelector('.pendf-thumb[data-page="300"].is-rendered');
+				res.firstReleased = !panel.contentEl.querySelector('.pendf-thumb[data-page="1"] canvas');
+				res.canvasesAfterScroll = panel.contentEl.querySelectorAll("canvas").length;
+				panel.contentEl.querySelector('.pendf-thumb[data-page="297"]').click();
+				await waitFor(() => s.viewer.currentPageNumber === 297, 5000).catch(() => {});
+				res.thumbJump = s.viewer.currentPageNumber;
+				await sleep(200);
+				res.currentMarked = panel.contentEl.querySelector(".pendf-thumb.is-current")?.dataset.page;
+				// search tab
+				panel.showTab("search");
+				const input = await waitFor(() => panel.contentEl.querySelector(".pendf-search-panel-input"), 5000);
+				input.value = "page 150";
+				input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+				await waitFor(() => /match/.test(panel.contentEl.querySelector(".pendf-search-status")?.textContent ?? ""), 30000).catch(() => {});
+				res.status = panel.contentEl.querySelector(".pendf-search-status")?.textContent;
+				const hits = [...panel.contentEl.querySelectorAll(".pendf-search-hit")];
+				res.hits = hits.length;
+				res.firstHit = hits[0]?.textContent;
+				hits[0]?.click();
+				await waitFor(() => s.viewer.currentPageNumber === 150, 5000).catch(() => {});
+				res.hitJump = s.viewer.currentPageNumber;
+				await waitFor(() => s.layers.getLayer(150)?.overlay.querySelector(".pendf-flash"), 3000).catch(() => {});
+				res.flashed = !!s.layers.getLayer(150)?.overlay.querySelector(".pendf-flash");
+				// Korean, in an embedded-font PDF
+				closeOurs();
+				const k = await openPenDF("korean-embedded.pdf");
+				await P().showAnnotationsPanel("search");
+				const panel2 = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
+				await sleep(400);
+				const input2 = await waitFor(() => panel2.contentEl.querySelector(".pendf-search-panel-input"), 5000);
+				input2.value = "임베디드 글꼴";
+				input2.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+				await waitFor(() => /match/.test(panel2.contentEl.querySelector(".pendf-search-status")?.textContent ?? ""), 15000).catch(() => {});
+				res.korean = { status: panel2.contentEl.querySelector(".pendf-search-status")?.textContent, hits: panel2.contentEl.querySelectorAll(".pendf-search-hit").length, pages: k.v.pageCount };
+				res.ok =
+					res.cells === 300 && res.rendered >= 4 && res.canvases <= 40 && res.darkPixelShare > 0.002 && res.thumbCssWidth >= 100 && res.thumbCssWidth <= 108 &&
+					res.lastRendered && res.firstReleased && res.canvasesAfterScroll <= 40 &&
+					res.thumbJump === 297 && res.currentMarked === "297" &&
+					res.hits >= 1 && /page 150/.test(res.firstHit) && res.hitJump === 150 && res.flashed &&
+					res.korean.hits === res.korean.pages;
+				return res;
+			});
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{

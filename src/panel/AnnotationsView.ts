@@ -1,5 +1,7 @@
-// Sidebar panel for the active penDF document, with three tabs:
+// Sidebar panel for the active penDF document, with five tabs:
 //   Outline      the PDF's own bookmarks (read-only; the PDF is never modified)
+//   Pages        page thumbnails (only the visible ones are drawn)
+//   Search       every match in the document, with context
 //   Bookmarks    your bookmarks: jump, rename, reorder, copy link, delete
 //   Annotations  highlights (with their note) and notes, page by page
 // It follows whichever penDF tab was active last.
@@ -8,13 +10,15 @@ import { Component, ItemView, MarkdownRenderer, setIcon, type ViewStateResult, t
 import { panelPages, type PanelItem } from "../notes/model";
 import type { Annotation, BookmarkAnnotation } from "../store/schema";
 import { aliasFrom } from "../links/format";
-import { PenDFView, VIEW_TYPE, type OutlineNode } from "../view/PdfView";
+import { PenDFView, VIEW_TYPE, type OutlineNode, type SearchHit } from "../view/PdfView";
 
 export const ANNOTATIONS_VIEW = "pendf-annotations";
 
-export type PanelTab = "outline" | "bookmarks" | "annotations";
+export type PanelTab = "outline" | "pages" | "search" | "bookmarks" | "annotations";
 const TABS: { id: PanelTab; label: string; icon: string }[] = [
 	{ id: "outline", label: "Outline", icon: "list-tree" },
+	{ id: "pages", label: "Pages", icon: "layout-grid" },
+	{ id: "search", label: "Search", icon: "search" },
 	{ id: "bookmarks", label: "Bookmarks", icon: "bookmark" },
 	{ id: "annotations", label: "Annotations", icon: "highlighter" },
 ];
@@ -26,6 +30,9 @@ export class AnnotationsView extends ItemView {
 	private timer: number | null = null;
 	private tab: PanelTab = "annotations";
 	private renderSeq = 0;
+	/** per-render cleanups (thumbnail observer, running search, page listener) */
+	private cleanups: (() => void)[] = [];
+	private searchQuery = "";
 
 	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
@@ -47,7 +54,7 @@ export class AnnotationsView extends ItemView {
 
 	async setState(state: unknown, result: ViewStateResult): Promise<void> {
 		const t = (state as { tab?: unknown } | null)?.tab;
-		if (t === "outline" || t === "bookmarks" || t === "annotations") this.tab = t;
+		if (typeof t === "string" && TABS.some((x) => x.id === t)) this.tab = t as PanelTab;
 		await super.setState(state, result);
 		this.renderSoon();
 	}
@@ -73,6 +80,7 @@ export class AnnotationsView extends ItemView {
 	}
 
 	async onClose(): Promise<void> {
+		this.runCleanups();
 		this.unsubscribe?.();
 		this.unsubscribe = null;
 		if (this.timer !== null) window.clearTimeout(this.timer);
@@ -110,8 +118,19 @@ export class AnnotationsView extends ItemView {
 		}, 120);
 	}
 
+	private runCleanups(): void {
+		for (const fn of this.cleanups.splice(0)) {
+			try {
+				fn();
+			} catch {
+				// best effort
+			}
+		}
+	}
+
 	render(): void {
 		const seq = ++this.renderSeq;
+		this.runCleanups();
 		const el = this.contentEl;
 		el.empty();
 		this.renderComp?.unload();
@@ -123,7 +142,7 @@ export class AnnotationsView extends ItemView {
 		for (const t of TABS) {
 			const b = tabs.createEl("button", { cls: "pendf-panel-tab clickable-icon", attr: { "aria-label": t.label, title: t.label, "data-tab": t.id } });
 			setIcon(b, t.icon);
-			b.createSpan({ text: t.label });
+			b.createSpan({ cls: "pendf-panel-tab-label", text: t.label });
 			if (t.id === this.tab) b.addClass("is-active");
 			b.addEventListener("click", () => this.showTab(t.id));
 		}
@@ -136,6 +155,8 @@ export class AnnotationsView extends ItemView {
 		el.createDiv({ cls: "pendf-panel-title", text: view.file.basename });
 		const body = el.createDiv({ cls: `pendf-panel-body is-${this.tab}` });
 		if (this.tab === "outline") void this.renderOutline(body, view, seq);
+		else if (this.tab === "pages") this.renderPages(body, view);
+		else if (this.tab === "search") this.renderSearch(body, view);
 		else if (this.tab === "bookmarks") this.renderBookmarks(body, view);
 		else this.renderAnnotations(body, view, comp);
 	}
@@ -183,6 +204,187 @@ export class AnnotationsView extends ItemView {
 			}
 		};
 		add(tree, nodes);
+	}
+
+	// ------------------------------------------------------------------- pages
+
+	private renderPages(body: HTMLElement, view: PenDFView): void {
+		const n = view.pageCount;
+		if (!n) {
+			body.createDiv({ cls: "pendf-panel-empty", text: "Loading…" });
+			return;
+		}
+		const THUMB = 104;
+		const counts = view.annotationCountsByPage();
+		const grid = body.createDiv({ cls: "pendf-thumbs" });
+		const cells: HTMLElement[] = [];
+		const live = new Map<number, { cancel: () => void }>();
+		const queue: number[] = [];
+		let running = false;
+		const pump = () => {
+			if (running) return;
+			const page = queue.shift();
+			if (page === undefined) return;
+			const cell = cells[page - 1];
+			if (!cell || !cell.hasClass("is-visible") || cell.hasClass("is-rendered")) {
+				pump();
+				return;
+			}
+			running = true;
+			const frame = cell.querySelector<HTMLElement>(".pendf-thumb-frame") ?? cell;
+			const canvas = frame.querySelector("canvas") ?? frame.createEl("canvas", { cls: "pendf-thumb-canvas" });
+			const job = view.renderThumbnail(page, canvas, THUMB);
+			live.set(page, job);
+			void job.done.then((ok) => {
+				live.delete(page);
+				if (ok) cell.addClass("is-rendered");
+				running = false;
+				pump();
+			});
+		};
+		const release = (page: number) => {
+			const cell = cells[page - 1];
+			live.get(page)?.cancel();
+			live.delete(page);
+			const canvas = cell?.querySelector("canvas");
+			if (canvas) {
+				canvas.width = 0;
+				canvas.height = 0;
+				canvas.remove();
+			}
+			cell?.removeClass("is-rendered");
+		};
+		for (let page = 1; page <= n; page++) {
+			const cell = grid.createDiv({ cls: "pendf-thumb", attr: { "data-page": String(page), tabindex: "0", "aria-label": `Page ${page}` } });
+			const frame = cell.createDiv({ cls: "pendf-thumb-frame" });
+			frame.setCssProps({ "--pendf-thumb-h": `${Math.round(THUMB * view.pageAspect(page))}px`, "--pendf-thumb-w": `${THUMB}px` });
+			const label = cell.createDiv({ cls: "pendf-thumb-label", text: String(page) });
+			const c = counts.get(page);
+			if (c) label.createSpan({ cls: "pendf-thumb-badge", text: String(c), attr: { title: `${c} annotation(s)` } });
+			if (page === view.currentPage) cell.addClass("is-current");
+			const go = () => {
+				this.app.workspace.setActiveLeaf(view.leaf, { focus: false });
+				view.goToPage(page);
+			};
+			cell.addEventListener("click", go);
+			cell.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") go();
+			});
+			cells.push(cell);
+		}
+		// draw only what is (nearly) visible; free canvases far off screen
+		const io = new IntersectionObserver(
+			(entries) => {
+				for (const e of entries) {
+					const page = Number((e.target as HTMLElement).dataset.page);
+					if (e.isIntersecting) {
+						e.target.addClass("is-visible");
+						queue.push(page);
+					} else {
+						e.target.removeClass("is-visible");
+						release(page);
+					}
+				}
+				pump();
+			},
+			{ root: this.contentEl, rootMargin: "300px 0px" },
+		);
+		for (const cell of cells) io.observe(cell);
+		const offPage = view.onPageChange((page) => {
+			grid.querySelector(".pendf-thumb.is-current")?.removeClass("is-current");
+			const cell = cells[page - 1];
+			if (!cell) return;
+			cell.addClass("is-current");
+			const r = cell.getBoundingClientRect();
+			const pr = this.contentEl.getBoundingClientRect();
+			if (r.bottom < pr.top || r.top > pr.bottom) cell.scrollIntoView({ block: "nearest" });
+		});
+		this.cleanups.push(() => {
+			io.disconnect();
+			offPage();
+			for (let p = 1; p <= cells.length; p++) release(p);
+		});
+		// start where the reader is
+		window.setTimeout(() => cells[view.currentPage - 1]?.scrollIntoView({ block: "center" }), 0);
+	}
+
+	// ------------------------------------------------------------------ search
+
+	private renderSearch(body: HTMLElement, view: PenDFView): void {
+		const form = body.createDiv({ cls: "pendf-search-panel" });
+		const input = form.createEl("input", { cls: "pendf-search-panel-input", attr: { type: "search", placeholder: "Search this PDF…", "aria-label": "Search this PDF" } });
+		input.value = this.searchQuery;
+		const status = body.createDiv({ cls: "pendf-panel-empty pendf-search-status" });
+		const list = body.createDiv({ cls: "pendf-search-results" });
+		let ac: AbortController | null = null;
+		let timer: number | null = null;
+		const run = () => {
+			ac?.abort();
+			list.empty();
+			const q = input.value.trim();
+			this.searchQuery = input.value;
+			if (q.length < 2) {
+				status.setText(q ? "Type at least 2 characters." : "Find words in the whole document.");
+				return;
+			}
+			const mine = new AbortController();
+			ac = mine;
+			let total = 0;
+			let pages = 0;
+			status.setText("Searching…");
+			void view
+				.searchAll(q, {
+					signal: mine.signal,
+					onHits: (hits) => {
+						if (mine.signal.aborted) return;
+						pages++;
+						total += hits.length;
+						this.renderHits(list, view, hits);
+					},
+					onProgress: (page, all) => {
+						if (!mine.signal.aborted && page % 10 === 0) status.setText(`Searching… page ${page} of ${all} — ${total} found`);
+					},
+				})
+				.then((n) => {
+					if (mine.signal.aborted) return;
+					status.setText(n === 0 ? "No matches." : `${n}${n >= 500 ? "+" : ""} match${n === 1 ? "" : "es"} on ${pages} page${pages === 1 ? "" : "s"}`);
+				});
+		};
+		input.addEventListener("input", () => {
+			if (timer !== null) window.clearTimeout(timer);
+			timer = window.setTimeout(run, 250);
+		});
+		input.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				if (timer !== null) window.clearTimeout(timer);
+				run();
+			}
+		});
+		this.cleanups.push(() => {
+			ac?.abort();
+			if (timer !== null) window.clearTimeout(timer);
+		});
+		run();
+		window.setTimeout(() => input.focus(), 0);
+	}
+
+	private renderHits(list: HTMLElement, view: PenDFView, hits: SearchHit[]): void {
+		const section = list.createDiv({ cls: "pendf-panel-page" });
+		section.createDiv({ cls: "pendf-panel-page-title", text: `Page ${hits[0].page}` });
+		for (const h of hits) {
+			const row = section.createDiv({ cls: "pendf-search-hit", attr: { tabindex: "0" } });
+			row.appendText((h.before.length >= 40 ? "…" : "") + h.before);
+			row.createEl("mark", { text: h.match });
+			row.appendText(h.after + (h.after.length >= 60 ? "…" : ""));
+			const go = () => {
+				this.app.workspace.setActiveLeaf(view.leaf, { focus: false });
+				view.revealHit(h);
+			};
+			row.addEventListener("click", go);
+			row.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") go();
+			});
+		}
 	}
 
 	// --------------------------------------------------------------- bookmarks

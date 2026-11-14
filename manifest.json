@@ -1,7 +1,7 @@
 {
 	"id": "pendf",
 	"name": "penDF",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"minAppVersion": "1.5.7",
 	"description": "A standalone, iPad-first PDF viewer with highlights. No other plugins required.",
 	"author": "Denny Kim",

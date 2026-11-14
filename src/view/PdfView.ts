@@ -61,6 +61,29 @@ interface Session {
 	ready: boolean;
 	/** the PDF's own outline, resolved once on demand */
 	outline: Promise<OutlineNode[]> | null;
+	/** extracted page text for the search panel, by page */
+	text: Map<number, Promise<PageText>>;
+}
+
+/** A page's text for searching: items with their PDF-space boxes, and the joined, normalized text. */
+interface PageText {
+	items: { x: number; y: number; w: number; h: number; start: number; len: number }[];
+	/** normalized text of all items, joined with single spaces */
+	joined: string;
+}
+
+export interface SearchHit {
+	page: number;
+	before: string;
+	match: string;
+	after: string;
+	/** PDF-space box of the match (approximate) */
+	rect: [number, number, number, number] | null;
+}
+
+/** Search normalization: case, width/compatibility forms and whitespace do not matter. */
+export function normalizeForSearch(s: string): string {
+	return s.normalize("NFKC").toLocaleLowerCase().replace(/\s+/g, " ");
 }
 
 /** An entry of the PDF's outline (its own bookmarks). */
@@ -105,6 +128,7 @@ export class PenDFView extends FileView {
 	/** set while ink edits run, so the side panel is not re-rendered for every stroke */
 	private quiet = false;
 	private changeListeners = new Set<() => void>();
+	private pageListeners = new Set<(page: number) => void>();
 
 	constructor(leaf: WorkspaceLeaf, private readonly plugin: PenDFPlugin) {
 		super(leaf);
@@ -391,6 +415,7 @@ export class PenDFView extends FileView {
 			ac,
 			ready: false,
 			outline: null,
+			text: new Map(),
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -455,6 +480,7 @@ export class PenDFView extends FileView {
 		eventBus.on("pagechanging", (e: { pageNumber: number }) => {
 			this.pageInput.value = String(e.pageNumber);
 			this.scheduleStateSave();
+			for (const fn of this.pageListeners) fn(e.pageNumber);
 		}, { signal: ac.signal });
 		eventBus.on("scalechanging", (e: { scale: number }) => {
 			this.zoomLabel.setText(`${Math.round(e.scale * 100)}%`);
@@ -684,6 +710,134 @@ export class PenDFView extends FileView {
 		const store = s?.store;
 		if (!s?.undo || !store?.writable) return;
 		s.undo.record("delete bookmark", [b.id], () => store.remove(b.id));
+	}
+
+	// ------------------------------------------------- pages & search (panel)
+
+	get pageCount(): number {
+		return this.session?.ready ? this.session.viewer.pagesCount : 0;
+	}
+
+	get currentPage(): number {
+		return this.session?.ready ? this.session.viewer.currentPageNumber : 0;
+	}
+
+	/** Subscribe to page changes. Returns the unsubscribe function. */
+	onPageChange(fn: (page: number) => void): () => void {
+		this.pageListeners.add(fn);
+		return () => this.pageListeners.delete(fn);
+	}
+
+	/** height / width of a page as displayed (rotation included). */
+	pageAspect(page: number): number {
+		const pv = this.session?.viewer.getPageView(page - 1) as unknown as { viewport?: { width: number; height: number } } | undefined;
+		const vp = pv?.viewport;
+		return vp && vp.width > 0 ? vp.height / vp.width : 1.414;
+	}
+
+	/** Live annotation counts by page (thumbnails badge). */
+	annotationCountsByPage(): Map<number, number> {
+		const m = new Map<number, number>();
+		for (const a of this.annotations()) if (a.type !== "bookmark") m.set(a.page, (m.get(a.page) ?? 0) + 1);
+		return m;
+	}
+
+	/** Render a page thumbnail `cssWidth` pixels wide into `canvas`. cancel() stops it. */
+	renderThumbnail(page: number, canvas: HTMLCanvasElement, cssWidth: number): { done: Promise<boolean>; cancel: () => void } {
+		const s = this.session;
+		let task: { promise: Promise<void>; cancel: () => void } | null = null;
+		let cancelled = false;
+		const done = (async () => {
+			if (!s?.ready) return false;
+			const pdfPage = await s.opened.doc.getPage(page);
+			if (cancelled || this.session !== s) return false;
+			const rotation = (pdfPage.rotate + s.viewer.pagesRotation) % 360;
+			const base = pdfPage.getViewport({ scale: 1, rotation });
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			const viewport = pdfPage.getViewport({ scale: (cssWidth * dpr) / base.width, rotation });
+			canvas.width = Math.max(1, Math.floor(viewport.width));
+			canvas.height = Math.max(1, Math.floor(viewport.height));
+			task = pdfPage.render({ canvas, viewport, annotationMode: AnnotationMode.DISABLE });
+			try {
+				await task.promise;
+				return !cancelled;
+			} catch {
+				return false;
+			}
+		})();
+		return {
+			done,
+			cancel: () => {
+				cancelled = true;
+				task?.cancel();
+			},
+		};
+	}
+
+	private pageText(s: Session, page: number): Promise<PageText> {
+		let p = s.text.get(page);
+		if (!p) {
+			p = (async () => {
+				const pdfPage = await s.opened.doc.getPage(page);
+				const tc = await pdfPage.getTextContent();
+				const items: PageText["items"] = [];
+				let joined = "";
+				for (const it of tc.items) {
+					if (!("str" in it)) continue;
+					const str = normalizeForSearch(it.str);
+					if (!str.trim()) continue;
+					if (joined && !joined.endsWith(" ")) joined += " ";
+					const t = it.transform as number[];
+					items.push({ x: t[4], y: t[5], w: it.width, h: it.height || Math.hypot(t[2], t[3]), start: joined.length, len: str.length });
+					joined += str;
+				}
+				return { items, joined };
+			})();
+			s.text.set(page, p);
+		}
+		return p;
+	}
+
+	/**
+	 * Find `query` in every page, page by page (yielding to the UI). Calls
+	 * `onHits` per page with matches, `onProgress` after each page.
+	 */
+	async searchAll(
+		query: string,
+		opts: { signal: AbortSignal; limit?: number; onHits: (hits: SearchHit[]) => void; onProgress?: (page: number, total: number) => void },
+	): Promise<number> {
+		const s = this.session;
+		const q = normalizeForSearch(query).trim();
+		if (!s?.ready || !q) return 0;
+		const total = s.viewer.pagesCount;
+		const limit = opts.limit ?? 500;
+		let count = 0;
+		for (let page = 1; page <= total && count < limit; page++) {
+			if (opts.signal.aborted || this.session !== s) return count;
+			const pt = await this.pageText(s, page);
+			const hits: SearchHit[] = [];
+			for (let i = pt.joined.indexOf(q); i >= 0 && count < limit; i = pt.joined.indexOf(q, i + q.length)) {
+				const item = pt.items.find((it) => i >= it.start && i < it.start + it.len) ?? null;
+				let rect: SearchHit["rect"] = null;
+				if (item) {
+					const f0 = (i - item.start) / item.len;
+					const f1 = Math.min(1, (i - item.start + q.length) / item.len);
+					rect = [item.x + item.w * f0, item.y - item.h * 0.25, item.x + item.w * f1, item.y + item.h * 0.95];
+				}
+				hits.push({ page, before: pt.joined.slice(Math.max(0, i - 40), i), match: pt.joined.slice(i, i + q.length), after: pt.joined.slice(i + q.length, i + q.length + 60), rect });
+				count++;
+			}
+			if (hits.length) opts.onHits(hits);
+			opts.onProgress?.(page, total);
+			if (page % 8 === 0) await new Promise((r) => window.setTimeout(r, 0));
+		}
+		return count;
+	}
+
+	/** Go to a search hit and flash it. */
+	revealHit(hit: SearchHit): void {
+		if (hit.rect) this.revealRect(hit.page, hit.rect);
+		else this.goToPage(hit.page);
 	}
 
 	/** Scroll a PDF-space box into view and flash it. */
@@ -1083,6 +1237,7 @@ export class PenDFView extends FileView {
 		this.hud?.destroy();
 		this.hud = null;
 		this.changeListeners.clear();
+		this.pageListeners.clear();
 		this.contentEl.empty();
 	}
 

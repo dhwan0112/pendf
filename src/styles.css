@@ -520,6 +520,103 @@
 	width: 100%;
 }
 
+/* panel: pages (thumbnails) and search */
+.pendf-panel .pendf-panel-tab .pendf-panel-tab-label {
+	display: none;
+}
+.pendf-panel .pendf-panel-tab.is-active .pendf-panel-tab-label {
+	display: inline;
+}
+.pendf-panel .pendf-panel-tabs {
+	flex-wrap: wrap;
+}
+.pendf-panel .pendf-thumbs {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+	gap: var(--size-4-3) var(--size-4-2);
+	justify-items: center;
+}
+.pendf-panel .pendf-thumb {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-3);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+.pendf-panel .pendf-thumb:hover,
+.pendf-panel .pendf-thumb:focus-visible {
+	background: var(--background-modifier-hover);
+}
+.pendf-panel .pendf-thumb-frame {
+	width: var(--pendf-thumb-w);
+	height: var(--pendf-thumb-h);
+	background: #fff;
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	position: relative;
+}
+.pendf-panel .pendf-thumb.is-current .pendf-thumb-frame {
+	box-shadow: 0 0 0 3px var(--interactive-accent);
+}
+.pendf-panel .pendf-thumb-canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+.pendf-panel .pendf-thumb-frame:has(.pendf-thumb-canvas) {
+	background: transparent;
+}
+.pendf-panel .pendf-thumb-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-variant-numeric: tabular-nums;
+}
+.pendf-panel .pendf-thumb.is-current .pendf-thumb-label {
+	color: var(--text-accent);
+	font-weight: var(--font-semibold);
+}
+.pendf-panel .pendf-thumb-badge {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: 999px;
+	padding: 0 6px;
+	font-size: 10px;
+	line-height: 16px;
+}
+.pendf-panel .pendf-search-panel {
+	margin-bottom: var(--size-4-2);
+}
+.pendf-panel .pendf-search-panel-input {
+	width: 100%;
+}
+.pendf-panel .pendf-search-status {
+	margin-bottom: var(--size-4-2);
+}
+.pendf-panel .pendf-search-hit {
+	font-size: var(--font-ui-small);
+	padding: var(--size-2-3) var(--size-4-2);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	overflow-wrap: anywhere;
+	color: var(--text-muted);
+}
+.pendf-panel .pendf-search-hit mark {
+	background: var(--text-highlight-bg);
+	color: var(--text-normal);
+	border-radius: 2px;
+}
+.pendf-panel .pendf-search-hit:hover,
+.pendf-panel .pendf-search-hit:focus-visible {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
 /* ---- floating palette & highlight menu ---- */
 .pendf-root .pendf-floating {
 	position: absolute;
