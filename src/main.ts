@@ -227,7 +227,12 @@ export default class PenDFPlugin extends Plugin {
 			if (!leaf) return;
 			await leaf.setViewState({ type: ANNOTATIONS_VIEW, active: true });
 		}
-		await ws.revealLeaf(leaf);
+		// revealLeaf() changed signature in 1.7.2 (minAppVersion is 1.5.7): open the sidebar and
+		// activate the leaf with APIs from before 1.0 instead. Both sidebar kinds (desktop dock,
+		// mobile drawer) have expand().
+		const side: { expand(): void } = ws.rightSplit;
+		side.expand();
+		ws.setActiveLeaf(leaf, { focus: true });
 		if (tab && leaf.view instanceof AnnotationsView) leaf.view.showTab(tab);
 	}
 

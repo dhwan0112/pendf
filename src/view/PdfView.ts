@@ -17,7 +17,7 @@ import {
 	type OpenedDocument,
 	workerMode,
 } from "../pdfjs";
-import { LayerManager, pageContentRect } from "../layers";
+import { LayerManager, pageContentRect, svgEl } from "../layers";
 import { HighlightController } from "../highlight/controller";
 import { NoteController } from "../notes/controller";
 import { InkController } from "../ink/controller";
@@ -700,9 +700,7 @@ export class PenDFView extends FileView {
 				return;
 			}
 			const pts = [layer.geom.toView(x0, y1), layer.geom.toView(x1, y1), layer.geom.toView(x1, y0), layer.geom.toView(x0, y0)];
-			const poly = layer.overlay.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "polygon");
-			poly.setAttribute("class", "pendf-flash");
-			poly.setAttribute("points", pts.map((p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" "));
+			const poly = svgEl("polygon", { class: "pendf-flash", points: pts.map((p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" ") });
 			layer.overlay.appendChild(poly);
 			window.setTimeout(() => poly.remove(), 2200);
 		};

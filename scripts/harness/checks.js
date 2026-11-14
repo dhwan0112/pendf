@@ -945,13 +945,25 @@
 				// 2. panel → Outline tab → tap "Chapter 30"
 				await P().showAnnotationsPanel("outline");
 				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
-				// let the sidebar finish opening: pdf.js re-fits the width on resize and returns to its last recorded spot
-				await sleep(1000);
+				// let the sidebar finish opening: pdf.js re-fits the width on resize and returns to its last
+				// recorded spot, so wait until the PDF area's width has been stable for a while
+				const settle = async () => {
+					let w = -1;
+					let same = 0;
+					for (let i = 0; i < 40 && same < 3; i++) {
+						const cw = s.viewer.container.clientWidth;
+						same = cw === w ? same + 1 : 0;
+						w = cw;
+						await sleep(150);
+					}
+				};
+				await settle();
 				const ch30 = await waitFor(() => [...panel.contentEl.querySelectorAll(".pendf-outline-row")].find((r) => r.textContent.startsWith("Chapter 30")), 8000);
 				ch30.click();
 				await waitFor(() => s.viewer.currentPageNumber === 292, 5000).catch(() => {});
 				res.outlineJump = s.viewer.currentPageNumber;
 				// 3. bookmarks: one through the prompt (suggested title), three with given titles
+				await settle();
 				v.goToPage(46);
 				await sleep(400);
 				const pending = v.addBookmark();
