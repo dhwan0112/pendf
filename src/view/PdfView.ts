@@ -572,7 +572,10 @@ export class PenDFView extends FileView {
 	}
 
 	setEphemeralState(state: unknown): void {
-		const page = (state as { page?: unknown } | null)?.page;
+		const st = state as { page?: unknown; subpath?: unknown } | null;
+		// links like [[file.pdf#page=3]] arrive as { subpath: "#page=3" }
+		const fromLink = typeof st?.subpath === "string" ? /[#&]page=(\d+)/.exec(st.subpath) : null;
+		const page = fromLink ? Number(fromLink[1]) : st?.page;
 		if (typeof page === "number") {
 			if (this.session?.ready) this.goToPage(page);
 			else this.pendingState = { ...(this.pendingState ?? {}), page };

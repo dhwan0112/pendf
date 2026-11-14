@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile } from "obsidian";
+import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile, type WorkspaceLeaf } from "obsidian";
 import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
 import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type PenDFSettings } from "./settings";
@@ -17,6 +17,9 @@ export default class PenDFPlugin extends Plugin {
 	engine: EngineReport = { ok: true, missing: [], ponyfilled: {} };
 	private stores = new Set<SidecarStore>();
 	private saveSettingsTimer: number | null = null;
+	/** Leaves the user deliberately opened in Obsidian's PDF viewer, with that file's path. */
+	private keepCore = new WeakMap<WorkspaceLeaf, string>();
+	private takingOver = new WeakSet<WorkspaceLeaf>();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -27,20 +30,44 @@ export default class PenDFPlugin extends Plugin {
 		this.registerView(PEN_PROBE_VIEW, (leaf) => new PenProbeView(leaf));
 		this.addSettingTab(new PenDFSettingTab(this.app, this));
 
-		// Entry points. PDF is a core extension, so plugins cannot become its
-		// default view through the public API; we offer explicit "open with".
+		// Entry points. PDF is a core extension, so a plugin cannot register
+		// itself as the view for ".pdf". With "Open PDFs in penDF" on, a tab
+		// that Obsidian opens in its PDF viewer is switched to penDF right away
+		// (public WorkspaceLeaf API only; the core viewer is left untouched).
+		// The file menu offers the other viewer either way.
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				if (!(file instanceof TFile) || file.extension !== "pdf") return;
-				menu.addItem((item) =>
-					item
-						.setTitle("Open in penDF")
-						.setIcon("book-open-text")
-						.setSection("open")
-						.onClick(() => void this.openPdf(file)),
-				);
+				if (this.settings.openPdfsInPenDF) {
+					menu.addItem((item) =>
+						item
+							.setTitle("Open in Obsidian's PDF viewer")
+							.setIcon("file-text")
+							.setSection("open")
+							.onClick(() => void this.openInCoreViewer(file)),
+					);
+				} else {
+					menu.addItem((item) =>
+						item
+							.setTitle("Open in penDF")
+							.setIcon("book-open-text")
+							.setSection("open")
+							.onClick(() => void this.openPdf(file)),
+					);
+				}
 			}),
 		);
+		this.app.workspace.onLayoutReady(() => {
+			this.registerEvent(this.app.workspace.on("active-leaf-change", (leaf) => leaf && this.takeOver(leaf)));
+			this.registerEvent(
+				this.app.workspace.on("file-open", (file) => {
+					const leaf = this.app.workspace.getMostRecentLeaf();
+					if (file?.extension === "pdf" && leaf) this.takeOver(leaf);
+				}),
+			);
+			const leaf = this.app.workspace.getMostRecentLeaf();
+			if (leaf) this.takeOver(leaf);
+		});
 
 		this.addCommand({
 			id: "open-current-pdf",
@@ -152,6 +179,33 @@ export default class PenDFPlugin extends Plugin {
 	async openPdf(file: TFile, newTab = true): Promise<void> {
 		const leaf = newTab ? this.app.workspace.getLeaf("tab") : this.app.workspace.getLeaf(false);
 		await leaf.setViewState({ type: VIEW_TYPE, state: { file: file.path }, active: true });
+	}
+
+	/** Open a PDF in Obsidian's own viewer, exempt from "Open PDFs in penDF". */
+	async openInCoreViewer(file: TFile): Promise<void> {
+		const leaf = this.app.workspace.getLeaf("tab");
+		this.keepCore.set(leaf, file.path);
+		await leaf.openFile(file, { active: true });
+	}
+
+	/**
+	 * Switch a tab showing a PDF in Obsidian's viewer to penDF. Runs as soon as
+	 * the tab opens, before Obsidian hands it the link's position (e.g.
+	 * `#page=3`), so that position reaches penDF's setEphemeralState().
+	 */
+	private takeOver(leaf: WorkspaceLeaf): void {
+		if (!this.settings.openPdfsInPenDF || this.takingOver.has(leaf)) return;
+		const vs = leaf.getViewState();
+		const path = (vs.state as { file?: unknown } | undefined)?.file;
+		if (vs.type !== "pdf" || typeof path !== "string" || !path.toLowerCase().endsWith(".pdf")) return;
+		if (this.keepCore.get(leaf) === path) return;
+		this.keepCore.delete(leaf);
+		this.takingOver.add(leaf);
+		log.info(`opening ${path} in penDF instead of the core PDF viewer`);
+		leaf
+			.setViewState({ type: VIEW_TYPE, state: { file: path }, active: vs.active ?? true })
+			.catch((e) => log.error(`switching ${path} to penDF failed`, e))
+			.finally(() => this.takingOver.delete(leaf));
 	}
 
 	trackStore(s: SidecarStore): void {

@@ -4,7 +4,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 ## 준비
 
-1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pendf`를 설치한다(`0.1.0` 릴리스가 생긴 뒤). 릴리스가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pendf/`에 복사한다.
+1. BRAT로 `dhwan0112/pendf`를 설치한다(최신 릴리스).
 2. `pnpm fixtures`로 만든 `fixtures/out/*.pdf`를 볼트의 `pendf-fixtures/` 폴더에 넣는다.
 3. 설정 → penDF에서 **Debug overlay**를 켠다. 펜 프로브 항목을 확인할 때는 **Pen probe**도 켠다.
 4. 문제가 생기면 명령 팔레트 → **penDF: Export log to vault**를 실행해 만들어지는 `pendf-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
@@ -23,7 +23,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |
-| 1-1 | 파일 목록에서 `a4.pdf`를 길게 눌러 **Open in penDF** | 페이지가 렌더링되고 툴바에 `/ 3`이 보인다 | 0-1, 0-2 |
+| 1-1 | 파일 목록에서 `a4.pdf`를 탭한다(0.1.5부터 기본으로 penDF가 연다) | penDF 툴바가 보이고 `/ 3`이 나온다. 코어 뷰어가 잠깐 보였다가 바뀔 수 있다 | 0-1, 0-2. 코어 뷰어로 남으면 설정 → penDF → Open PDFs in penDF |
 | 1-2 | `long-300.pdf`를 열고 손가락으로 끝까지 빠르게 스크롤, 중간중간 핀치 줌(50%~300%), 다시 처음으로 | 앱이 종료되지 않는다. HUD의 `canvases`가 대략 10~20 사이를 유지한다 | 캔버스 메모리. `PdfView.ts`의 `maxCanvasPixels`(모바일 2^23)를 낮춘다 |
 | 1-3 | 1-2 직후 HUD의 `renderMs`와 체감 속도를 기록한다 | 한 페이지가 1초 안에 그려진다 | 0-2 폴백 여부 |
 | 1-4 | `korean-cmap.pdf`(글꼴 미포함, CMap 필요)와 `korean-embedded.pdf`를 연다 | 두 파일 모두 한글이 깨지지 않는다 | CMap 임베드(`pendf:assets`) 또는 iOS의 CJK 대체 글꼴 |

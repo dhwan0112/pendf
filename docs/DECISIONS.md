@@ -126,3 +126,10 @@
 - **검증:** 테스트 122개, 데스크톱 하네스 21/21(`docs/evidence/harness-2026-11-14-0.1.2.json`), Obsidian 1.15에서 선언형 설정 탭 렌더링 확인.
 - **0.1.3 후속:** 스캐너가 0.1.2에서 두 건을 더 찾았다(로컬 0.5.1 규칙으로는 재현되지 않음, 스캐너의 규칙이 더 새로움). `setControlValue`의 `this.update()`(1.13 API)를 `requireApiVersion("1.13.0")`로 감쌌고, `display()`의 `forEach` 화살표가 체인 결과를 돌려주던 것을 `for…of`로 바꿨다.
 - **0.1.4 후속:** 스캐너가 `requireApiVersion("1.13.0") && this.update()`도 같은 오류로 보고했다. GitHub의 규칙 문서는 `&&` 오른쪽과 `setControlValue` 재정의 안을 허용한다고 하므로, 스캐너가 그보다 오래된 규칙을 쓰는 것으로 보인다. 추측으로 다른 가드 형태를 시도하는 대신 `update()` 호출을 없앴다. 색 이름을 바꾸면 기본 색 드롭다운에는 설정 탭을 다시 열 때 반영된다.
+
+## D-23 PDF를 기본으로 penDF에서 연다 (2026-11-14, 사용자 결정, 0.1.5)
+- **결정:** 설정 "Open PDFs in penDF"(기본 켜짐)가 켜져 있으면, Obsidian이 PDF를 코어 뷰어로 연 탭을 곧바로 penDF 뷰로 바꾼다(`active-leaf-change`·`file-open` 때 `leaf.getViewState()`가 `pdf`이면 `leaf.setViewState()`). 파일 메뉴에는 "Open in Obsidian's PDF viewer"가 생기고, 그렇게 연 탭은 그 파일인 동안 바꾸지 않는다. 설정을 끄면 예전처럼 "Open in penDF"가 나온다.
+- **근거:** 사용자가 매번 따로 여는 것을 원하지 않았다. 지시문의 비목표("코어 PDF 확장 가로채기")를 사용자가 직접 뒤집은 것이다. 공개 API로는 `.pdf` 확장자를 다시 등록할 수 없으므로(코어가 등록해 둠), 코어 뷰어를 패치하거나 DOM을 건드리지 않고 공개 `WorkspaceLeaf` API로 탭의 뷰만 바꾼다. 비활성 탭(지연 로드)은 활성화될 때 바뀐다.
+- **한계:** (1) 노트 안의 PDF 임베드와 호버 미리보기는 코어 뷰어 그대로다(임베드 등록은 비공개 API). (2) `[[file.pdf#page=3]]` 같은 페이지 링크는 마지막 위치로 열린다. Obsidian은 `{subpath:"#page=3"}`를 탭 전환이 끝나기 전(약 260 ms 뒤) 아직 코어 뷰인 탭에 넘기고, 코어 뷰는 그것을 상태로 내놓지 않는다(`getState()`는 `{file}`, `getEphemeralState()`는 `{}`)고 실측했다. penDF 뷰는 `subpath`의 `page=N`을 이해하므로, Phase 4(링크)에서 다시 다룬다. (3) 전환하는 동안 코어 뷰어가 잠깐 보이고 코어의 pdf.js가 로드된다.
+- **검증:** 하네스 `open-by-default`(일반 열기 → penDF, 페이지 링크 → penDF, 코어로 열기 유지, 설정 끔 → 코어). 기존 검사들은 코어 뷰어가 필요해 하네스가 시작할 때 이 설정을 끈다.
+- **참고:** 같은 날 `highlight-ground-truth`의 끝 오차가 -0.32~0.3 pt에서 1.0~1.4 pt로 바뀌었다. 0.1.2 릴리스 파일로도 같은 값이 나와 코드가 아니라 환경(Obsidian 창 1536×912, 배율 125%에서 page-width 배율이 달라짐) 때문이다. 전체 실행에서는 3.21 pt로 기준(3 pt)을 넘는데, 코어 PDF 뷰어를 먼저 연 뒤(`coexistence-core-first`)에만 그렇고 단독 실행은 통과한다. 0.1.2 빌드로도 같은 순서에서 똑같이 3.21 pt가 나와 이번 변경과는 무관한 기존 현상이다(BLOCKERS B-06).

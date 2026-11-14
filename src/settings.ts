@@ -9,6 +9,8 @@ export interface HighlightColor {
 export interface PenDFSettings {
 	colors: HighlightColor[];
 	defaultColor: number;
+	/** open every PDF in penDF instead of Obsidian's PDF viewer */
+	openPdfsInPenDF: boolean;
 	/** invert page colors (canvas only) — for dark mode reading */
 	invertPages: boolean;
 	debugHud: boolean;
@@ -26,6 +28,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 		{ name: "Pink", hex: "#ff6680" },
 	],
 	defaultColor: 0,
+	openPdfsInPenDF: true,
 	invertPages: false,
 	debugHud: false,
 	penProbe: false,
@@ -35,12 +38,13 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 
 export const MAX_POSITIONS = 300;
 
-type BoolKey = "invertPages" | "rememberPosition" | "debugHud" | "penProbe";
+type BoolKey = "openPdfsInPenDF" | "invertPages" | "rememberPosition" | "debugHud" | "penProbe";
 
 const TEXT = {
 	highlights: "Highlights",
 	defaultColor: ["Default color", "Used by the highlight command and keyboard shortcut."],
 	viewer: "Viewer",
+	openPdfsInPenDF: ["Open PDFs in penDF", "Use penDF instead of Obsidian's PDF viewer whenever a PDF is opened. Embeds in notes and hover previews still use Obsidian's viewer."],
 	invertPages: ["Invert page colors", "Dark reading mode: inverts the rendered pages (not your highlights)."],
 	rememberPosition: ["Remember position", "Reopen each PDF at the page and zoom you left it."],
 	diagnostics: "Diagnostics",
@@ -82,7 +86,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 					},
 				],
 			},
-			{ type: "group", heading: TEXT.viewer, items: [toggle("invertPages"), toggle("rememberPosition")] },
+			{ type: "group", heading: TEXT.viewer, items: [toggle("openPdfsInPenDF"), toggle("invertPages"), toggle("rememberPosition")] },
 			{ type: "group", heading: TEXT.diagnostics, items: [toggle("debugHud"), toggle("penProbe")] },
 		];
 	}
@@ -151,6 +155,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 				.addToggle((t) => t.setValue(s[key]).onChange((v) => set(key, v)));
 		};
 		new Setting(containerEl).setName(TEXT.viewer).setHeading();
+		toggle("openPdfsInPenDF");
 		toggle("invertPages");
 		toggle("rememberPosition");
 		new Setting(containerEl).setName(TEXT.diagnostics).setHeading();

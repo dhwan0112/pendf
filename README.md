@@ -29,8 +29,12 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 
 ## Use
 
-- File menu on a PDF → **Open in penDF**
+- Just open a PDF: with **Settings → penDF → Open PDFs in penDF** (on by default) every PDF
+  you open goes to penDF. The file menu offers **Open in Obsidian's PDF viewer** when you
+  need the built-in one; with the setting off it offers **Open in penDF** instead.
 - Command palette → **penDF: Open current PDF** / **Open a PDF…**
+- Limits: PDFs embedded in notes and hover previews still use Obsidian's viewer, and a
+  link to a page (`[[file.pdf#page=3]]`) opens penDF at your last position, not that page.
 - Select text → pick a color from the palette that appears. Tap a highlight to
   recolor, copy or delete it. ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z undo/redo.
 - ⌘/Ctrl+F searches.

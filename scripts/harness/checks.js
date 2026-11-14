@@ -103,6 +103,8 @@
 			window.Worker = orig.Worker;
 			(async () => {
 				await app.plugins.disablePlugin(ID).catch(() => {});
+				// the plugin's unload flushes pending settings asynchronously; let it land before deleting data.json
+				await new Promise((r) => setTimeout(r, 1500));
 				const ad = app.vault.adapter;
 				const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
 				if (await ad.exists(dataJson)) await ad.remove(dataJson);
@@ -258,6 +260,8 @@
 			await app.plugins.disablePlugin(ID);
 			if (await ad.exists(dataJson)) await ad.remove(dataJson);
 			for (const f of (await ad.list(FIX)).files) if (/\.pendf\.json(\.tmp)?$/.test(f)) await ad.remove(f);
+			// the coexistence checks need Obsidian's own PDF viewer; "open-by-default" turns this on itself
+			await ad.write(dataJson, JSON.stringify({ openPdfsInPenDF: false }));
 			await reloadPlugin();
 
 			await check("fixtures-render", async () => {
@@ -315,6 +319,46 @@
 				return { jumped, external: opened.slice(), tocJump, ok: (jumped === 2 || jumped === 3) && opened.some((u) => u.startsWith("https://example.com")) && tocJump === 92 };
 			});
 
+			await check("open-by-default", async () => {
+				const pl = P();
+				const f = file("a4.pdf");
+				const ws = app.workspace;
+				pl.settings.openPdfsInPenDF = true;
+				try {
+					// 1. a plain open (file explorer, quick switcher) lands in penDF
+					const l1 = ws.getLeaf("tab");
+					await l1.openFile(f, { active: true });
+					await waitFor(() => l1.view.getViewType() === VIEW, 10000);
+					// 2. a link with a page lands in penDF on that page
+					await ws.openLinkText(FIX + "a4.pdf#page=2", "", "tab");
+					const l2 = ws.getMostRecentLeaf();
+					await waitFor(() => l2.view.getViewType() === VIEW && l2.view.debugSession && l2.view.debugSession.ready, 20000);
+					await waitFor(() => l2.view.debugSession.viewer.currentPageNumber === 2, 5000).catch(() => {});
+					const linkPage = l2.view.debugSession.viewer.currentPageNumber;
+					// 3. "Open in Obsidian's PDF viewer" stays in the core viewer
+					await pl.openInCoreViewer(f);
+					const l3 = ws.getMostRecentLeaf();
+					await sleep(1000);
+					const keptCore = l3.view.getViewType();
+					// 4. with the setting off, Obsidian's viewer is used again
+					pl.settings.openPdfsInPenDF = false;
+					const l4 = ws.getLeaf("tab");
+					await l4.openFile(f, { active: true });
+					await sleep(1000);
+					const offType = l4.view.getViewType();
+					return {
+						plainOpen: l1.view.getViewType(),
+						linkPage,
+						keptCore,
+						offType,
+						// known limitation (D-23): Obsidian hands "#page=2" to the core viewer before the switch
+						// finishes and the core viewer does not expose it, so linkPage is informational
+						ok: l1.view.getViewType() === VIEW && l2.view.getViewType() === VIEW && keptCore === "pdf" && offType === "pdf",
+					};
+				} finally {
+					pl.settings.openPdfsInPenDF = false;
+				}
+			});
 			await check("state-restore", async () => {
 				const { leaf, v } = await openPenDF("a4.pdf");
 				v.debugSession.viewer.currentScaleValue = "1.5";
