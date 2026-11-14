@@ -1,6 +1,6 @@
 # REPORT — PDF+++ Phase 1(뷰어와 공통 기반) + Phase 2(하이라이트)
 
-세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pdf-ppp`(git init만 하고 원격은 없음, B-02).
+세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pdf-ppp`, 원격은 https://github.com/dhwan0112/pdf_ppp (2026-11-14 생성, D-18).
 개발 환경: Windows 11, Obsidian 1.15.1(Electron 37 / Chromium 138), Node 22, pnpm 10.
 (하네스 결과 JSON의 `obsidian: 1.10.6`은 user agent에 찍히는 **설치 파일** 버전이다. 앱 버전은 1.15.1이다.)
 
@@ -88,7 +88,7 @@
 ## 다음 세션 권장 작업
 
 1. iPad에서 `DEVICE_CHECKLIST` 0–2절을 진행하고 로그와 펜 프로브 JSON을 가져온다. 결과에 따라 `maxCanvasPixels`, 팔레트 위치, touch-action을 조정한다.
-2. `gh repo create dhwan0112/pdf-ppp --private --source . --push` 후 `0.1.0` 태그를 단다. draft 릴리스를 확인하고 BRAT로 설치한다.
+2. 저장소 `dhwan0112/pdf_ppp`(공개, D-18)에 `0.1.0` 태그를 단다. draft 릴리스를 확인하고 BRAT로 설치한다.
 3. Obsidian을 재시작한 뒤 하네스를 한 번 돌린다.
 4. Phase 3(텍스트 주석): 스키마의 `note`는 이미 정의되어 있다. 하이라이트 메뉴에 "메모"를 추가하고, 페이지별 목록 패널(`ItemView`)과 마크다운 렌더링(`MarkdownRenderer`, 공개 API)을 만든다.
 5. pdf.js를 올릴 때: `pnpm add pdfjs-dist@<정확한 버전>`, `pnpm build`. 전역 변환 규칙이나 ponyfill이 소스 모양 변화를 만나면 빌드가 실패하므로 그때 규칙을 고친다. 엔진 검사 목록도 다시 확인한다.

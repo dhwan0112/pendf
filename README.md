@@ -1,4 +1,4 @@
-# PDF+++ (working name)
+# PDF+++
 
 A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
@@ -19,6 +19,13 @@ Phase 1 (viewer) and Phase 2 (highlights) of six. See [docs/REPORT.md](docs/REPO
 | 1 | Viewer: continuous scroll, virtualized pages, pinch/⌘-wheel zoom, fit width, rotation, text selection, search, internal/external links, per-file position memory, dark (inverted) pages | done (desktop-verified, iPad checklist pending) |
 | 2 | Highlights: 4 colors, multi-line / multi-column / cross-page, tap to recolor / copy / delete, undo/redo | done (desktop-verified, iPad checklist pending) |
 | 3–6 | Notes, links, bookmarks, handwriting | schema reserved, not implemented |
+
+## Install
+
+Not in the community plugin list yet. With [BRAT](https://github.com/TfTHacker/obsidian42-brat):
+add `dhwan0112/pdf_ppp`. Or copy `main.js`, `manifest.json` and `styles.css`
+from a [release](https://github.com/dhwan0112/pdf_ppp/releases) into
+`<vault>/.obsidian/plugins/pdf-ppp/`.
 
 ## Use
 

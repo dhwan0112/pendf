@@ -12,6 +12,7 @@
 - **결정:** `git init -b main`만 하고 원격은 설정하지 않았다. GitHub에 `dhwan0112/pdf-ppp`가 아직 없다.
 - **근거:** 지시문이 "원격 설정은 남겨둘 것"이라고 했다. 저장소를 묻지 않고 새로 만들지 않는다는 기존 원칙도 있다.
 - **되돌리기:** `gh repo create dhwan0112/pdf-ppp --private --source . --push`.
+- **갱신(2026-11-14):** 사용자 결정으로 공개 저장소 `dhwan0112/pdf_ppp`를 만들고 push했다(D-18).
 
 ## D-03 pdfjs-dist 6.5.438, modern 빌드 + 빌드 시 ponyfill 치환
 - **결정:** 최신 안정판을 정확한 버전으로 고정한다. **modern 빌드**를 번들하고, Chromium 138이나 iPadOS WebKit에 없을 수 있는 최신 내장 기능의 호출 지점을 빌드 시 모듈 지역 함수로 바꾼다(`scripts/pdfjs-ponyfill.mjs`). 소스는 `"pdfjs-dist"`와 `"pdfjs-dist/web/pdf_viewer.mjs"`만 import할 수 있다. esbuild 플러그인이 둘을 변환된 modern 파일로 연결하고, 그 밖의 경로는 막는다.
@@ -62,7 +63,7 @@
 - **근거:** iOS에서는 버튼을 탭하는 순간 선택이 사라질 수 있다.
 
 ## D-12 매니페스트
-- **결정:** id `pdf-ppp`, 이름 `PDF+++`(가칭), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
+- **결정:** id `pdf-ppp`, 이름 `PDF+++`(D-18에서 확정), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
 - **근거:** 기존 플러그인(Wikiwurzel 등)과 같은 표기. 쓰는 API(`FileView`, `Scope`, `Platform`, `setIcon`)는 1.5 이전부터 공개되어 있다.
 
 ## D-13 내장 객체 무변경을 검증 기준으로 삼음
@@ -97,3 +98,8 @@
 - **결정:** `scripts/obsidian-harness.mjs`가 Obsidian CLI(`obsidian vault=… eval`)로 실제 Obsidian 안에서 Phase 1·2 완료 기준을 검사한다. 검사 대상은 SciWiki 테스트 볼트뿐이다. 하네스는 매번 자신이 연 탭, 심(shim), 플러그인 활성화, 사이드카, `data.json`을 되돌린다. 검사마다 150초 제한이 있고, Node 쪽이 중단돼도(SIGINT/SIGTERM) 정리 코드가 돈다.
 - **주의:** 하네스 파일은 플러그인 코드가 아니다. 플러그인을 다시 로드하려고 `app.plugins`를 쓰므로 check-standalone 검사 대상(`src/`, `main.js`)에서 빠져 있다.
 - **환경 제약:** 창이 숨어 있을 때의 Chromium 동작(rAF 정지, scroll 이벤트 없음, intensive timer throttling)은 INVESTIGATION 11절에 정리했다.
+
+## D-18 이름 `PDF+++`, 저장소 `pdf_ppp`, id `pdf-ppp` (2026-11-14, 사용자 결정)
+- **결정:** 표시 이름은 `PDF+++`로 확정한다. GitHub 저장소는 공개 `dhwan0112/pdf_ppp`다. plugin id와 볼트 안 폴더 이름은 `pdf-ppp`로 둔다.
+- **근거:** GitHub 저장소 이름에는 `+`를 쓸 수 없다(`pdf_+++`는 `pdf_---`가 된다). Obsidian 커뮤니티 목록은 id에 소문자·숫자·하이픈을 권장하고, id를 바꾸면 이미 설치한 볼트의 설정(`data.json`) 위치가 바뀐다.
+- **되돌리기:** `gh repo rename`. id를 바꾸려면 `manifest.json`, `install-dev.mjs`, 하네스, 문서의 `pdf-ppp`를 함께 고친다.

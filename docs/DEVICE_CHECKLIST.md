@@ -4,7 +4,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 ## 준비
 
-1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pdf-ppp`를 설치한다(원격 저장소와 릴리스가 생긴 뒤). 저장소가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pdf-ppp/`에 복사한다.
+1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pdf_ppp`를 설치한다(`0.1.0` 릴리스가 생긴 뒤). 릴리스가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pdf-ppp/`에 복사한다.
 2. `pnpm fixtures`로 만든 `fixtures/out/*.pdf`를 볼트의 `pdf-ppp-fixtures/` 폴더에 넣는다.
 3. 설정 → PDF+++에서 **Debug overlay**를 켠다. 펜 프로브 항목을 확인할 때는 **Pen probe**도 켠다.
 4. 문제가 생기면 명령 팔레트 → **PDF+++: Export log to vault**를 실행해 만들어지는 `pdf-ppp-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
