@@ -108,7 +108,7 @@
 				if (await ad.exists(dataJson)) await ad.remove(dataJson);
 				for (const p of createdPaths) if (await ad.exists(p)) await ad.remove(p);
 				const listing = await ad.list(FIX).catch(() => ({ files: [] }));
-				for (const f of listing.files) if (/\\.pendf\\.json(\.tmp)?$/.test(f) || /-renamed\.pdf$/.test(f)) await ad.remove(f);
+				for (const f of listing.files) if (/\.pendf\.json(\.tmp)?$/.test(f) || /-renamed\.pdf$/.test(f)) await ad.remove(f);
 			})().catch((e) => console.error(e));
 		};
 
@@ -257,7 +257,7 @@
 			const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
 			await app.plugins.disablePlugin(ID);
 			if (await ad.exists(dataJson)) await ad.remove(dataJson);
-			for (const f of (await ad.list(FIX)).files) if (/\\.pendf\\.json(\.tmp)?$/.test(f)) await ad.remove(f);
+			for (const f of (await ad.list(FIX)).files) if (/\.pendf\.json(\.tmp)?$/.test(f)) await ad.remove(f);
 			await reloadPlugin();
 
 			await check("fixtures-render", async () => {
