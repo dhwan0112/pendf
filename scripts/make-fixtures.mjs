@@ -14,7 +14,8 @@
 //   korean-embedded.pdf  Korean text in an embedded subset font (needs a Hangul
 //                        TTF/OTF; auto-detected on Windows/Ubuntu/macOS)
 //   links.pdf            internal GoTo links between pages + one URI link
-//   long-300.pdf         300 pages, page 1 = table of contents with links
+//   long-300.pdf         300 pages, page 1 = table of contents with links;
+//                        document outline: 30 chapters × 2 sections (chapter 30 via a named destination)
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -322,6 +323,38 @@ async function links() {
 	await save(doc, "links.pdf");
 }
 
+/**
+ * Document outline (the PDF's own bookmarks). entries: [{ title, dest, children? }]
+ * where dest is a PDFPage (explicit destination) or a string (named destination).
+ */
+function addOutline(doc, entries) {
+	const ctx = doc.context;
+	const destOf = (d) => (typeof d === "string" ? PDFName.of(d) : ctx.obj([d.ref, "XYZ", null, null, null]));
+	const build = (list, parentRef) => {
+		const refs = list.map(() => ctx.nextRef());
+		let total = 0;
+		list.forEach((e, i) => {
+			const dict = { Title: PDFHexString.fromText(e.title), Parent: parentRef, Dest: destOf(e.dest) };
+			if (i > 0) dict.Prev = refs[i - 1];
+			if (i < list.length - 1) dict.Next = refs[i + 1];
+			if (e.children?.length) {
+				const sub = build(e.children, refs[i]);
+				dict.First = sub.refs[0];
+				dict.Last = sub.refs[sub.refs.length - 1];
+				dict.Count = -sub.total; // closed by default
+				total += sub.total;
+			}
+			ctx.assign(refs[i], ctx.obj(dict));
+			total += 1;
+		});
+		return { refs, total };
+	};
+	const rootRef = ctx.nextRef();
+	const top = build(entries, rootRef);
+	ctx.assign(rootRef, ctx.obj({ Type: "Outlines", First: top.refs[0], Last: top.refs[top.refs.length - 1], Count: top.total }));
+	doc.catalog.set(PDFName.of("Outlines"), rootRef);
+}
+
 async function long300() {
 	const doc = await newDoc("300-page fixture");
 	const helv = await doc.embedFont(StandardFonts.Helvetica);
@@ -350,6 +383,21 @@ async function long300() {
 		toc.drawText(`Chapter ${k + 1} … p. ${target}`, { x, y, size: 12, font: helv, color: rgb(0.1, 0.3, 0.9) });
 		addLink(doc, toc, [x - 2, y - 4, x + 180, y + 14], goTo(doc, pages[target - 1]));
 	}
+	// outline: chapter k starts on page 10k-8 (k ≥ 2; chapter 1 = page 2), sections a few pages in
+	const chapters = [];
+	for (let k = 1; k <= 30; k++) {
+		const start = Math.min(300, (k - 1) * 10 + 2);
+		chapters.push({
+			title: `Chapter ${k}`,
+			dest: k === 30 ? "chapter-30" : pages[start - 1],
+			children: [
+				{ title: `${k}.1 Introduction`, dest: pages[Math.min(299, start)] },
+				{ title: `${k}.2 Results`, dest: pages[Math.min(299, start + 4)] },
+			],
+		});
+	}
+	doc.catalog.set(PDFName.of("Dests"), doc.context.obj({ "chapter-30": doc.context.obj([pages[291].ref, "XYZ", null, null, null]) }));
+	addOutline(doc, chapters);
 	await save(doc, "long-300.pdf");
 }
 

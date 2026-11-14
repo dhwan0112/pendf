@@ -17,12 +17,16 @@ import {
 	type OpenedDocument,
 	workerMode,
 } from "../pdfjs";
-import { LayerManager } from "../layers";
+import { LayerManager, pageContentRect } from "../layers";
 import { HighlightController } from "../highlight/controller";
 import { NoteController } from "../notes/controller";
 import { noteAnchor } from "../notes/model";
 import type { Annotation } from "../store/schema";
 import { aliasFrom, buildSubpath, parseSubpath, type PdfTarget } from "../links/format";
+import { defaultBookmarkTitle, orderAtEnd, reorder, sectionFor, sortedBookmarks, type OutlineEntry } from "../bookmarks/model";
+import type { BookmarkAnnotation } from "../store/schema";
+import { uuid } from "../store/schema";
+import { promptText } from "../ui/prompt";
 import { SidecarStore } from "../store/sidecar";
 import { UndoStack } from "../store/undo";
 import { adapterFs } from "../store/obsidianFs";
@@ -52,6 +56,20 @@ interface Session {
 	undo: UndoStack | null;
 	ac: AbortController;
 	ready: boolean;
+	/** the PDF's own outline, resolved once on demand */
+	outline: Promise<OutlineNode[]> | null;
+}
+
+/** An entry of the PDF's outline (its own bookmarks). */
+export interface OutlineNode {
+	title: string;
+	/** pdf.js destination (name or explicit array) */
+	dest: string | unknown[] | null;
+	/** external URL instead of a destination */
+	url: string | null;
+	page: number | null;
+	depth: number;
+	items: OutlineNode[];
 }
 
 export class PenDFView extends FileView {
@@ -183,6 +201,7 @@ export class PenDFView extends FileView {
 		tb.createDiv({ cls: "pendf-spacer" });
 		const tools = tb.createDiv({ cls: "pendf-group" });
 		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
+		this.button(tools, "bookmark-plus", "Bookmark this spot", () => void this.addBookmark());
 		this.noteButton = this.button(tools, "message-square-plus", "Add note (then tap the page)", () => {
 			const n = this.session?.notes;
 			if (n) n.setPlacing(!n.placing);
@@ -191,7 +210,7 @@ export class PenDFView extends FileView {
 		this.button(tools, "redo-2", "Redo", () => this.redo());
 		this.button(tools, "search", "Find in PDF", () => this.openSearch());
 		this.button(tools, "link", "Copy link to this page", () => this.copyPageLink());
-		this.button(tools, "list", "Annotations", () => void this.plugin.showAnnotationsPanel());
+		this.button(tools, "list", "Outline, bookmarks and annotations", () => void this.plugin.showAnnotationsPanel());
 	}
 
 	private buildSearchBar(bar: HTMLElement): void {
@@ -308,6 +327,7 @@ export class PenDFView extends FileView {
 			undo: null,
 			ac,
 			ready: false,
+			outline: null,
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -436,6 +456,144 @@ export class PenDFView extends FileView {
 			return;
 		}
 		if (nav.page) this.goToPage(nav.page);
+	}
+
+	// --------------------------------------------------- outline & bookmarks
+
+	/** The PDF's own outline with page numbers (empty if it has none). */
+	outline(): Promise<OutlineNode[]> {
+		const s = this.session;
+		if (!s) return Promise.resolve([]);
+		s.outline ??= this.loadOutline(s);
+		return s.outline;
+	}
+
+	private async loadOutline(s: Session): Promise<OutlineNode[]> {
+		const doc = s.opened.doc;
+		let raw: Awaited<ReturnType<typeof doc.getOutline>> | null = null;
+		try {
+			raw = await doc.getOutline();
+		} catch (e) {
+			log.warn("could not read the outline", e);
+		}
+		if (!raw) return [];
+		const pageOf = async (dest: unknown): Promise<number | null> => {
+			try {
+				const explicit = typeof dest === "string" ? await doc.getDestination(dest) : dest;
+				if (!Array.isArray(explicit) || explicit.length === 0) return null;
+				const ref: unknown = explicit[0];
+				if (typeof ref === "number") return ref + 1;
+				if (ref && typeof ref === "object") return (await doc.getPageIndex(ref as Parameters<typeof doc.getPageIndex>[0])) + 1;
+			} catch {
+				// unresolvable destination: listed without a page
+			}
+			return null;
+		};
+		type Raw = { title: string; dest: string | unknown[] | null; url: string | null; items: Raw[] };
+		const walk = async (items: Raw[], depth: number): Promise<OutlineNode[]> =>
+			Promise.all(
+				items.map(async (it) => ({
+					title: it.title,
+					dest: it.dest ?? null,
+					url: it.url ?? null,
+					page: it.dest ? await pageOf(it.dest) : null,
+					depth,
+					items: await walk(it.items ?? [], depth + 1),
+				})),
+			);
+		return walk(raw, 0);
+	}
+
+	goToOutline(node: OutlineNode): void {
+		const s = this.session;
+		if (!s?.ready) return;
+		if (node.dest) void s.linkService.goToDestination(node.dest);
+		else if (node.url) window.open(node.url, "_blank", "noopener");
+	}
+
+	bookmarks(): BookmarkAnnotation[] {
+		return sortedBookmarks(this.annotations());
+	}
+
+	/** PDF position at the top of the view: page and y (a little below the top edge). */
+	topPosition(): { page: number; y: number } | null {
+		const s = this.session;
+		if (!s?.ready) return null;
+		const cr = this.container.getBoundingClientRect();
+		const x = cr.left + cr.width / 2;
+		for (const dy of [16, 48, 96]) {
+			const pageDiv = this.container.ownerDocument
+				.elementsFromPoint(x, cr.top + dy)
+				.map((el) => el.closest<HTMLElement>(".page[data-page-number]"))
+				.find((el) => !!el && this.container.contains(el));
+			if (!pageDiv) continue;
+			const page = Number(pageDiv.dataset.pageNumber);
+			const geom = s.layers.geometry(page);
+			if (!geom) continue;
+			const pr = pageContentRect(pageDiv);
+			const v = geom.clientToView(x, Math.max(cr.top + dy, pr.top), pr);
+			const [, y] = geom.toPdf(v[0], v[1]);
+			return { page, y: Math.round(y * 10) / 10 };
+		}
+		const page = s.viewer.currentPageNumber;
+		const geom = s.layers.geometry(page);
+		return { page, y: geom ? geom.viewBox[3] : 0 };
+	}
+
+	/** Bookmark the top of the view; asks for a title unless one is given. */
+	async addBookmark(title?: string): Promise<string | null> {
+		const s = this.session;
+		const store = s?.store;
+		if (!s || !store || !s.undo) return null;
+		if (!store.writable) {
+			new Notice("penDF: annotations for this PDF are read-only (see the banner).");
+			return null;
+		}
+		const pos = this.topPosition();
+		if (!pos) return null;
+		const outline = await this.outline();
+		const flat: OutlineEntry[] = [];
+		const flatten = (nodes: OutlineNode[]) => nodes.forEach((n) => (flat.push({ title: n.title, page: n.page, depth: n.depth }), flatten(n.items)));
+		flatten(outline);
+		const suggested = defaultBookmarkTitle(pos.page, sectionFor(flat, pos.page));
+		const name = title ?? (await promptText(this.app, "Bookmark this spot", suggested, "Add"));
+		if (name === null || this.session !== s || !s.undo) return null;
+		const now = Date.now();
+		const b: BookmarkAnnotation = { id: uuid(), type: "bookmark", page: pos.page, createdAt: now, updatedAt: now, deleted: false, y: pos.y, title: name, order: orderAtEnd(this.bookmarks()) };
+		s.undo.record("bookmark", [b.id], () => store.upsert(b));
+		log.info(`bookmark on page ${b.page}`);
+		return b.id;
+	}
+
+	async renameBookmark(b: BookmarkAnnotation, title?: string): Promise<void> {
+		const name = title ?? (await promptText(this.app, "Rename bookmark", b.title));
+		const s = this.session;
+		const cur = s?.store?.get(b.id);
+		if (name === null || !s?.undo || !s.store?.writable || !cur || cur.type !== "bookmark" || cur.title === name) return;
+		const store = s.store;
+		s.undo.record("rename bookmark", [b.id], () => store.upsert({ ...cur, title: name }));
+	}
+
+	/** Move a bookmark to position `to` in the list (0-based). */
+	moveBookmark(id: string, to: number): void {
+		const s = this.session;
+		const store = s?.store;
+		if (!s?.undo || !store?.writable) return;
+		const changes = reorder(this.bookmarks(), id, to);
+		if (changes.size === 0) return;
+		s.undo.record("move bookmark", [...changes.keys()], () => {
+			for (const [bid, order] of changes) {
+				const cur = store.get(bid);
+				if (cur && cur.type === "bookmark") store.upsert({ ...cur, order });
+			}
+		});
+	}
+
+	deleteBookmark(b: BookmarkAnnotation): void {
+		const s = this.session;
+		const store = s?.store;
+		if (!s?.undo || !store?.writable) return;
+		s.undo.record("delete bookmark", [b.id], () => store.remove(b.id));
 	}
 
 	/** Scroll a PDF-space box into view and flash it. */

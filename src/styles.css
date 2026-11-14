@@ -309,6 +309,135 @@
 	margin-bottom: 0;
 }
 
+/* panel tabs, outline, bookmarks (Phase 5) */
+.pendf-panel .pendf-panel-tabs {
+	display: flex;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-4-2);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	padding-bottom: var(--size-4-1);
+}
+.pendf-panel .pendf-panel-tab {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-size: var(--font-ui-small);
+	padding: var(--size-2-2) var(--size-4-2);
+	width: auto;
+	height: auto;
+}
+.pendf-panel .pendf-panel-tab.is-active {
+	color: var(--text-normal);
+	background: var(--background-modifier-active-hover);
+}
+.pendf-panel .pendf-outline-row {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-2-2);
+	padding: var(--size-2-2) var(--size-4-1);
+	padding-left: calc(var(--size-4-1) + var(--pendf-depth, 0) * var(--size-4-4));
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+.pendf-panel .pendf-outline-row:hover,
+.pendf-panel .pendf-outline-row:focus-visible {
+	background: var(--background-modifier-hover);
+}
+.pendf-panel .pendf-outline-toggle {
+	flex: none;
+	width: 16px;
+	display: inline-flex;
+	color: var(--icon-color);
+	transition: transform 0.1s;
+}
+.pendf-panel .pendf-outline-item.is-open > .pendf-outline-row .pendf-outline-toggle {
+	transform: rotate(90deg);
+}
+.pendf-panel .pendf-outline-toggle svg {
+	width: 14px;
+	height: 14px;
+}
+.pendf-panel .pendf-outline-children {
+	display: none;
+}
+.pendf-panel .pendf-outline-item.is-open > .pendf-outline-children {
+	display: block;
+}
+.pendf-panel .pendf-outline-title {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.pendf-panel .pendf-outline-page,
+.pendf-panel .pendf-bookmark-page {
+	flex: none;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+}
+.pendf-panel .pendf-panel-add {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	width: 100%;
+	margin-bottom: var(--size-4-2);
+	justify-content: center;
+}
+.pendf-panel .pendf-panel-add-icon {
+	display: inline-flex;
+}
+.pendf-panel .pendf-bookmark {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-1) 0;
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+.pendf-panel .pendf-bookmark-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-2-3);
+	padding: var(--size-2-3) var(--size-4-1);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+.pendf-panel .pendf-bookmark-main:hover,
+.pendf-panel .pendf-bookmark-main:focus-visible {
+	background: var(--background-modifier-hover);
+}
+.pendf-panel .pendf-bookmark-title {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+	font-size: var(--font-ui-small);
+}
+.pendf-panel .pendf-bookmark-actions {
+	display: flex;
+	flex: none;
+}
+.pendf-panel .pendf-bookmark-btn {
+	padding: var(--size-2-2);
+	width: auto;
+	height: auto;
+}
+.pendf-panel .pendf-bookmark-btn {
+	background: transparent;
+	box-shadow: none;
+}
+.pendf-panel .pendf-bookmark-btn.is-danger {
+	color: var(--text-error);
+}
+.pendf-panel .pendf-bookmark-btn:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+.pendf-prompt-input {
+	width: 100%;
+}
+
 /* ---- floating palette & highlight menu ---- */
 .pendf-root .pendf-floating {
 	position: absolute;

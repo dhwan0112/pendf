@@ -81,13 +81,17 @@ A highlight note is drawn at the top-right corner of the highlight's first quad 
 highlight in penDF also tombstones its notes. A note whose highlight no longer exists (for
 example after a merge) is kept and listed in the annotations panel, but has no marker on the page.
 
-### `bookmark` (Phase 5, reserved)
+### `bookmark` (Phase 5)
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `y` | number | PDF user-space y of the bookmarked position |
 | `title` | string | display name |
 | `order` | number | sort key (fractional values allowed) |
+
+Bookmarks are listed by `order`, then `createdAt`. Moving one sets its `order` between its new
+neighbours; when that gap gets too small, all bookmarks are renumbered 1, 2, 3…. The PDF's own
+outline is only read, never written.
 
 ### `ink` (Phase 6, reserved)
 

@@ -1,7 +1,7 @@
 import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile, type WorkspaceLeaf } from "obsidian";
 import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
-import { ANNOTATIONS_VIEW, AnnotationsView } from "./panel/AnnotationsView";
+import { ANNOTATIONS_VIEW, AnnotationsView, type PanelTab } from "./panel/AnnotationsView";
 import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type PenDFSettings } from "./settings";
 import { destroyWorker } from "./pdfjs";
 import { checkEngine, type EngineReport } from "./pdfjs/engine";
@@ -124,7 +124,10 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "zoom-out", name: "Zoom out", checkCallback: (c) => this.withView(c, (v) => v.zoom(-1)) });
 		this.addCommand({ id: "fit-width", name: "Fit width", checkCallback: (c) => this.withView(c, (v) => v.setScale("page-width")) });
 		this.addCommand({ id: "export-log", name: "Export log to vault", callback: () => void this.exportLog() });
-		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel() });
+		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel("annotations") });
+		this.addCommand({ id: "show-outline", name: "Show outline", callback: () => void this.showAnnotationsPanel("outline") });
+		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
+		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });
 		this.addCommand({ id: "copy-page-link", name: "Copy link to current page", checkCallback: (c) => this.withView(c, (v) => v.copyPageLink()) });
 		this.addCommand({
 			id: "copy-selection-link",
@@ -214,8 +217,8 @@ export default class PenDFPlugin extends Plugin {
 		await leaf.setViewState({ type: VIEW_TYPE, state: { file: file.path }, active: true });
 	}
 
-	/** Reveal the annotations panel in the right sidebar (creating it once). */
-	async showAnnotationsPanel(): Promise<void> {
+	/** Reveal the panel in the right sidebar (creating it once), optionally on a tab. */
+	async showAnnotationsPanel(tab?: PanelTab): Promise<void> {
 		const ws = this.app.workspace;
 		let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(ANNOTATIONS_VIEW)[0] ?? null;
 		if (!leaf) {
@@ -224,6 +227,7 @@ export default class PenDFPlugin extends Plugin {
 			await leaf.setViewState({ type: ANNOTATIONS_VIEW, active: true });
 		}
 		await ws.revealLeaf(leaf);
+		if (tab && leaf.view instanceof AnnotationsView) leaf.view.showTab(tab);
 	}
 
 	/** Open a PDF in Obsidian's own viewer, exempt from "Open PDFs in penDF". */

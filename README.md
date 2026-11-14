@@ -12,7 +12,7 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
 ## Status
 
-Phases 1–4 (viewer, highlights, notes, links) of six. See [docs/REPORT.md](docs/REPORT.md).
+Phases 1–5 (viewer, highlights, notes, links, bookmarks) of six. See [docs/REPORT.md](docs/REPORT.md).
 
 | Phase | Feature | State |
 | --- | --- | --- |
@@ -20,7 +20,8 @@ Phases 1–4 (viewer, highlights, notes, links) of six. See [docs/REPORT.md](doc
 | 2 | Highlights: 4 colors, multi-line / multi-column / cross-page, tap to recolor / copy / delete, undo/redo | done (desktop-verified, iPad checklist pending) |
 | 3 | Notes: on a highlight or a point of the page, Markdown (links, lists, tasks…), annotations panel by page | done (desktop-verified, iPad checklist pending) |
 | 4 | Links: copy a link to a highlight, note, selection or page; clicking it in a note opens penDF there (and the page in Obsidian's viewer without penDF) | done (desktop-verified, iPad checklist pending) |
-| 5–6 | Bookmarks, handwriting | schema reserved, not implemented |
+| 5 | Bookmarks: the PDF's outline, your own bookmarks (add, rename, reorder, copy link, delete) | done (desktop-verified, iPad checklist pending) |
+| 6 | Handwriting | schema reserved, not implemented |
 
 ## Install
 
@@ -46,6 +47,9 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Links: the link button in a highlight's menu, a note's popover, the selection palette or the
   toolbar (current page) copies an Obsidian link; paste it into any note. Clicking it opens penDF
   at that spot. Commands: **Copy link to current page**, **Copy link to selection**.
+- Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Bookmarks**
+  (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
+  rename, move up/down, copy link, delete) and **Annotations**.
 - ⌘/Ctrl+F searches.
 
 > Obsidian Sync users: enable *Settings → Sync → Sync all other types* so the

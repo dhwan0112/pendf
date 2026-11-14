@@ -921,6 +921,91 @@
 					pl.settings.openPdfsInPenDF = false;
 				}
 			});
+			await check("bookmarks", async () => {
+				// Phase 5: PDF outline (read-only) + user bookmarks; the PDF itself never changes
+				const f = file("long-300.pdf");
+				const hash = async () => {
+					const buf = await app.vault.readBinary(f);
+					const d = await crypto.subtle.digest("SHA-256", buf);
+					return Array.from(new Uint8Array(d).slice(0, 8), (b) => b.toString(16).padStart(2, "0")).join("");
+				};
+				const before = { hash: await hash(), mtime: f.stat.mtime, size: f.stat.size };
+				const { v, leaf } = await openPenDF("long-300.pdf");
+				const s = v.debugSession;
+				const res = {};
+				// 1. outline with resolved pages (explicit and named destinations)
+				const outline = await v.outline();
+				res.outline = { top: outline.length, first: [outline[0].title, outline[0].page], named: [outline[29].title, outline[29].page], child: [outline[3].items[1].title, outline[3].items[1].page] };
+				// 2. panel → Outline tab → tap "Chapter 30"
+				await P().showAnnotationsPanel("outline");
+				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
+				// let the sidebar finish opening: pdf.js re-fits the width on resize and returns to its last recorded spot
+				await sleep(1000);
+				const ch30 = await waitFor(() => [...panel.contentEl.querySelectorAll(".pendf-outline-row")].find((r) => r.textContent.startsWith("Chapter 30")), 8000);
+				ch30.click();
+				await waitFor(() => s.viewer.currentPageNumber === 292, 5000).catch(() => {});
+				res.outlineJump = s.viewer.currentPageNumber;
+				// 3. bookmarks: one through the prompt (suggested title), three with given titles
+				v.goToPage(46);
+				await sleep(400);
+				const pending = v.addBookmark();
+				const input = await waitFor(() => document.querySelector(".pendf-prompt-input"), 5000);
+				res.suggested = input.value;
+				input.closest(".modal").querySelector("button.mod-cta").click();
+				const viaPrompt = await pending;
+				const add = async (page, title) => {
+					v.goToPage(page);
+					await sleep(300);
+					return v.addBookmark(title);
+				};
+				const alpha = await add(50, "Alpha");
+				const beta = await add(120, "Beta");
+				const gamma = await add(7, "Gamma");
+				const titles = () => v.bookmarks().map((b) => b.title);
+				res.added = titles();
+				res.positions = v.bookmarks().map((b) => [b.page, Math.round(b.y)]);
+				v.moveBookmark(gamma, 0);
+				res.afterMove = titles();
+				await v.renameBookmark(v.bookmarks().find((b) => b.id === beta), "Beta 2");
+				v.deleteBookmark(v.bookmarks().find((b) => b.id === alpha));
+				res.afterRenameDelete = titles();
+				v.undo();
+				res.afterUndo = titles();
+				// 4. Bookmarks tab lists them in order; tapping one jumps there
+				panel.showTab("bookmarks");
+				await sleep(300);
+				res.panelRows = [...panel.contentEl.querySelectorAll(".pendf-bookmark-title")].map((e) => e.textContent);
+				[...panel.contentEl.querySelectorAll(".pendf-bookmark-main")].find((e) => e.textContent.startsWith("Beta 2")).click();
+				await waitFor(() => s.viewer.currentPageNumber === 120, 5000).catch(() => {});
+				res.bookmarkJump = s.viewer.currentPageNumber;
+				// 5. a copied link to a bookmark leads back to it
+				res.link = v.linkTo({ page: 50, id: alpha }, "Alpha");
+				v.goToPage(1);
+				await sleep(300);
+				v.setEphemeralState({ subpath: res.link.slice(res.link.indexOf("#"), res.link.indexOf("|")) });
+				await waitFor(() => s.viewer.currentPageNumber === 50, 5000).catch(() => {});
+				res.linkJump = s.viewer.currentPageNumber;
+				// 6. saved, reopened, PDF untouched
+				await s.store.flush();
+				leaf.detach();
+				const again = await openPenDF("long-300.pdf");
+				res.reopened = again.v.bookmarks().map((b) => b.title);
+				const after = { hash: await hash(), mtime: f.stat.mtime, size: f.stat.size };
+				res.pdfUnchanged = before.hash === after.hash && before.mtime === after.mtime && before.size === after.size;
+				res.ok =
+					res.outline.top === 30 && res.outline.first[1] === 2 && res.outline.named[1] === 292 && res.outline.child[1] === 37 &&
+					res.outlineJump === 292 &&
+					/^Page 46 — /.test(res.suggested) && !!viaPrompt &&
+					res.added.join() === [res.suggested, "Alpha", "Beta", "Gamma"].join() &&
+					res.afterMove[0] === "Gamma" &&
+					!res.afterRenameDelete.includes("Alpha") && res.afterRenameDelete.includes("Beta 2") &&
+					res.afterUndo.includes("Alpha") &&
+					res.panelRows.join() === res.afterUndo.join() &&
+					res.bookmarkJump === 120 && res.linkJump === 50 &&
+					res.reopened.join() === res.afterUndo.join() &&
+					res.pdfUnchanged;
+				return res;
+			});
 			await check("persist-restart-rename", async () => {
 				const before = (await ad.exists(FIX + "rotations.pdf.pendf.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.pendf.json"));
 				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;

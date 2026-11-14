@@ -155,3 +155,26 @@ f8f38b7 docs: REPORT for Phase 1-2
 
 - iPad: DEVICE_CHECKLIST 4-1 ~ 4-5. 특히 4-3(iOS 라이브 프리뷰에서 탭이 CodeMirror `mousedown`으로 오는지).
 - 다음: Phase 5 북마크(PDF 개요, 사용자 북마크).
+
+---
+
+# Phase 5 — 북마크 (2026-11-15, 0.4.0)
+
+## 완료 기준 대조
+
+| 기준(목표 문서 1.3) | 결과 | 근거 |
+| --- | --- | --- |
+| PDF 기존 개요 표시 | 완료 | 패널 Outline 탭, 쪽 번호, 이름 있는 목적지 |
+| 사용자 북마크 추가·이름 변경·정렬 | 완료 | Bookmarks 탭, 툴바, 명령 |
+| 북마크 이동과 링크 복사 동작 | 완료 | 하네스 `bookmarks` |
+| PDF 원본 무수정 | 완료 | 하네스가 작업 전후 SHA-256·mtime·크기 비교 |
+
+## 바뀐 것
+
+- `src/bookmarks/model.ts`, `src/ui/prompt.ts`, 뷰의 개요·북마크 메서드, 패널 탭. 명령 "Show outline", "Show bookmarks", "Bookmark this spot".
+- 검증: 단위 테스트 150개, lint 통과, 하네스 `bookmarks`·`notes`·`pdf-links`·`fixtures-render`·`unload-cleanup` 통과.
+
+## 남은 것
+
+- iPad: DEVICE_CHECKLIST 5-1 ~ 5-5.
+- 다음: Phase 6 필기. 펜 프로브 결과(iPad)가 아직 없어 입력 처리는 Pointer Events 표준 동작 기준으로 만들고, 실기기 결과로 조정한다.
