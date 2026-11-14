@@ -1,0 +1,248 @@
+/* ---- penDF view chrome ---- */
+.pendf-view {
+	display: flex;
+	flex-direction: column;
+	padding: 0 !important;
+	overflow: hidden !important;
+}
+.pendf-view .pendf-toolbar {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-1) var(--size-4-2);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	flex: 0 0 auto;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.pendf-view .pendf-group {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+.pendf-view .pendf-spacer {
+	flex: 1 1 auto;
+}
+.pendf-view .pendf-icon-btn {
+	padding: var(--size-4-1);
+	background: transparent;
+	box-shadow: none;
+	border: none;
+	color: var(--icon-color);
+}
+.pendf-view .pendf-page-input {
+	width: 3.5em;
+	text-align: right;
+	padding: 0 var(--size-4-1);
+	height: var(--input-height);
+}
+.pendf-view .pendf-page-count,
+.pendf-view .pendf-zoom-label,
+.pendf-view .pendf-search-count {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.pendf-view .pendf-zoom-label {
+	min-width: 3.2em;
+	text-align: center;
+}
+.pendf-view .pendf-searchbar {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-1) var(--size-4-2);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	flex: 0 0 auto;
+}
+.pendf-view .pendf-search-input {
+	flex: 1 1 auto;
+	min-width: 6em;
+}
+.pendf-view .pendf-banner {
+	padding: var(--size-4-2) var(--size-4-3);
+	background: rgba(var(--color-yellow-rgb), 0.15);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	flex: 0 0 auto;
+}
+.pendf-view .pendf-banner.is-error {
+	background: rgba(var(--color-red-rgb), 0.15);
+}
+.pendf-view .is-hidden {
+	display: none !important;
+}
+
+/* viewer area: pdf.js requires an absolutely positioned scroll container */
+.pendf-root {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+	background: var(--background-secondary);
+	--page-bg-color: #fff;
+}
+.pendf-root .pendf-container {
+	position: absolute;
+	inset: 0;
+	overflow: auto;
+	outline: none;
+	-webkit-overflow-scrolling: touch;
+}
+.pendf-root .pendf-loading {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	pointer-events: none;
+}
+.pendf-root .pdfViewer .page {
+	box-shadow: var(--shadow-s);
+}
+
+/* Obsidian sets `* { box-sizing: border-box }` globally; pdf.js sizes pages
+   and layers assuming content-box (the page border lies outside the canvas). */
+.pendf-root .pdfViewer,
+.pendf-root .pdfViewer *,
+.pendf-root .pdfViewer *::before,
+.pendf-root .pdfViewer *::after {
+	box-sizing: content-box;
+}
+
+/* dark reading mode: invert only the rendered page canvases */
+.pendf-root.pendf-invert .canvasWrapper {
+	filter: invert(1) hue-rotate(180deg);
+}
+
+/* ---- annotation layers ---- */
+.pendf-root .pendf-layer-host {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.pendf-root .pendf-layer-svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	mix-blend-mode: multiply;
+}
+.pendf-root.pendf-invert .pendf-layer-svg {
+	mix-blend-mode: screen;
+}
+.pendf-root .pendf-hl polygon {
+	fill-opacity: 0.4;
+}
+.pendf-root .pendf-hl.is-selected polygon {
+	fill-opacity: 0.6;
+	stroke: var(--interactive-accent);
+	stroke-width: 0.8;
+	vector-effect: non-scaling-stroke;
+}
+
+/* ---- floating palette & highlight menu ---- */
+.pendf-root .pendf-floating {
+	position: absolute;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	padding: var(--size-4-1);
+	background: var(--background-primary);
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-l);
+}
+.pendf-root .pendf-hl-menu-colors,
+.pendf-root .pendf-hl-menu-actions {
+	display: flex;
+	gap: var(--size-4-1);
+}
+.pendf-root .pendf-hl-menu-actions {
+	border-left: var(--border-width) solid var(--background-modifier-border);
+	padding-left: var(--size-4-1);
+}
+.pendf-root .pendf-swatch {
+	width: 30px;
+	height: 30px;
+	min-width: 30px;
+	padding: 0;
+	border-radius: 50%;
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	background: var(--pendf-swatch);
+	cursor: pointer;
+}
+.pendf-root .pendf-swatch.is-active {
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+.pendf-root .pendf-icon-btn {
+	padding: var(--size-4-1);
+	background: transparent;
+	box-shadow: none;
+	border: none;
+	color: var(--icon-color);
+	min-height: 30px;
+}
+.pendf-root .pendf-icon-btn.mod-warning {
+	color: var(--text-error);
+}
+
+/* ---- debug overlay ---- */
+.pendf-root .pendf-hud {
+	position: absolute;
+	right: 14px;
+	bottom: 8px;
+	z-index: 30;
+	padding: 6px 8px;
+	background: rgba(0, 0, 0, 0.72);
+	color: #fff;
+	font: 11px/1.35 var(--font-monospace);
+	white-space: pre;
+	border-radius: 6px;
+	pointer-events: none;
+}
+
+/* ---- pen probe ---- */
+.pendf-probe {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+}
+.pendf-probe .pendf-probe-bar {
+	display: flex;
+	gap: var(--size-4-2);
+	align-items: center;
+	flex-wrap: wrap;
+}
+.pendf-probe .pendf-probe-help {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+.pendf-probe .pendf-probe-scroller {
+	height: 45vh;
+	overflow: auto;
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+}
+.pendf-probe .pendf-probe-pad {
+	height: 200%;
+	position: relative;
+	background: repeating-linear-gradient(0deg, transparent 0 39px, var(--background-modifier-border) 39px 40px);
+	user-select: none;
+	-webkit-user-select: none;
+}
+.pendf-probe .pendf-probe-pad canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+	pointer-events: none;
+}
+.pendf-probe .pendf-probe-out {
+	font-size: 11px;
+	user-select: text;
+	-webkit-user-select: text;
+}

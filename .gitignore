@@ -1,9 +1,9 @@
 node_modules/
-main.js
-styles.css
-build-size.json
+/main.js
+/styles.css
+/build-size.json
 fixtures/out/
 *.log
 .DS_Store
-harness-result.json
-harness-run.log
+/harness-result.json
+/harness-run.log

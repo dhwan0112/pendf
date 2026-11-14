@@ -113,3 +113,4 @@
 - **결정:** plugin id `pendf`, 저장소 `dhwan0112/pendf`, 로컬 폴더 `C:\Users\denny\pendf`, 패키지 이름 `pendf`. 코드 안의 `ppp` 접두사도 바꿨다: 뷰 타입 `pendf-view`·`pendf-pen-probe`, CSS 클래스 `pendf-*`와 루트 `.pendf-root`, 빌드 helper `__pendf_*`, 가상 모듈 `pendf:assets`, 사이드카 `<pdf>.pendf.json`, fixture 폴더 `pendf-fixtures`.
 - **근거:** 표시 이름이 `penDF`로 바뀌었고(D-19), 아직 릴리스 전이라 기존 설치나 사이드카가 없다. `pendf`는 커뮤니티 목록의 id와 겹치지 않는다.
 - **주의:** `docs/evidence/`의 JSON, REPORT의 커밋 목록, D-02·D-18·D-19는 당시 기록이라 옛 이름(`pdf-ppp`, `ppp-*`, `.ppp.json`)을 그대로 둔다.
+- **함께 고친 것:** `.gitignore`의 `styles.css`가 빌드 결과물뿐 아니라 `src/styles.css`까지 무시해, 원본 스타일시트가 한 번도 커밋되지 않았다(이름 변경 스크립트가 git 추적 파일만 바꾸다가 드러남). 빌드 결과물 패턴을 저장소 루트(`/main.js`, `/styles.css` 등)로 한정하고 `src/styles.css`를 추가했다. 추적 파일만으로 만든 복사본에서 `pnpm install && pnpm build && pnpm test && pnpm lint`가 통과한다.
