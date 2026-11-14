@@ -39,6 +39,8 @@ export interface StoreOptions {
 	clearTimeout?: (h: unknown) => void;
 	now?: () => number;
 	onChange?: (source: "local" | "external") => void;
+	/** return false to postpone the debounced save (e.g. while a pen stroke is being drawn) */
+	canSave?: () => boolean;
 	onProblem?: (msg: string) => void;
 }
 
@@ -198,6 +200,11 @@ export class SidecarStore {
 		if (this.timer !== null) this.clearT(this.timer);
 		this.timer = this.setT(() => {
 			this.timer = null;
+			// serializing a big sidecar mid-stroke would stall the pen: try again shortly
+			if (this.opts.canSave && !this.opts.canSave()) {
+				this.scheduleSave();
+				return;
+			}
 			void this.flush();
 		}, this.debounceMs);
 	}

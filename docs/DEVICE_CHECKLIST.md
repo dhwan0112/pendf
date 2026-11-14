@@ -102,7 +102,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 ## Phase 6 — 필기
 
-먼저 펜 프로브(설정 → Pen probe → 명령 "Open pen probe")에서 **cancel Pencil touchstart**를 켠 채 `touch-action: auto`로 Pencil 획과 손가락 끌기를 한 번씩 하고 JSON을 내보낸다. `scrollByPointerType.pen`에 `auto+cancel-stylus:no-scroll`, `touch`에 `auto+cancel-stylus:scrolled`가 나오면 기본 입력 방식("Pencil writes, finger scrolls")이 이 기기에서 맞다.
+먼저 펜 프로브(설정 → Pen probe → 명령 "Open pen probe", 0.5.1 이상)에서 **cancel Pencil touchstart**를 켠 채 `touch-action: auto`로 Pencil 획과 손가락 끌기를 각각 몇 번씩 하고 JSON을 내보낸다. `scrollByPointerType.pen`에 `auto+cancel-stylus:no-scroll`만 있고 `:scrolled`·`:cancelled`가 없으며, `touch`에 `auto+cancel-stylus:scrolled`가 나오면 기본 입력 방식("Pencil writes, finger scrolls")이 이 기기에서 맞다. Pencil에 `:cancelled`가 나오면 iPadOS가 획을 스크롤로 가져간 것이므로 "Everything writes"를 쓴다.
 
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |

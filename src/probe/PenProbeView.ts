@@ -114,8 +114,8 @@ export class PenProbeView extends ItemView {
 		const opts = { passive: false } as AddEventListenerOptions;
 		this.registerDomEvent(this.pad, "pointerdown", (e) => this.onDown(e), opts);
 		this.registerDomEvent(this.pad, "pointermove", (e) => this.onMove(e), opts);
-		this.registerDomEvent(this.pad, "pointerup", (e) => this.onUp(e), opts);
-		this.registerDomEvent(this.pad, "pointercancel", (e) => this.onUp(e), opts);
+		this.registerDomEvent(this.pad, "pointerup", (e) => this.onUp(e, false), opts);
+		this.registerDomEvent(this.pad, "pointercancel", (e) => this.onUp(e, true), opts);
 		this.registerDomEvent(this.pad, "touchstart", (e) => this.onTouch(e), { passive: false });
 		this.resizeCanvas();
 		this.registerDomEvent(window, "resize", () => this.resizeCanvas());
@@ -191,7 +191,7 @@ export class PenProbeView extends ItemView {
 		this.renderSoon();
 	}
 
-	private onUp(e: PointerEvent): void {
+	private onUp(e: PointerEvent, cancelled: boolean): void {
 		const stroke = this.strokeStart.get(e.pointerId);
 		if (!stroke) return;
 		const s = this.st(e.pointerType);
@@ -203,12 +203,21 @@ export class PenProbeView extends ItemView {
 		}
 		this.strokeStart.delete(e.pointerId);
 		this.lastPt.delete(e.pointerId);
-		const scrolled = this.scroller.scrollTop !== this.scrollTopAtDown;
-		const byTa = this.scrollByType.get(this.downType) ?? new Map<string, number>();
-		const key = `${this.touchAction}${this.preventStylus ? "+cancel-stylus" : ""}:${scrolled ? "scrolled" : "no-scroll"}`;
-		byTa.set(key, (byTa.get(key) ?? 0) + 1);
-		this.scrollByType.set(this.downType, byTa);
-		this.render();
+		// iPadOS cancels a pointer when it turns the gesture into a scroll — often before the
+		// page has moved — so cancels are counted separately and the scroll position is
+		// checked again a moment later (momentum).
+		const startTop = this.scrollTopAtDown;
+		const type = this.downType;
+		const mode = `${this.touchAction}${this.preventStylus ? "+cancel-stylus" : ""}`;
+		const movedNow = this.scroller.scrollTop !== startTop;
+		window.setTimeout(() => {
+			const scrolled = movedNow || this.scroller.scrollTop !== startTop;
+			const byTa = this.scrollByType.get(type) ?? new Map<string, number>();
+			const key = `${mode}:${cancelled ? "cancelled" : scrolled ? "scrolled" : "no-scroll"}`;
+			byTa.set(key, (byTa.get(key) ?? 0) + 1);
+			this.scrollByType.set(type, byTa);
+			this.render();
+		}, 300);
 	}
 
 	private onTouch(e: TouchEvent): void {
@@ -274,7 +283,7 @@ export class PenProbeView extends ItemView {
 			};
 		}
 		return {
-			probe: "pendf pen probe v2",
+			probe: "pendf pen probe v3",
 			at: new Date().toISOString(),
 			...describePlatform(),
 			devicePixelRatio: window.devicePixelRatio,

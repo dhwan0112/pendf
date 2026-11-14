@@ -21,7 +21,7 @@ import { uuid } from "../store/schema";
 import type { SidecarStore } from "../store/sidecar";
 import type { UndoStack } from "../store/undo";
 import { logger } from "../util/log";
-import { dedupe, pathData, roundPoints, simplify, strokeHit } from "./model";
+import { bounds, dedupe, distanceToPolyline, pathData, roundPoints, simplify, type Box } from "./model";
 
 const log = logger("ink");
 
@@ -66,6 +66,12 @@ interface Erase {
 	hits: Set<string>;
 	lastX: number;
 	lastY: number;
+	/** strokes and their bounds, taken once at eraser-down (pages can hold thousands) */
+	strokes: { id: string; page: number; points: number[]; width: number; box: Box }[];
+	/** the page under the eraser, kept while the eraser stays on it (avoids a hit test per sample) */
+	at: { page: number; div: HTMLElement; rect: DOMRect; geom: PageGeometry } | null;
+	/** rendered paths by stroke id, collected at eraser-down */
+	els: Map<string, Element[]>;
 }
 
 export class InkController implements LayerRenderer {
@@ -210,7 +216,18 @@ export class InkController implements LayerRenderer {
 		}
 		const cfg = this.host.settings();
 		if (cfg.tool === "eraser") {
-			this.erase = { pointerId: e.pointerId, hits: new Set(), lastX: e.clientX, lastY: e.clientY };
+			const store = this.host.store();
+			const strokes = (store?.all() ?? [])
+				.filter((a): a is InkAnnotation => a.type === "ink")
+				.map((a) => ({ id: a.id, page: a.page, points: a.points, width: a.width, box: bounds(a.points) }));
+			const els = new Map<string, Element[]>();
+			for (const el of Array.from(this.host.container.querySelectorAll(".pendf-ink[data-id]"))) {
+				const id = el.getAttribute("data-id") ?? "";
+				const list = els.get(id);
+				if (list) list.push(el);
+				else els.set(id, [el]);
+			}
+			this.erase = { pointerId: e.pointerId, hits: new Set(), lastX: e.clientX, lastY: e.clientY, strokes, at: null, els };
 			this.eraseAt(e.clientX, e.clientY);
 			return;
 		}
@@ -373,22 +390,29 @@ export class InkController implements LayerRenderer {
 
 	private eraseAt(clientX: number, clientY: number): void {
 		const er = this.erase;
-		const store = this.host.store();
-		if (!er || !store) return;
-		const pageDiv = this.pageAt(clientX, clientY);
-		if (!pageDiv) return;
-		const page = Number(pageDiv.dataset.pageNumber);
-		const geom = this.host.layers.geometry(page);
-		if (!geom) return;
-		const pr = pageContentRect(pageDiv);
+		if (!er) return;
+		let at = er.at;
+		const inside = (r: DOMRect) => clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+		if (!at || !inside(at.rect)) {
+			const div = this.pageAt(clientX, clientY);
+			if (!div) return;
+			const page = Number(div.dataset.pageNumber);
+			const geom = this.host.layers.geometry(page);
+			if (!geom) return;
+			at = { page, div, rect: pageContentRect(div), geom };
+			er.at = at;
+		}
+		const { page, geom, rect: pr } = at;
 		const v = geom.clientToView(clientX, clientY, pr);
 		const [x, y] = geom.toPdf(v[0], v[1]);
 		const radius = ERASER_PX / (pr.width / geom.width);
-		for (const a of store.all()) {
-			if (a.type !== "ink" || a.page !== page || er.hits.has(a.id)) continue;
-			if (strokeHit(x, y, radius, a.points, a.width)) {
+		for (const a of er.strokes) {
+			if (a.page !== page || er.hits.has(a.id)) continue;
+			const r = radius + a.width / 2;
+			if (x < a.box.x0 - r || x > a.box.x1 + r || y < a.box.y0 - r || y > a.box.y1 + r) continue;
+			if (distanceToPolyline(x, y, a.points) <= r) {
 				er.hits.add(a.id);
-				this.pathsFor(a.id).forEach((p) => p.addClass("is-erased"));
+				for (const p of er.els.get(a.id) ?? []) p.classList.add("is-erased");
 			}
 		}
 	}

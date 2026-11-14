@@ -194,7 +194,7 @@ f8f38b7 docs: REPORT for Phase 1-2
 ## 전체 검증 상태 (0.5.0)
 
 - 단위 테스트 161개, lint(Obsidian 규칙 포함), check-standalone 통과. `main.js` 3.25 MB.
-- 하네스 26개 검사 전부 통과(메모리 때문에 다섯 묶음으로 나눠 실행). 증거: `docs/evidence/harness-2026-11-15-0.5.0.json`.
+- 하네스 26개 검사 전부 통과(메모리 때문에 다섯 묶음으로 나눠 실행). 증거: `docs/evidence/harness-2026-11-15-0.5.0.json`. **단, B-06이 드러나는 순서(`coexistence-core-first` 뒤 `highlight-ground-truth`)는 이 묶음에 없었고, 따로 돌리면 여전히 실패한다(3.21 pt, D-28).**
 - **iPad에서는 아무것도 확인하지 못했다.** Phase 1–6 전부 DEVICE_CHECKLIST 대기. 특히 필기의 입력 분기와 지연은 합성 이벤트로 검증할 수 없다.
 - Obsidian 커뮤니티 심사 스캐너는 0.1.4 이후 버전(0.2.0~0.5.0)을 아직 보지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 이미 두 번 결과가 달랐다(0.1.3, 0.1.4).
 
@@ -203,3 +203,10 @@ f8f38b7 docs: REPORT for Phase 1-2
 1. iPad에서 펜 프로브(cancel Pencil touchstart 켜고/끄고) → DEVICE_CHECKLIST 0 → 6장. 로그와 프로브 JSON을 가져오면 입력 기본값·캔버스·`maxCanvasPixels`를 조정한다.
 2. 커뮤니티 심사 다시 실행.
 3. B-06(코어 뷰어를 먼저 연 뒤 하이라이트 끝 오차) 조사.
+
+## 0.5.1 (2026-11-15)
+
+- 펜 프로브가 iPadOS의 포인터 취소를 따로 기록하고 300 ms 뒤 스크롤을 다시 확인한다(판정 오류 방지).
+- 지우개 이동 비용 3.19 → 0.33 ms(1,500획 페이지), 필기 중 자동 저장 보류.
+- 일반 열기에서도 탭 전환이 두 번 일어남을 확인(전체 로드는 한 번)하고 D-25를 정정.
+- B-06 재확인: 여전히 열림.

@@ -326,9 +326,14 @@
 				pl.settings.openPdfsInPenDF = true;
 				try {
 					// 1. a plain open (file explorer, quick switcher) lands in penDF
+					const logMark = pl.getLogText().length;
 					const l1 = ws.getLeaf("tab");
 					await l1.openFile(f, { active: true });
 					await waitFor(() => l1.view.getViewType() === VIEW, 10000);
+					await waitFor(() => l1.view.debugSession && l1.view.debugSession.ready, 10000);
+					await sleep(1500);
+					const logged = pl.getLogText().slice(logMark);
+					var plainOpenCounts = { takeovers: (logged.match(/opening pendf-fixtures\/a4\.pdf in penDF/g) || []).length, loads: (logged.match(/opened pendf-fixtures\/a4\.pdf /g) || []).length };
 					// 2. a link with a page lands in penDF on that page
 					await ws.openLinkText(FIX + "a4.pdf#page=2", "", "tab");
 					const l2 = ws.getMostRecentLeaf();
@@ -348,6 +353,7 @@
 					const offType = l4.view.getViewType();
 					return {
 						plainOpen: l1.view.getViewType(),
+						plainOpenCounts,
 						linkPage,
 						keptCore,
 						offType,
@@ -1126,7 +1132,24 @@
 					await s.store.flush();
 					const tFlush = performance.now() - t2;
 					const size = (await app.vault.adapter.stat(FIX + "a4.pdf.pendf.json"))?.size ?? -1;
-					res.stress = { strokes: 1500, upsertMs: Math.round(tUpsert), renderPageMs: Math.round(tRender), flushMs: Math.round(tFlush), sidecarBytes: size, paths: s.layers.getLayer(2)?.ink.querySelectorAll(".pendf-ink").length ?? 0 };
+					const t3 = performance.now();
+					JSON.stringify(s.store.raw());
+					const tStringify = performance.now() - t3;
+					// eraser drag across the crowded page: cost per pointermove (includes interpolation)
+					pl.settings.ink = { ...pl.settings.ink, tool: "eraser" };
+					v.toggleInk(true);
+					const ec = [clientOf(s, 2, 60, 700), clientOf(s, 2, 520, 600)];
+					const etarget = document.elementFromPoint(ec[0][0], ec[0][1]);
+					ptr("pointerdown", etarget, ec[0][0], ec[0][1]);
+					const moves = 40;
+					const t4 = performance.now();
+					for (let i = 1; i <= moves; i++) ptr("pointermove", etarget, ec[0][0] + ((ec[1][0] - ec[0][0]) * i) / moves, ec[0][1] + ((ec[1][1] - ec[0][1]) * i) / moves);
+					const tErase = (performance.now() - t4) / moves;
+					ptr("pointerup", etarget, ec[1][0], ec[1][1]);
+					const erasedNow = 1500 - s.store.all().filter((a) => a.type === "ink" && a.page === 2).length;
+					v.undo();
+					v.toggleInk(false);
+					res.stress = { strokes: 1500, upsertMs: Math.round(tUpsert), renderPageMs: Math.round(tRender), flushMs: Math.round(tFlush), stringifyMs: Math.round(tStringify), eraserMsPerMove: +tErase.toFixed(2), erasedInDrag: erasedNow, sidecarBytes: size, paths: s.layers.getLayer(2)?.ink.querySelectorAll(".pendf-ink").length ?? 0 };
 					// 4. reopen
 					leaf.detach();
 					const again = await openPenDF("a4.pdf");

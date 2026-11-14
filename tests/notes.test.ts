@@ -172,3 +172,33 @@ describe("notes in the store", () => {
 		expect(B.get(n.id)?.deleted).toBe(true);
 	});
 });
+
+describe("save hold", () => {
+	it("postpones the debounced save while canSave() is false", async () => {
+		const fs = new MemFs();
+		let pending: (() => void) | null = null;
+		let drawing = true;
+		const s = new SidecarStore(fs, "hold/doc.pdf", "fp", {
+			setTimeout: (fn) => ((pending = fn), 1),
+			clearTimeout: () => (pending = null),
+			canSave: () => !drawing,
+		});
+		await s.load();
+		s.upsert(pointNote(1, 1, 1, "x"));
+		const fire = async () => {
+			const f = pending;
+			pending = null;
+			f?.();
+			await s.flush().catch(() => undefined);
+		};
+		// timer fires while drawing: rescheduled, nothing written
+		const f1 = pending as (() => void) | null;
+		pending = null;
+		f1?.();
+		expect(await fs.exists(sidecarPathFor("hold/doc.pdf"))).toBe(false);
+		expect(pending).not.toBeNull();
+		drawing = false;
+		await fire();
+		expect(await fs.exists(sidecarPathFor("hold/doc.pdf"))).toBe(true);
+	});
+});

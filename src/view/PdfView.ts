@@ -485,6 +485,7 @@ export class PenDFView extends FileView {
 				if (!this.quiet) this.notifyChange();
 			},
 			onProblem: (m) => log.warn(`${store.path}: ${m}`),
+			canSave: () => !session.ink?.isDrawing,
 		});
 		await store.load();
 		if (token !== this.loadToken || this.session !== session) {
