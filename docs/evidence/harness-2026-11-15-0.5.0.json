@@ -1,0 +1,729 @@
+{
+ "env": {
+  "obsidian": "1.10.6",
+  "chrome": "138.0.7204.251",
+  "electron": "37.10.2"
+ },
+ "batches": [
+  [
+   "fixtures-render",
+   "search",
+   "links",
+   "open-by-default",
+   "state-restore",
+   "css-inward"
+  ],
+  [
+   "highlight-ground-truth",
+   "highlight-multiline-columns",
+   "highlight-korean",
+   "highlight-cross-page",
+   "smoke-ui"
+  ],
+  [
+   "rename-while-open",
+   "highlight-palette",
+   "highlight-menu-undo",
+   "notes",
+   "pdf-links",
+   "bookmarks"
+  ],
+  [
+   "ink",
+   "persist-restart-rename",
+   "fingerprint-mismatch",
+   "fallback-main-thread",
+   "pdfjs-footprint"
+  ],
+  [
+   "coexistence-core-first",
+   "coexistence-pendf-first",
+   "ink",
+   "persist-restart-rename",
+   "long-300-memory",
+   "unload-cleanup"
+  ]
+ ],
+ "checks": {
+  "fixtures-render": {
+   "ok": true,
+   "out": {
+    "a4.pdf": {
+     "pages": 3,
+     "chars": 2505,
+     "sample": "A4 fixture — page 1Whose spectra electro"
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "chars": 1965,
+     "sample": "US Letter — page 1Quick at peaks seven f"
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "chars": 1368,
+     "sample": "/Rotate 0This line is near the top-left "
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "chars": 1621,
+     "sample": "Inside the CropBox [100 150 500 700]Wiza"
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "chars": 3378,
+     "sample": "Two-column layout — page 1[1.1.1] A with"
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "chars": 136,
+     "sample": "1-1. 한국어 CMap 테스트 문서입니다.1-2. 이 글꼴은 PDF에 "
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "chars": 913,
+     "sample": "한국어 임베디드 글꼴 — 1쪽물리화학은 분자의 구조와 에너지, 그리고 반"
+    },
+    "links.pdf": {
+     "pages": 3,
+     "chars": 75,
+     "sample": "Links fixture — page 1Go to page 2Go to "
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "chars": 592,
+     "sample": "300-page fixture — contentsChapter 1 … p"
+    }
+   }
+  },
+  "search": {
+   "ok": true,
+   "first": "1 / 24",
+   "second": "2 / 24",
+   "highlighted": 17,
+   "none": "No matches"
+  },
+  "links": {
+   "ok": true,
+   "jumped": 2,
+   "external": [
+    "https://example.com/"
+   ],
+   "tocJump": 92
+  },
+  "open-by-default": {
+   "ok": true,
+   "plainOpen": "pendf-view",
+   "linkPage": 1,
+   "keptCore": "pdf",
+   "offType": "pdf"
+  },
+  "state-restore": {
+   "ok": true,
+   "savedState": {
+    "page": 3,
+    "scale": "1.5"
+   },
+   "restored": {
+    "page": 3,
+    "scale": 1.5
+   },
+   "remembered": {
+    "page": 3,
+    "scale": 1.5
+   }
+  },
+  "css-inward": {
+   "ok": true,
+   "pageBorder": "8.8px solid",
+   "boxSizing": {
+    "page": "content-box",
+    "textLayer": "content-box",
+    "span": "content-box",
+    "canvasWrapper": "content-box",
+    "annotationLayer": "content-box"
+   },
+   "sizes": {
+    "text": [
+     1188,
+     1680
+    ],
+    "canvas": [
+     1188,
+     1680
+    ],
+    "page": [
+     1205.5999755859375,
+     1697.5999755859375
+    ]
+   },
+   "aligned": true,
+   "spanTransform": "matrix(1.06661, 0, 0, 1, 0, 0)",
+   "foreign": {
+    "textLayer": [
+     ".textLayer  {position: absolute; text-align: initial; inset: 0px; overflow: clip; opacity: 1; line-heig}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "span": [
+     ".textLayer span, .textLayer br  {color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: }  @app://obsidian.md/app.css",
+     ".textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent)  {z-index: 1;}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "body, [dir=\"ltr\"]  {--direction: 1; --inset-start: left; --inset-end: right; --safe-area-inline-start: var(--s}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "annotationLayer": [
+     ".annotationLayer  {--csstools-color-scheme--dark: ; color-scheme: light only; --annotation-unfocused-field-ba}  @app://obsidian.md/app.css",
+     ".annotationLayer  {--input-focus-border-color: CanvasText; --input-unfocused-border-color: ActiveText; --inpu}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "page": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .page  {--user-unit: 1; --total-scale-factor: calc(var(--scale-factor) * var(--user-unit)); --scal}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "canvasWrapper": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .canvasWrapper  {overflow: hidden; width: 100%; height: 100%;}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ]
+   }
+  },
+  "highlight-ground-truth": {
+   "ok": true,
+   "out": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 1.03,
+     "topAboveBaseline": 1.05,
+     "bottomBelowBaseline": 0.43,
+     "heightRatio": 1.48,
+     "ok": true,
+     "ious": [
+      1,
+      0.98,
+      0.98,
+      0.98,
+      0.98
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 0.92,
+     "topAboveBaseline": 1.05,
+     "bottomBelowBaseline": 0.43,
+     "heightRatio": 1.48,
+     "ok": true,
+     "ious": [
+      1,
+      0.98,
+      0.98,
+      0.98,
+      0.98
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 1.38,
+     "topAboveBaseline": 1.08,
+     "bottomBelowBaseline": 0.36,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.91,
+      0.91,
+      0.91,
+      0.91
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 1.05,
+     "topAboveBaseline": 1.05,
+     "bottomBelowBaseline": 0.43,
+     "heightRatio": 1.48,
+     "ok": true,
+     "ious": [
+      1,
+      0.98,
+      0.98,
+      0.98,
+      0.98
+     ]
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 1.33,
+     "topAboveBaseline": 1.03,
+     "bottomBelowBaseline": 0.42,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.99,
+      0.99,
+      0.95,
+      0.95
+     ]
+    }
+   ]
+  },
+  "highlight-multiline-columns": {
+   "ok": true,
+   "lines": 4,
+   "inLeftColumn": true,
+   "crossColumnQuads": 4,
+   "noBridge": true,
+   "text": "[1.1.1] A with through positions whose fox brown precision t"
+  },
+  "highlight-korean": {
+   "ok": true,
+   "res": {
+    "korean-embedded.pdf": {
+     "text": "상호작용을 통해 분자의 성질을 밝혀낸다. 이 문단은 여",
+     "quads": 1,
+     "iou": 1
+    },
+    "korean-cmap.pdf": {
+     "text": "문서입니다.",
+     "quads": 1,
+     "iou": 1
+    }
+   }
+  },
+  "highlight-cross-page": {
+   "ok": true,
+   "pages": [
+    1,
+    2
+   ],
+   "groups": [
+    "82357523-547c-47fc-bc81-00528730b81c"
+   ]
+  },
+  "smoke-ui": {
+   "ok": true,
+   "engine": {
+    "ok": true,
+    "missing": [],
+    "ponyfilled": {
+     "Map#getOrInsertComputed": false,
+     "Math.sumPrecise": true,
+     "Uint8Array#toBase64 / fromBase64 / toHex": true,
+     "Promise.try": true,
+     "RegExp.escape": true,
+     "URL.parse": true
+    }
+   },
+   "errorBanner": false,
+   "hud": "worker: web-worker | rendering: 0 | rendered: 3 | canvases: 3",
+   "hudGone": true,
+   "commands": {
+    "find": true,
+    "zoom-in": true,
+    "zoom-out": true,
+    "fit-width": true,
+    "undo": true,
+    "redo": true,
+    "highlight-selection": true,
+    "export-log": true,
+    "open-current-pdf": true,
+    "open-pdf": true,
+    "open-pen-probe": true
+   },
+   "searchOpened": true,
+   "highlightByCommand": true,
+   "logExported": true,
+   "logHasEngine": true,
+   "openCurrentWorked": true,
+   "modalShown": true,
+   "probeCommandHidden": true,
+   "probe": {
+    "penEvents": 9,
+    "fractional": 1,
+    "coalesced": true
+   },
+   "probeExported": true,
+   "fileMenu": true,
+   "fileMenuOpens": true,
+   "noMenuForMarkdown": true,
+   "settingsItems": 15
+  },
+  "rename-while-open": {
+   "ok": true,
+   "both": true,
+   "oldExists": false,
+   "viewFile": "pendf-fixtures/cropbox.pdf"
+  },
+  "highlight-palette": {
+   "ok": true,
+   "made": 1,
+   "color": "#2ea8e5",
+   "paletteGone": true,
+   "selectionCleared": true
+  },
+  "highlight-menu-undo": {
+   "ok": true,
+   "recolored": "#5fb236",
+   "deleted": true,
+   "polyGone": true,
+   "back": true,
+   "colorBack": "#ffd400"
+  },
+  "notes": {
+   "ok": true,
+   "placed": {
+    "page": 1,
+    "body": "**bold** from the editor",
+    "x": 175.67,
+    "y": 634.84
+   },
+   "placingOff": true,
+   "markerPx": 18,
+   "hitTest": true,
+   "popoverBold": "bold",
+   "highlightMenuNotOpened": true,
+   "beforeDelete": 2,
+   "afterDelete": 0,
+   "afterUndo": 2,
+   "panelItems": 2,
+   "panelBold": "bold",
+   "panelHighlightNote": true,
+   "reopened": [
+    "**bold** from the editor",
+    "note on *highlight*"
+   ]
+  },
+  "pdf-links": {
+   "ok": true,
+   "hlLink": "[[long-300.pdf#page=5&pendf=links-check-h|linked text]]",
+   "formats": true,
+   "reading": {
+    "page": 5,
+    "flashed": true
+   },
+   "editor": {
+    "page": 9,
+    "popover": "note"
+   },
+   "rect": {
+    "page": 12,
+    "flash": true
+   },
+   "plainOpen": {
+    "type": "pendf-view",
+    "page": 12
+   }
+  },
+  "bookmarks": {
+   "ok": true,
+   "outline": {
+    "top": 30,
+    "first": [
+     "Chapter 1",
+     2
+    ],
+    "named": [
+     "Chapter 30",
+     292
+    ],
+    "child": [
+     "4.2 Results",
+     37
+    ]
+   },
+   "outlineJump": 292,
+   "suggested": "Page 46 — 5.1 Introduction",
+   "added": [
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta",
+    "Gamma"
+   ],
+   "positions": [
+    [
+     46,
+     830
+    ],
+    [
+     50,
+     830
+    ],
+    [
+     120,
+     830
+    ],
+    [
+     7,
+     829
+    ]
+   ],
+   "afterMove": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta"
+   ],
+   "afterRenameDelete": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Beta 2"
+   ],
+   "afterUndo": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "panelRows": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "bookmarkJump": 120,
+   "link": "[[long-300.pdf#page=50&pendf=68c764b7-6e90-4212-b7b7-c3530d82f2ec|Alpha]]",
+   "linkJump": 50,
+   "reopened": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "pdfUnchanged": true
+  },
+  "ink": {
+   "ok": true,
+   "geometry": [
+    {
+     "name": "rotations.pdf",
+     "page": 1,
+     "rotate": 0,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 2,
+     "rotate": 90,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 3,
+     "rotate": 180,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 4,
+     "rotate": 270,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 2,
+     "viewRotated": true,
+     "rotate": 180,
+     "errPt": 0
+    },
+    {
+     "name": "cropbox.pdf",
+     "page": 1,
+     "rotate": 0,
+     "errPt": 0,
+     "svg": true
+    }
+   ],
+   "touch": null,
+   "menuAfterStroke": false,
+   "dot": {
+    "n": 2,
+    "svg": true
+   },
+   "beforeErase": 2,
+   "afterErase": 1,
+   "erasedLong": true,
+   "afterUndo": 2,
+   "stress": {
+    "strokes": 1500,
+    "upsertMs": 21,
+    "renderPageMs": 34,
+    "flushMs": 228,
+    "sidecarBytes": 974574,
+    "paths": 1500
+   },
+   "reopenedInk": 1502
+  },
+  "persist-restart-rename": {
+   "ok": true,
+   "saved": 6,
+   "afterRestart": 6,
+   "moved": true,
+   "oldGone": true,
+   "afterRename": 6
+  },
+  "fingerprint-mismatch": {
+   "ok": true,
+   "status": "fingerprint-mismatch",
+   "banner": "Annotations hidden: pendf-fixtures/letter.pdf.pendf.json belongs to a different ",
+   "untouched": true
+  },
+  "fallback-main-thread": {
+   "ok": true,
+   "mode": "main-thread",
+   "rendered": true,
+   "pdfjsWorkerUnchanged": true,
+   "pdfjsLibUnchanged": true
+  },
+  "pdfjs-footprint": {
+   "ok": true,
+   "viaWorker": {
+    "a4.pdf": {
+     "pages": 3,
+     "fingerprint": "e6ebc96f92d58a88e60477d3278a73cd",
+     "text": 122,
+     "ops": 959,
+     "rendered": 3
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "fingerprint": "e4ada3ef61964d5058f3a3b282c7e62e",
+     "text": 44,
+     "ops": 422,
+     "rendered": 2
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "fingerprint": "fd8fe2171353408aad988d526f27e993",
+     "text": 72,
+     "ops": 663,
+     "rendered": 3
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "fingerprint": "e3d6fade73c0d17d4cf524141cfd19e9",
+     "text": 29,
+     "ops": 309,
+     "rendered": 1
+    }
+   },
+   "viaMainThread": {
+    "a4.pdf": {
+     "pages": 3,
+     "fingerprint": "e6ebc96f92d58a88e60477d3278a73cd",
+     "text": 122,
+     "ops": 959,
+     "rendered": 3
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "fingerprint": "e4ada3ef61964d5058f3a3b282c7e62e",
+     "text": 44,
+     "ops": 422,
+     "rendered": 2
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "fingerprint": "fd8fe2171353408aad988d526f27e993",
+     "text": 72,
+     "ops": 663,
+     "rendered": 3
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "fingerprint": "e3d6fade73c0d17d4cf524141cfd19e9",
+     "text": 29,
+     "ops": 309,
+     "rendered": 1
+    }
+   },
+   "added": [],
+   "replaced": [],
+   "removed": []
+  },
+  "coexistence-core-first": {
+   "ok": true,
+   "coreVersion": "5.3.34",
+   "ourVersion": "6.5.438",
+   "sameLib": true,
+   "sameVersion": true,
+   "pdfjsWorkerUnchanged": true,
+   "pdfjsViewerBefore": "object",
+   "coreCanvasesBefore": 1,
+   "coreCanvasesAfter": 1,
+   "pendfCanvases": 4
+  },
+  "coexistence-pendf-first": {
+   "ok": true,
+   "diag": {
+    "cur": 1,
+    "scale": 0.5,
+    "states": [
+     3,
+     3
+    ],
+    "canvases": 3,
+    "size": [
+     265,
+     783
+    ],
+    "visible": true
+   },
+   "coreVersion": "5.3.34",
+   "libUntouchedByUs": true,
+   "coreCanvases": 2,
+   "pendfStillRenders": true
+  },
+  "long-300-memory": {
+   "ok": true,
+   "maxCanvas": 11,
+   "maxLayers": 4,
+   "maxRendered": 10,
+   "seconds": 8,
+   "heapMB": 246
+  },
+  "unload-cleanup": {
+   "ok": true,
+   "leaves": 1,
+   "leftovers": 0,
+   "workers": 2,
+   "allTerminated": true,
+   "blobRevoked": [
+    true,
+    true
+   ],
+   "pendingHighlightSaved": true,
+   "styleLeft": false
+  }
+ }
+}

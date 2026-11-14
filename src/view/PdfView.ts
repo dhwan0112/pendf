@@ -20,6 +20,8 @@ import {
 import { LayerManager, pageContentRect } from "../layers";
 import { HighlightController } from "../highlight/controller";
 import { NoteController } from "../notes/controller";
+import { InkController } from "../ink/controller";
+import { PEN_COLORS, PEN_WIDTHS, type InkTool } from "../settings";
 import { noteAnchor } from "../notes/model";
 import type { Annotation } from "../store/schema";
 import { aliasFrom, buildSubpath, parseSubpath, type PdfTarget } from "../links/format";
@@ -52,6 +54,7 @@ interface Session {
 	layers: LayerManager;
 	highlights: HighlightController;
 	notes: NoteController;
+	ink: InkController;
 	store: SidecarStore | null;
 	undo: UndoStack | null;
 	ac: AbortController;
@@ -97,6 +100,10 @@ export class PenDFView extends FileView {
 	private hud: DebugHud | null = null;
 	private saveStateTimer: number | null = null;
 	private noteButton: HTMLButtonElement | null = null;
+	private inkButton: HTMLButtonElement | null = null;
+	private inkBar!: HTMLElement;
+	/** set while ink edits run, so the side panel is not re-rendered for every stroke */
+	private quiet = false;
 	private changeListeners = new Set<() => void>();
 
 	constructor(leaf: WorkspaceLeaf, private readonly plugin: PenDFPlugin) {
@@ -148,6 +155,7 @@ export class PenDFView extends FileView {
 
 		this.toolbarEl = el.createDiv({ cls: "pendf-toolbar" });
 		this.buildToolbar(this.toolbarEl);
+		this.inkBar = el.createDiv({ cls: "pendf-inkbar is-hidden" });
 		this.searchBar = el.createDiv({ cls: "pendf-searchbar is-hidden" });
 		this.buildSearchBar(this.searchBar);
 		this.bannerEl = el.createDiv({ cls: "pendf-banner is-hidden" });
@@ -202,6 +210,7 @@ export class PenDFView extends FileView {
 		const tools = tb.createDiv({ cls: "pendf-group" });
 		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
 		this.button(tools, "bookmark-plus", "Bookmark this spot", () => void this.addBookmark());
+		this.inkButton = this.button(tools, "pen-line", "Handwriting (Pencil writes, finger scrolls)", () => this.toggleInk());
 		this.noteButton = this.button(tools, "message-square-plus", "Add note (then tap the page)", () => {
 			const n = this.session?.notes;
 			if (n) n.setPlacing(!n.placing);
@@ -241,6 +250,59 @@ export class PenDFView extends FileView {
 			this.hud = null;
 		}
 		this.session?.layers.refresh();
+		this.session?.ink.applyInputMode();
+		if (this.session?.ink.active) this.renderInkBar();
+	}
+
+	// --------------------------------------------------- handwriting (Phase 6)
+
+	toggleInk(on?: boolean): void {
+		const ink = this.session?.ink;
+		if (!ink) return;
+		ink.setActive(on ?? !ink.active);
+	}
+
+	private setInk(patch: Partial<typeof this.plugin.settings.ink>): void {
+		this.plugin.settings.ink = { ...this.plugin.settings.ink, ...patch };
+		this.renderInkBar();
+		void this.plugin.saveSettings();
+	}
+
+	private renderInkBar(): void {
+		const bar = this.inkBar;
+		const ink = this.plugin.settings.ink;
+		bar.empty();
+		const tools = bar.createDiv({ cls: "pendf-group" });
+		const tool = (id: InkTool, icon: string, label: string) => {
+			const b = this.button(tools, icon, label, () => this.setInk({ tool: id }));
+			b.toggleClass("is-active", ink.tool === id);
+		};
+		tool("pen", "pen-line", "Pen");
+		tool("highlighter", "highlighter", "Highlighter");
+		tool("eraser", "eraser", "Stroke eraser");
+		if (ink.tool !== "eraser") {
+			const colors = bar.createDiv({ cls: "pendf-group pendf-ink-colors" });
+			const list = ink.tool === "pen" ? PEN_COLORS : this.plugin.settings.colors.map((c) => c.hex);
+			const current = ink.tool === "pen" ? ink.penColor : ink.highlighterColor;
+			for (const hex of list) {
+				const b = colors.createEl("button", { cls: "pendf-swatch pendf-ink-swatch", attr: { "aria-label": hex, title: hex } });
+				b.setCssProps({ "--pendf-swatch": hex });
+				b.toggleClass("is-active", hex.toLowerCase() === current.toLowerCase());
+				b.addEventListener("click", () => this.setInk(ink.tool === "pen" ? { penColor: hex } : { highlighterColor: hex }));
+			}
+			const widths = bar.createDiv({ cls: "pendf-group pendf-ink-widths" });
+			const wl = ink.tool === "pen" ? PEN_WIDTHS : [8, 12, 18];
+			const cw = ink.tool === "pen" ? ink.penWidth : ink.highlighterWidth;
+			wl.forEach((w, i) => {
+				const b = widths.createEl("button", { cls: "pendf-icon-btn pendf-ink-width", attr: { "aria-label": `Width ${w} pt`, title: `${w} pt` } });
+				b.createSpan({ cls: "pendf-ink-dot" }).setCssProps({ "--pendf-dot": `${4 + i * 4}px` });
+				b.toggleClass("is-active", w === cw);
+				b.addEventListener("click", () => this.setInk(ink.tool === "pen" ? { penWidth: w } : { highlighterWidth: w }));
+			});
+		}
+		bar.createDiv({ cls: "pendf-spacer" });
+		const done = bar.createEl("button", { cls: "pendf-ink-done", text: "Done" });
+		done.addEventListener("click", () => this.toggleInk(false));
 	}
 
 	// ------------------------------------------------------------- file load
@@ -323,6 +385,7 @@ export class PenDFView extends FileView {
 			layers,
 			highlights: null as unknown as HighlightController,
 			notes: null as unknown as NoteController,
+			ink: null as unknown as InkController,
 			store: null,
 			undo: null,
 			ac,
@@ -359,6 +422,28 @@ export class PenDFView extends FileView {
 			},
 			copyLink: (n) => this.copyLink({ page: n.page, id: n.id }, aliasFrom(n.body.split("\n").find((l) => l.trim()) ?? "") || `p. ${n.page}`),
 		});
+		session.ink = new InkController({
+			root: this.viewerRoot,
+			container: this.container,
+			layers,
+			store: () => session.store,
+			undo: () => session.undo,
+			settings: () => this.plugin.settings.ink,
+			notice: (m) => new Notice(m),
+			onActiveChange: (on) => {
+				this.inkButton?.toggleClass("is-active", on);
+				this.inkBar.toggleClass("is-hidden", !on);
+				if (on) this.renderInkBar();
+			},
+			quietly: (fn) => {
+				this.quiet = true;
+				try {
+					fn();
+				} finally {
+					this.quiet = false;
+				}
+			},
+		});
 		this.session = session;
 
 		eventBus.on("pagesinit", () => {
@@ -391,10 +476,13 @@ export class PenDFView extends FileView {
 		// annotations
 		const store = new SidecarStore(adapterFs(this.app.vault.adapter), file.path, opened.fingerprint, {
 			onChange: (source) => {
-				if (source === "external") log.info(`merged external changes into ${store.path}`);
-				layers.refresh();
+				// local edits re-render only what they touch (each controller refreshes its page)
+				if (source === "external") {
+					log.info(`merged external changes into ${store.path}`);
+					layers.refresh();
+				}
 				if (store.status !== "ok") this.showStoreStatus(store);
-				this.notifyChange();
+				if (!this.quiet) this.notifyChange();
 			},
 			onProblem: (m) => log.warn(`${store.path}: ${m}`),
 		});
@@ -739,7 +827,8 @@ export class PenDFView extends FileView {
 		let accumulated = 1;
 		new TouchManager({
 			container: this.container,
-			isPinchingDisabled: () => false,
+			// a palm resting while the Pencil writes is a second touch: no zooming mid-stroke
+			isPinchingDisabled: () => session.ink.isDrawing,
 			onPinchStart: () => {
 				accumulated = 1;
 			},
@@ -966,6 +1055,9 @@ export class PenDFView extends FileView {
 		}
 		s.highlights.destroy();
 		s.notes.destroy();
+		s.ink.destroy();
+		this.inkBar?.addClass("is-hidden");
+		this.inkButton?.removeClass("is-active");
 		s.layers.destroy();
 		this.hud?.detach();
 		s.ac.abort();

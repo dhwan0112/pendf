@@ -18,7 +18,30 @@ export interface PenDFSettings {
 	/** remember page/zoom per file across views */
 	rememberPosition: boolean;
 	positions: Record<string, { page: number; scale: string; t: number }>;
+	/** handwriting (Phase 6) */
+	ink: InkSettings;
 }
+
+export type InkTool = "pen" | "highlighter" | "eraser";
+
+export interface InkSettings {
+	tool: InkTool;
+	penColor: string;
+	/** pt */
+	penWidth: number;
+	highlighterColor: string;
+	/** pt */
+	highlighterWidth: number;
+	/**
+	 * "stylus": Apple Pencil draws, fingers scroll and select (default).
+	 * "exclusive": in ink mode every pointer draws and the page does not scroll by touch
+	 * (fallback for devices where the Pencil would otherwise scroll the page).
+	 */
+	input: "stylus" | "exclusive";
+}
+
+export const PEN_COLORS = ["#1f1f1f", "#1f5fbf", "#c62828", "#2e7d32"];
+export const PEN_WIDTHS = [0.75, 1.5, 3];
 
 export const DEFAULT_SETTINGS: PenDFSettings = {
 	colors: [
@@ -34,6 +57,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	penProbe: false,
 	rememberPosition: true,
 	positions: {},
+	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus" },
 };
 
 export const MAX_POSITIONS = 300;
@@ -47,6 +71,8 @@ const TEXT = {
 	openPdfsInPenDF: ["Open PDFs in penDF", "Use penDF instead of Obsidian's PDF viewer whenever a PDF is opened. Embeds in notes and hover previews still use Obsidian's viewer."],
 	invertPages: ["Invert page colors", "Dark reading mode: inverts the rendered pages (not your highlights)."],
 	rememberPosition: ["Remember position", "Reopen each PDF at the page and zoom you left it."],
+	handwriting: "Handwriting",
+	inkInput: ["Pencil and finger", "Default: the Pencil writes, fingers scroll and select text. If the Pencil scrolls the page instead of writing on your device, choose “Everything writes” (then leave ink mode to scroll)."],
 	diagnostics: "Diagnostics",
 	debugHud: ["Debug overlay", "Shows pages being rendered, render time, canvas count and annotation count."],
 	penProbe: ["Pen probe", "Enables the 'Open pen probe' command: measures Apple Pencil / touch input in this webview."],
@@ -87,6 +113,17 @@ export class PenDFSettingTab extends PluginSettingTab {
 				],
 			},
 			{ type: "group", heading: TEXT.viewer, items: [toggle("openPdfsInPenDF"), toggle("invertPages"), toggle("rememberPosition")] },
+			{
+				type: "group",
+				heading: TEXT.handwriting,
+				items: [
+					{
+						name: TEXT.inkInput[0],
+						desc: TEXT.inkInput[1],
+						control: { type: "dropdown", key: "inkInput", options: { stylus: "Pencil writes, finger scrolls", exclusive: "Everything writes (in ink mode)" } },
+					},
+				],
+			},
 			{ type: "group", heading: TEXT.diagnostics, items: [toggle("debugHud"), toggle("penProbe")] },
 		];
 	}
@@ -96,6 +133,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 		const m = /^color\.(\d)\.(name|hex)$/.exec(key);
 		if (m) return s.colors[Number(m[1])]?.[m[2] as "name" | "hex"];
 		if (key === "defaultColor") return String(s.defaultColor);
+		if (key === "inkInput") return s.ink.input;
 		return s[key as BoolKey];
 	}
 
@@ -116,6 +154,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 			else c.hex = String(value);
 		} else if (key === "defaultColor") {
 			s.defaultColor = Number(value);
+		} else if (key === "inkInput") {
+			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
 		} else {
 			const k = key as BoolKey;
 			s[k] = Boolean(value);
@@ -158,6 +198,17 @@ export class PenDFSettingTab extends PluginSettingTab {
 		toggle("openPdfsInPenDF");
 		toggle("invertPages");
 		toggle("rememberPosition");
+		new Setting(containerEl).setName(TEXT.handwriting).setHeading();
+		new Setting(containerEl)
+			.setName(TEXT.inkInput[0])
+			.setDesc(TEXT.inkInput[1])
+			.addDropdown((d) =>
+				d
+					.addOption("stylus", "Pencil writes, finger scrolls")
+					.addOption("exclusive", "Everything writes (in ink mode)")
+					.setValue(s.ink.input)
+					.onChange((v) => set("inkInput", v)),
+			);
 		new Setting(containerEl).setName(TEXT.diagnostics).setHeading();
 		toggle("debugHud");
 		toggle("penProbe");

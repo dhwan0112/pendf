@@ -1006,7 +1006,156 @@
 					res.pdfUnchanged;
 				return res;
 			});
+			await check("ink", async () => {
+				// Phase 6: synthetic Pencil events → stored PDF points; touch ignored; eraser, undo, reopen
+				const pl = P();
+				const inkBefore = structuredClone(pl.settings.ink);
+				const res = { geometry: [] };
+				const ptr = (type, el, x, y, pointerType = "pen", id = 7) =>
+					el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerId: id, pointerType, button: 0, buttons: type === "pointerup" ? 0 : 1, isPrimary: true, pressure: 0.5, view: window }));
+				const clientOf = (s, page, x, y) => {
+					const geom = s.layers.geometry(page);
+					const div = s.viewer.getPageView(page - 1).div;
+					const cs = getComputedStyle(div);
+					const r = div.getBoundingClientRect();
+					const bl = parseFloat(cs.borderLeftWidth) || 0;
+					const bt = parseFloat(cs.borderTopWidth) || 0;
+					const w = r.width - bl - (parseFloat(cs.borderRightWidth) || 0);
+					const h = r.height - bt - (parseFloat(cs.borderBottomWidth) || 0);
+					const v = geom.toView(x, y);
+					return [r.left + bl + (v[0] * w) / geom.width, r.top + bt + (v[1] * h) / geom.height];
+				};
+				// draw a stroke through PDF points on a page; returns the new ink annotation
+				const drawPdf = async (v, page, pdfPts, pointerType = "pen") => {
+					const s = v.debugSession;
+					const before = new Set(s.store.all().map((a) => a.id));
+					// bring the stroke's first point to the middle of the view (works for any rotation)
+					const c0 = clientOf(s, page, pdfPts[0][0], pdfPts[0][1]);
+					const cr = s.viewer.container.getBoundingClientRect();
+					s.viewer.container.scrollTop += c0[1] - (cr.top + cr.height / 2);
+					s.viewer.container.scrollLeft += c0[0] - (cr.left + cr.width / 3);
+					await sleep(250);
+					const cl = pdfPts.map(([x, y]) => clientOf(s, page, x, y));
+					const target = document.elementFromPoint(cl[0][0], cl[0][1]);
+					if (!target) {
+						const pr = s.viewer.getPageView(page - 1).div.getBoundingClientRect();
+						const cr = s.viewer.container.getBoundingClientRect();
+						throw new Error(`no element at ${JSON.stringify(cl.map((c) => c.map(Math.round)))} page=${page} pageRect=${[pr.left, pr.top, pr.width, pr.height].map(Math.round)} container=${[cr.left, cr.top, cr.width, cr.height].map(Math.round)} win=${innerWidth}x${innerHeight} current=${s.viewer.currentPageNumber} scale=${s.viewer.currentScale}`);
+					}
+					ptr("pointerdown", target, cl[0][0], cl[0][1], pointerType);
+					for (let i = 1; i < cl.length; i++) ptr("pointermove", target, cl[i][0], cl[i][1], pointerType);
+					ptr("pointerup", target, cl[cl.length - 1][0], cl[cl.length - 1][1], pointerType);
+					target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: cl[cl.length - 1][0], clientY: cl[cl.length - 1][1], view: window }));
+					await sleep(50);
+					return s.store.all().find((a) => !before.has(a.id) && a.type === "ink") ?? null;
+				};
+				const err = (a, pts) => (a ? Math.max(Math.hypot(a.points[0] - pts[0][0], a.points[1] - pts[0][1]), Math.hypot(a.points[a.points.length - 2] - pts[pts.length - 1][0], a.points[a.points.length - 1] - pts[pts.length - 1][1])) : Infinity);
+				try {
+					pl.settings.ink = { ...pl.settings.ink, tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, input: "stylus" };
+					// 1. ground truth on rotated pages and a CropBox page, at 150 %
+					for (const [name, pages] of [["rotations.pdf", [1, 2, 3, 4]], ["cropbox.pdf", [1]]]) {
+						const { v } = await openPenDF(name);
+						const s = v.debugSession;
+						s.viewer.currentScaleValue = "1.5";
+						await sleep(300);
+						v.toggleInk(true);
+						for (const page of pages) {
+							v.goToPage(page);
+							await waitRendered(v, page);
+							await sleep(200);
+							const vb = s.layers.geometry(page).viewBox;
+							const pts = [[vb[0] + 80, vb[1] + 300], [vb[0] + 140, vb[1] + 320], [vb[0] + 200, vb[1] + 310]];
+							const a = await drawPdf(v, page, pts);
+							const svg = !!(a && s.layers.getLayer(page)?.ink.querySelector(`.pendf-ink[data-id="${a.id}"]`));
+							res.geometry.push({ name, page, rotate: s.layers.geometry(page).rotation, errPt: +err(a, pts).toFixed(3), svg });
+						}
+						// after rotating the view
+						if (name === "rotations.pdf") {
+							v.rotate(90);
+							await sleep(400);
+							v.goToPage(2);
+							await waitRendered(v, 2);
+							await sleep(200);
+							const vb = s.layers.geometry(2).viewBox;
+							const pts = [[vb[0] + 100, vb[1] + 500], [vb[0] + 180, vb[1] + 520]];
+							const a = await drawPdf(v, 2, pts);
+							res.geometry.push({ name, page: 2, viewRotated: true, rotate: s.layers.geometry(2).rotation, errPt: +err(a, pts).toFixed(3) });
+						}
+						await s.store.flush();
+						closeOurs();
+					}
+					// 2. a4.pdf: touch ignored, click after a stroke opens nothing, eraser + undo, reopen
+					const { v, leaf } = await openPenDF("a4.pdf");
+					const s = v.debugSession;
+					await waitRendered(v, 1);
+					const now = Date.now();
+					s.store.upsert({ id: "ink-check-h", type: "highlight", page: 1, createdAt: now, updatedAt: now, deleted: false, quads: [[90, 610, 400, 610, 90, 590, 400, 590]], color: "#ffd400", text: "under ink" });
+					s.layers.refresh(1);
+					v.toggleInk(true);
+					res.touch = await drawPdf(v, 1, [[100, 500], [200, 520]], "touch");
+					const across = await drawPdf(v, 1, [[80, 600], [250, 600], [420, 600]]);
+					res.menuAfterStroke = !!s.viewerRoot?.querySelector?.(".pendf-hl-menu") || !!document.querySelector(".pendf-hl-menu");
+					const dot = await drawPdf(v, 1, [[300, 300]]);
+					res.dot = dot ? { n: dot.points.length, svg: !!s.layers.getLayer(1)?.ink.querySelector(`.pendf-ink[data-id="${dot.id}"]`) } : null;
+					pl.settings.ink = { ...pl.settings.ink, tool: "eraser" };
+					const live = () => s.store.all().filter((a) => a.type === "ink").length;
+					res.beforeErase = live();
+					await drawPdf(v, 1, [[250, 640], [250, 560]]); // crosses the long stroke only
+					res.afterErase = live();
+					res.erasedLong = !s.store.get(across.id) || s.store.get(across.id).deleted;
+					v.undo();
+					res.afterUndo = live();
+					v.toggleInk(false);
+					// 3. stress: 1,500 strokes on page 2
+					const t0 = performance.now();
+					s.store.upsert; // (keep reference)
+					const many = [];
+					for (let k = 0; k < 1500; k++) {
+						const pts = [];
+						for (let i = 0; i < 40; i++) pts.push(Math.round((60 + i * 3 + (k % 30) * 15) * 100) / 100, Math.round((780 - Math.floor(k / 30) * 14 + Math.sin(i + k) * 4) * 100) / 100);
+						many.push({ id: "stress-" + k, type: "ink", page: 2, createdAt: now + k, updatedAt: now + k, deleted: false, tool: "pen", color: "#1f1f1f", width: 1, points: pts });
+					}
+					for (const a of many) s.store.upsert(a);
+					const tUpsert = performance.now() - t0;
+					v.goToPage(2);
+					await waitRendered(v, 2);
+					const t1 = performance.now();
+					s.layers.refresh(2);
+					const tRender = performance.now() - t1;
+					const t2 = performance.now();
+					await s.store.flush();
+					const tFlush = performance.now() - t2;
+					const size = (await app.vault.adapter.stat(FIX + "a4.pdf.pendf.json"))?.size ?? -1;
+					res.stress = { strokes: 1500, upsertMs: Math.round(tUpsert), renderPageMs: Math.round(tRender), flushMs: Math.round(tFlush), sidecarBytes: size, paths: s.layers.getLayer(2)?.ink.querySelectorAll(".pendf-ink").length ?? 0 };
+					// 4. reopen
+					leaf.detach();
+					const again = await openPenDF("a4.pdf");
+					res.reopenedInk = again.v.debugSession.store.all().filter((a) => a.type === "ink").length;
+					const g = res.geometry;
+					res.ok =
+						g.length === 6 && g.every((x) => x.errPt < 0.5) && g.filter((x) => "svg" in x).every((x) => x.svg) &&
+						res.touch === null && !res.menuAfterStroke &&
+						!!res.dot && res.dot.n === 2 && res.dot.svg &&
+						res.beforeErase === 2 && res.afterErase === 1 && res.erasedLong && res.afterUndo === 2 &&
+						res.stress.paths === 1500 && res.stress.sidecarBytes > 0 && res.stress.sidecarBytes < 2e6 &&
+						res.reopenedInk === 1502;
+					return res;
+				} finally {
+					pl.settings.ink = inkBefore;
+				}
+			});
 			await check("persist-restart-rename", async () => {
+				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
+				{
+					const { v: v0 } = await openPenDF("rotations.pdf");
+					const st = store(v0);
+					if (!st.all().some((a) => a.type === "highlight")) {
+						const t = Date.now();
+						st.upsert({ id: "persist-check-h", type: "highlight", page: 1, createdAt: t, updatedAt: t, deleted: false, quads: [[72, 700, 300, 700, 72, 688, 300, 688]], color: "#ffd400", text: "persist" });
+					}
+					await st.flush();
+					closeOurs();
+				}
 				const before = (await ad.exists(FIX + "rotations.pdf.pendf.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.pendf.json"));
 				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;
 				await reloadPlugin();

@@ -58,6 +58,8 @@ export class PenProbeView extends ItemView {
 	private touchTypes = new Map<string, number>();
 	private scrollByType = new Map<string, Map<string, number>>();
 	private touchAction = "none";
+	/** cancel touchstart for stylus touches only (what ink mode does, setting "stylus") */
+	private preventStylus = false;
 	private pad!: HTMLElement;
 	private scroller!: HTMLElement;
 	private canvas!: HTMLCanvasElement;
@@ -93,11 +95,15 @@ export class PenProbeView extends ItemView {
 			this.touchAction = sel.value;
 			this.pad.style.touchAction = this.touchAction;
 		});
+		const lab = bar.createEl("label", { cls: "pendf-probe-check" });
+		const cb = lab.createEl("input", { attr: { type: "checkbox" } });
+		lab.appendText(" cancel Pencil touchstart");
+		cb.addEventListener("change", () => (this.preventStylus = cb.checked));
 		bar.createEl("button", { text: "Reset" }).addEventListener("click", () => this.reset());
 		bar.createEl("button", { text: "Export JSON" }).addEventListener("click", () => void this.export());
 		el.createDiv({
 			cls: "pendf-probe-help",
-			text: "Write with the Pencil and drag with a finger inside the box, once per touch-action value. The box scrolls, so 'scrolled' tells whether input of that type scrolls the page.",
+			text: "Write with the Pencil and drag with a finger inside the box, once per touch-action value, with and without 'cancel Pencil touchstart' (what handwriting mode does). The box scrolls, so 'scrolled' tells whether input of that type scrolls the page.",
 		});
 		this.scroller = el.createDiv({ cls: "pendf-probe-scroller" });
 		this.pad = this.scroller.createDiv({ cls: "pendf-probe-pad" });
@@ -110,7 +116,7 @@ export class PenProbeView extends ItemView {
 		this.registerDomEvent(this.pad, "pointermove", (e) => this.onMove(e), opts);
 		this.registerDomEvent(this.pad, "pointerup", (e) => this.onUp(e), opts);
 		this.registerDomEvent(this.pad, "pointercancel", (e) => this.onUp(e), opts);
-		this.registerDomEvent(this.pad, "touchstart", (e) => this.onTouch(e), { passive: true });
+		this.registerDomEvent(this.pad, "touchstart", (e) => this.onTouch(e), { passive: false });
 		this.resizeCanvas();
 		this.registerDomEvent(window, "resize", () => this.resizeCanvas());
 		this.render();
@@ -199,17 +205,20 @@ export class PenProbeView extends ItemView {
 		this.lastPt.delete(e.pointerId);
 		const scrolled = this.scroller.scrollTop !== this.scrollTopAtDown;
 		const byTa = this.scrollByType.get(this.downType) ?? new Map<string, number>();
-		const key = `${this.touchAction}:${scrolled ? "scrolled" : "no-scroll"}`;
+		const key = `${this.touchAction}${this.preventStylus ? "+cancel-stylus" : ""}:${scrolled ? "scrolled" : "no-scroll"}`;
 		byTa.set(key, (byTa.get(key) ?? 0) + 1);
 		this.scrollByType.set(this.downType, byTa);
 		this.render();
 	}
 
 	private onTouch(e: TouchEvent): void {
+		let stylus = false;
 		for (const t of Array.from(e.changedTouches)) {
 			const tt = (t as Touch & { touchType?: string }).touchType ?? "(unsupported)";
 			this.touchTypes.set(tt, (this.touchTypes.get(tt) ?? 0) + 1);
+			if (tt === "stylus") stylus = true;
 		}
+		if (stylus && this.preventStylus) e.preventDefault();
 	}
 
 	private draw(id: number, type: string, pts: PointerEvent[]): void {
@@ -265,7 +274,7 @@ export class PenProbeView extends ItemView {
 			};
 		}
 		return {
-			probe: "pendf pen probe v1",
+			probe: "pendf pen probe v2",
 			at: new Date().toISOString(),
 			...describePlatform(),
 			devicePixelRatio: window.devicePixelRatio,

@@ -168,6 +168,88 @@
 	border-radius: 0;
 }
 
+/* ---- handwriting (Phase 6) ---- */
+.pendf-view .pendf-inkbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	padding: var(--size-4-1) var(--size-4-2);
+	border-bottom: var(--border-width) solid var(--background-modifier-border);
+	flex: 0 0 auto;
+}
+.pendf-view .pendf-inkbar .pendf-swatch {
+	width: 26px;
+	height: 26px;
+	min-width: 26px;
+	padding: 0;
+	border-radius: 50%;
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	background: var(--pendf-swatch);
+}
+.pendf-view .pendf-inkbar .pendf-swatch.is-active {
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+.pendf-view .pendf-ink-dot {
+	display: inline-block;
+	width: var(--pendf-dot);
+	height: var(--pendf-dot);
+	border-radius: 50%;
+	background: currentColor;
+}
+.pendf-view .pendf-ink-width {
+	min-width: 30px;
+	justify-content: center;
+}
+.pendf-root .pendf-ink-live {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: var(--pendf-canvas-w, 0px);
+	height: var(--pendf-canvas-h, 0px);
+	pointer-events: none;
+	z-index: 15;
+	display: none;
+}
+.pendf-root .pendf-ink-live.is-drawing {
+	display: block;
+}
+.pendf-root .pendf-ink-live.is-highlighter {
+	opacity: 0.35;
+	mix-blend-mode: multiply;
+}
+.pendf-root .pendf-ink {
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.pendf-root .pendf-ink-highlighter {
+	stroke-opacity: 0.35;
+}
+.pendf-root .pendf-ink.is-erased {
+	opacity: 0.15;
+}
+.pendf-root .pendf-layer-svg.pendf-layer-ink {
+	mix-blend-mode: normal;
+}
+/* dark reading mode inverts the page canvas; pen ink follows so black ink stays visible */
+.pendf-root.pendf-invert .pendf-layer-svg.pendf-layer-ink,
+.pendf-root.pendf-invert .pendf-ink-live:not(.is-highlighter) {
+	filter: invert(1) hue-rotate(180deg);
+}
+.pendf-root.pendf-invert .pendf-ink-live.is-highlighter {
+	mix-blend-mode: screen;
+}
+.pendf-root.is-inking .textLayer,
+.pendf-root.is-inking .pendf-container {
+	cursor: crosshair;
+}
+.pendf-root.is-inking-exclusive .pendf-container,
+.pendf-root.is-inking-exclusive .textLayer {
+	touch-action: none;
+}
+
 /* ---- notes (Phase 3) ---- */
 .pendf-root .pendf-note circle {
 	fill: var(--color-accent);

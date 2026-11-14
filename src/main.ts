@@ -127,6 +127,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel("annotations") });
 		this.addCommand({ id: "show-outline", name: "Show outline", callback: () => void this.showAnnotationsPanel("outline") });
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
+		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
 		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });
 		this.addCommand({ id: "copy-page-link", name: "Copy link to current page", checkCallback: (c) => this.withView(c, (v) => v.copyPageLink()) });
 		this.addCommand({
@@ -323,6 +324,7 @@ export default class PenDFPlugin extends Plugin {
 		this.settings = { ...structuredClone(DEFAULT_SETTINGS), ...data };
 		if (!Array.isArray(this.settings.colors) || this.settings.colors.length !== 4) this.settings.colors = structuredClone(DEFAULT_SETTINGS.colors);
 		if (typeof this.settings.positions !== "object" || !this.settings.positions) this.settings.positions = {};
+		this.settings.ink = { ...structuredClone(DEFAULT_SETTINGS.ink), ...(typeof data.ink === "object" && data.ink ? data.ink : {}) };
 	}
 
 	async saveSettings(): Promise<void> {

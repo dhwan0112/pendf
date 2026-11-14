@@ -178,3 +178,28 @@ f8f38b7 docs: REPORT for Phase 1-2
 
 - iPad: DEVICE_CHECKLIST 5-1 ~ 5-5.
 - 다음: Phase 6 필기. 펜 프로브 결과(iPad)가 아직 없어 입력 처리는 Pointer Events 표준 동작 기준으로 만들고, 실기기 결과로 조정한다.
+
+---
+
+# Phase 6 — 간단한 필기 (2026-11-15, 0.5.0)
+
+## 완료 기준 대조
+
+| 기준(목표 문서 1.3) | 결과 | 근거 |
+| --- | --- | --- |
+| 모노 펜, 형광펜, 획 지우개, 실행 취소 | 완료(데스크톱) | `src/ink/`, 하네스 `ink` |
+| Pencil은 필기, 손가락은 스크롤·선택 | 구현, **iPad 미확인** | Pencil `touchstart`만 취소. 대안 설정과 펜 프로브 스위치(D-27) |
+| Excalidraw 대비 펜 끝–잉크 간격 +1프레임 이내 | **iPad 미확인** | DEVICE_CHECKLIST 6-9(240fps 촬영 비교) |
+
+## 전체 검증 상태 (0.5.0)
+
+- 단위 테스트 161개, lint(Obsidian 규칙 포함), check-standalone 통과. `main.js` 3.25 MB.
+- 하네스 26개 검사 전부 통과(메모리 때문에 다섯 묶음으로 나눠 실행). 증거: `docs/evidence/harness-2026-11-15-0.5.0.json`.
+- **iPad에서는 아무것도 확인하지 못했다.** Phase 1–6 전부 DEVICE_CHECKLIST 대기. 특히 필기의 입력 분기와 지연은 합성 이벤트로 검증할 수 없다.
+- Obsidian 커뮤니티 심사 스캐너는 0.1.4 이후 버전(0.2.0~0.5.0)을 아직 보지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 이미 두 번 결과가 달랐다(0.1.3, 0.1.4).
+
+## 다음
+
+1. iPad에서 펜 프로브(cancel Pencil touchstart 켜고/끄고) → DEVICE_CHECKLIST 0 → 6장. 로그와 프로브 JSON을 가져오면 입력 기본값·캔버스·`maxCanvasPixels`를 조정한다.
+2. 커뮤니티 심사 다시 실행.
+3. B-06(코어 뷰어를 먼저 연 뒤 하이라이트 끝 오차) 조사.

@@ -100,7 +100,18 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | C-2 | penDF를 켜기 전과 후에 PDF++의 하이라이트·백링크 기능을 비교한다 | 바뀐 것이 없다 |
 | C-3 | penDF를 제거한 뒤 볼트를 살펴본다 | `*.pdf.pendf.json` 사이드카만 남는다 |
 
-## Phase 6 — 필기 (지금은 측정만)
+## Phase 6 — 필기
 
-- [ ] 240fps 슬로모션으로 Excalidraw와 같은 구간의 펜 끝–잉크 간격을 비교했다(+1프레임 이내)
-- [ ] 손바닥을 댄 채 써도 스크롤·선택 오작동이 없다
+먼저 펜 프로브(설정 → Pen probe → 명령 "Open pen probe")에서 **cancel Pencil touchstart**를 켠 채 `touch-action: auto`로 Pencil 획과 손가락 끌기를 한 번씩 하고 JSON을 내보낸다. `scrollByPointerType.pen`에 `auto+cancel-stylus:no-scroll`, `touch`에 `auto+cancel-stylus:scrolled`가 나오면 기본 입력 방식("Pencil writes, finger scrolls")이 이 기기에서 맞다.
+
+| # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
+| --- | --- | --- | --- |
+| 6-1 | 툴바의 펜 버튼 → Pencil로 글씨를 쓴다 | 쓰는 동안 페이지가 움직이지 않고, 펜을 떼면 획이 남는다 | Pencil `touchstart` 취소가 안 먹힘 → 설정 "Everything writes"로 바꿔 본다 |
+| 6-2 | 필기 모드인 채로 손가락으로 위아래로 끈다, 손가락으로 길게 눌러 글자를 선택한다 | 스크롤된다, 글자가 선택된다(획은 생기지 않는다) | 손가락 입력 분기(`draws()`) |
+| 6-3 | 손바닥을 화면에 댄 채 쓴다 | 확대·축소나 스크롤이 일어나지 않는다 | 획 중 핀치 차단(`isPinchingDisabled`), 손바닥 터치의 스크롤 |
+| 6-4 | 화면 왼쪽 가장자리에서 오른쪽으로 가로획을 긋는다 | 사이드바가 열리지 않고 획이 그어진다 | Obsidian의 가장자리 스와이프 |
+| 6-5 | 형광펜으로 줄을 긋고, 지우개로 획을 문지르고, 실행 취소 | 형광펜은 글자 위에 반투명, 지우개가 닿은 획이 지워졌다가 돌아온다 | `strokeHit`, 지우개 보간 |
+| 6-6 | 점(마침표, i의 점)을 찍는다 | 점이 남는다 | 한 점짜리 획 |
+| 6-7 | 쓴 뒤 핀치 줌, 툴바 회전, 다크 모드(설정 Invert page colors) | 획이 글자에 붙어 있고, 다크 모드에서 검은 펜이 흰색으로 보인다 | 잉크 레이어, invert 필터 |
+| 6-8 | 한 페이지에 획을 수백 개 쓰고 다른 쪽으로 갔다 온다, 앱을 껐다 켠다 | 느려지지 않고 획이 그대로 있다 | 증분 렌더, 사이드카 크기 |
+| 6-9 | **지연 비교(완료 기준)**: 240fps 슬로모션으로 penDF와 Excalidraw에서 같은 속도의 획을 찍고 펜 끝–잉크 끝 간격을 프레임 단위로 비교한다 | penDF가 Excalidraw보다 1프레임(120 Hz 기준 약 8 ms) 이내로 늦다 | 실시간 캔버스(`desynchronized`), coalesced 이벤트 지원 여부(펜 프로브) |

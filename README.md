@@ -12,7 +12,7 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
 ## Status
 
-Phases 1–5 (viewer, highlights, notes, links, bookmarks) of six. See [docs/REPORT.md](docs/REPORT.md).
+All six phases: viewer, highlights, notes, links, bookmarks and handwriting. See [docs/REPORT.md](docs/REPORT.md).
 
 | Phase | Feature | State |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ Phases 1–5 (viewer, highlights, notes, links, bookmarks) of six. See [docs/REP
 | 3 | Notes: on a highlight or a point of the page, Markdown (links, lists, tasks…), annotations panel by page | done (desktop-verified, iPad checklist pending) |
 | 4 | Links: copy a link to a highlight, note, selection or page; clicking it in a note opens penDF there (and the page in Obsidian's viewer without penDF) | done (desktop-verified, iPad checklist pending) |
 | 5 | Bookmarks: the PDF's outline, your own bookmarks (add, rename, reorder, copy link, delete) | done (desktop-verified, iPad checklist pending) |
-| 6 | Handwriting | schema reserved, not implemented |
+| 6 | Handwriting: uniform-width pen, highlighter, stroke eraser, undo; Apple Pencil writes, fingers scroll and select | done (desktop-verified with synthetic pen input; Pencil latency and palm behaviour need an iPad) |
 
 ## Install
 
@@ -50,6 +50,10 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Bookmarks**
   (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
   rename, move up/down, copy link, delete) and **Annotations**.
+- Handwriting: toolbar pen button (or **Toggle handwriting**) shows the ink bar: pen, highlighter,
+  stroke eraser, colors, widths, **Done**. With the Apple Pencil you write while fingers still
+  scroll and select text. If on your device the Pencil scrolls the page instead, set
+  **Settings → penDF → Pencil and finger → Everything writes**. Undo/redo cover strokes too.
 - ⌘/Ctrl+F searches.
 
 > Obsidian Sync users: enable *Settings → Sync → Sync all other types* so the

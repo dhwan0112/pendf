@@ -93,7 +93,7 @@ Bookmarks are listed by `order`, then `createdAt`. Moving one sets its `order` b
 neighbours; when that gap gets too small, all bookmarks are renumbered 1, 2, 3…. The PDF's own
 outline is only read, never written.
 
-### `ink` (Phase 6, reserved)
+### `ink` (Phase 6)
 
 | Field | Type | Meaning |
 | --- | --- | --- |
@@ -101,6 +101,12 @@ outline is only read, never written.
 | `color` | string | CSS color |
 | `width` | number > 0 | stroke width in points |
 | `points` | number[] | one stroke, flattened `[x0, y0, x1, y1, …]` |
+
+Points are in PDF user space, rounded to 0.01 pt and simplified (Ramer–Douglas–Peucker, 0.08 pt for
+the pen, 0.3 pt for the highlighter). A single point is a dot. The pen draws with a uniform width
+(no pressure). The highlighter is drawn at 35 % opacity, blended with the page like text highlights.
+
+penDF writes coordinate arrays (`points`, `quads`) on one line each; the file is still plain JSON.
 
 ## Links (Phase 4)
 

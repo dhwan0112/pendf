@@ -156,10 +156,28 @@ export function parseSidecar(raw: unknown): ParseResult {
 	return { sidecar, problems };
 }
 
+/**
+ * Pretty-printed JSON, except that coordinate arrays (`points`, `quads`) stay
+ * on one line each: handwriting has thousands of numbers per page, and one
+ * number per line would multiply the file size. Still plain JSON.
+ */
 export function serializeSidecar(s: Sidecar): string {
 	const out: Sidecar = { schemaVersion: s.schemaVersion, pdfFingerprint: s.pdfFingerprint, annotations: s.annotations };
 	if (s.unknown && s.unknown.length) out.unknown = s.unknown;
-	return JSON.stringify(out, null, "\t") + "\n";
+	const inline: string[] = [];
+	// marker: U+0000 + "pendf:" + index; a real string collides only if it is exactly that
+	const json = JSON.stringify(
+		out,
+		(key, value: unknown) => {
+			if ((key === "points" || key === "quads") && Array.isArray(value)) {
+				inline.push(JSON.stringify(value));
+				return `\u0000pendf:${inline.length - 1}`;
+			}
+			return value;
+		},
+		"\t",
+	);
+	return json.replace(/"\\u0000pendf:(\d+)"/g, (_, i: string) => inline[Number(i)]) + "\n";
 }
 
 export function uuid(): string {
