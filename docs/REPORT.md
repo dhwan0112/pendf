@@ -1,6 +1,6 @@
 # REPORT — penDF Phase 1(뷰어와 공통 기반) + Phase 2(하이라이트)
 
-세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pdf-ppp`, 원격은 https://github.com/dhwan0112/pdf_ppp (2026-11-14 생성, D-18).
+세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pendf`, 원격은 https://github.com/dhwan0112/pendf (2026-11-14 생성, D-18).
 개발 환경: Windows 11, Obsidian 1.15.1(Electron 37 / Chromium 138), Node 22, pnpm 10.
 (하네스 결과 JSON의 `obsidian: 1.10.6`은 user agent에 찍히는 **설치 파일** 버전이다. 앱 버전은 1.15.1이다.)
 
@@ -19,7 +19,7 @@
 | --- | --- | --- |
 | `pnpm build`, `pnpm test`, `pnpm lint`(check-standalone 포함) 통과, `main.js` 크기 기록 | ✅ | 빌드 3,361,584 B(`build-size.json`, `docs/evidence/build-size-2026-11-13.json`), 테스트 122/122, lint OK |
 | 데스크톱에서 fixture 전부 표시·검색·내부 링크 이동·상태 복원 | ✅ | 하네스 `fixtures-render`(9종), `search`, `links`(페이지 링크, 300쪽 목차 링크, 외부 URL), `state-restore`(작업 공간 상태와 파일별 위치 기억) |
-| 코어 PDF 뷰어로 같은 파일을 동시에 열어도 양쪽 정상 | ✅ | `coexistence-core-first`, `coexistence-ppp-first`: 분할 화면 양쪽 렌더링, `window.pdfjsLib`(코어 5.3.34)의 동일성과 버전 유지 |
+| 코어 PDF 뷰어로 같은 파일을 동시에 열어도 양쪽 정상 | ✅ | `coexistence-core-first`, `coexistence-pendf-first`: 분할 화면 양쪽 렌더링, `window.pdfjsLib`(코어 5.3.34)의 동일성과 버전 유지 |
 | 플러그인을 끈 뒤 DOM·리스너·워커가 남지 않음 | ✅ | `unload-cleanup`: 우리 DOM 0, 워커 3개 모두 terminate, Blob URL 모두 해제, 저장 전 하이라이트도 디스크에 기록됨, 스타일 제거. 리스너는 `registerEvent`/`registerDomEvent`/AbortController로 묶여 있어 직접 셀 수 없다. 잔여 DOM 0과 워커 종료로 간접 확인했다 |
 | (목표 문서) 300쪽 PDF 끝까지 스크롤·줌, 비공개 API 0 | 데스크톱 ✅ / iPad 대기 | `long-300-memory`: 3가지 배율로 300쪽을 훑는 동안 캔버스 최대 10, 주석 레이어 최대 4, 렌더 상태 페이지 최대 10. check-standalone 통과 |
 
@@ -74,12 +74,12 @@
 
 ## 남아 있는 것(사용자 환경)
 
-- SciWiki 테스트 볼트에 `.obsidian/plugins/pdf-ppp/`(꺼진 상태, `community-plugins.json`에는 넣지 않음)와 `pdf-ppp-fixtures/` 폴더(fixture PDF 9개)를 남겨 두었다. 데스크톱에서 직접 시험해 볼 때 쓰면 된다. 필요 없으면 두 폴더를 지우면 된다. 탭, rAF·Worker·`window.open` 심, background throttling 설정, 사이드카, `data.json`, 내보낸 로그·프로브 파일은 모두 되돌리거나 지웠다.
-- **Obsidian을 재시작해야 사라지는 흔적(현재 실행 중인 창에만 있고 파일로는 남지 않음):** 초기 탐색 때 감싼 `console.warn/error/log` 래퍼(동작은 무력화함). `window.__ppp*`, `__dbg`, `__r` 같은 진단용 전역 변수. 개발 중 legacy 빌드를 로드해 생긴 core-js 폴리필.
+- SciWiki 테스트 볼트에 `.obsidian/plugins/pendf/`(꺼진 상태, `community-plugins.json`에는 넣지 않음)와 `pendf-fixtures/` 폴더(fixture PDF 9개)를 남겨 두었다. 데스크톱에서 직접 시험해 볼 때 쓰면 된다. 필요 없으면 두 폴더를 지우면 된다. 탭, rAF·Worker·`window.open` 심, background throttling 설정, 사이드카, `data.json`, 내보낸 로그·프로브 파일은 모두 되돌리거나 지웠다.
+- **Obsidian을 재시작해야 사라지는 흔적(현재 실행 중인 창에만 있고 파일로는 남지 않음):** 초기 탐색 때 감싼 `console.warn/error/log` 래퍼(동작은 무력화함). `window.__pendf*`, `__dbg`, `__r` 같은 진단용 전역 변수. 개발 중 legacy 빌드를 로드해 생긴 core-js 폴리필.
 
 ## 열린 질문
 
-1. **이름**: 해결. 표시 이름 `penDF`, id `pdf-ppp`, 저장소 `dhwan0112/pdf_ppp`(D-18, D-19).
+1. **이름**: 해결. 표시 이름 `penDF`, id `pendf`, 저장소 `dhwan0112/pendf`(D-18, D-19).
 2. **동기화 방식**: Obsidian Sync라면 "Sync all other types"를 켜야 사이드카가 오간다(D-15). iCloud나 Git이면 상관없다. 무엇을 쓰는지 알려 주면 병합 우선순위와 안내를 확정하겠다.
 3. "모노 펜"을 필압 없는 균일 굵기 펜으로 해석했다(목표 문서). 단색 펜을 뜻한 것이라면 알려 달라.
 4. 링크 파라미터(`&ink=` 등)를 코어가 무시하고 해당 페이지로 여는지는 Phase 4 전에 확인해야 한다.
@@ -88,7 +88,7 @@
 ## 다음 세션 권장 작업
 
 1. iPad에서 `DEVICE_CHECKLIST` 0–2절을 진행하고 로그와 펜 프로브 JSON을 가져온다. 결과에 따라 `maxCanvasPixels`, 팔레트 위치, touch-action을 조정한다.
-2. 저장소 `dhwan0112/pdf_ppp`(공개, D-18)에 `0.1.0` 태그를 단다. draft 릴리스를 확인하고 BRAT로 설치한다.
+2. 저장소 `dhwan0112/pendf`(공개, D-18)에 `0.1.0` 태그를 단다. draft 릴리스를 확인하고 BRAT로 설치한다.
 3. Obsidian을 재시작한 뒤 하네스를 한 번 돌린다.
 4. Phase 3(텍스트 주석): 스키마의 `note`는 이미 정의되어 있다. 하이라이트 메뉴에 "메모"를 추가하고, 페이지별 목록 패널(`ItemView`)과 마크다운 렌더링(`MarkdownRenderer`, 공개 API)을 만든다.
 5. pdf.js를 올릴 때: `pnpm add pdfjs-dist@<정확한 버전>`, `pnpm build`. 전역 변환 규칙이나 ponyfill이 소스 모양 변화를 만나면 빌드가 실패하므로 그때 규칙을 고친다. 엔진 검사 목록도 다시 확인한다.

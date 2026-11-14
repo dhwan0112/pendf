@@ -2,7 +2,7 @@
 // pdf.js. It never touches Obsidian's core PDF viewer or its DOM.
 
 import { FileView, Modal, Notice, Platform, Scope, Setting, TFile, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
-import type PdfPppPlugin from "../main";
+import type PenDFPlugin from "../main";
 import {
 	AnnotationEditorType,
 	AnnotationMode,
@@ -25,7 +25,7 @@ import { adapterFs } from "../store/obsidianFs";
 import { logger } from "../util/log";
 import { DebugHud } from "../debug/hud";
 
-export const VIEW_TYPE = "pdf-ppp-view";
+export const VIEW_TYPE = "pendf-view";
 const log = logger("view");
 
 interface ViewerState {
@@ -49,7 +49,7 @@ interface Session {
 	ready: boolean;
 }
 
-export class PdfPppView extends FileView {
+export class PenDFView extends FileView {
 	allowNoFile = false;
 	navigation = true;
 
@@ -72,7 +72,7 @@ export class PdfPppView extends FileView {
 	private hud: DebugHud | null = null;
 	private saveStateTimer: number | null = null;
 
-	constructor(leaf: WorkspaceLeaf, private readonly plugin: PdfPppPlugin) {
+	constructor(leaf: WorkspaceLeaf, private readonly plugin: PenDFPlugin) {
 		super(leaf);
 		this.scope = new Scope(this.app.scope);
 		this.scope.register(["Mod"], "f", () => {
@@ -117,16 +117,16 @@ export class PdfPppView extends FileView {
 	async onOpen(): Promise<void> {
 		const el = this.contentEl;
 		el.empty();
-		el.addClass("pdf-ppp-view");
+		el.addClass("pendf-view");
 
-		this.toolbarEl = el.createDiv({ cls: "ppp-toolbar" });
+		this.toolbarEl = el.createDiv({ cls: "pendf-toolbar" });
 		this.buildToolbar(this.toolbarEl);
-		this.searchBar = el.createDiv({ cls: "ppp-searchbar is-hidden" });
+		this.searchBar = el.createDiv({ cls: "pendf-searchbar is-hidden" });
 		this.buildSearchBar(this.searchBar);
-		this.bannerEl = el.createDiv({ cls: "ppp-banner is-hidden" });
+		this.bannerEl = el.createDiv({ cls: "pendf-banner is-hidden" });
 
-		this.viewerRoot = el.createDiv({ cls: "pdf-ppp-root" });
-		this.container = this.viewerRoot.createDiv({ cls: "ppp-container" });
+		this.viewerRoot = el.createDiv({ cls: "pendf-root" });
+		this.container = this.viewerRoot.createDiv({ cls: "pendf-container" });
 		this.container.tabIndex = 0;
 		this.viewerEl = this.container.createDiv({ cls: "pdfViewer" });
 		this.applySettings();
@@ -141,7 +141,7 @@ export class PdfPppView extends FileView {
 	}
 
 	private button(parent: HTMLElement, icon: string, label: string, onClick: () => void): HTMLButtonElement {
-		const b = parent.createEl("button", { cls: "ppp-icon-btn clickable-icon", attr: { "aria-label": label, title: label } });
+		const b = parent.createEl("button", { cls: "pendf-icon-btn clickable-icon", attr: { "aria-label": label, title: label } });
 		setIcon(b, icon);
 		b.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -151,10 +151,10 @@ export class PdfPppView extends FileView {
 	}
 
 	private buildToolbar(tb: HTMLElement): void {
-		const nav = tb.createDiv({ cls: "ppp-group" });
+		const nav = tb.createDiv({ cls: "pendf-group" });
 		this.button(nav, "chevron-up", "Previous page", () => this.session?.viewer.previousPage());
-		this.pageInput = nav.createEl("input", { cls: "ppp-page-input", attr: { type: "text", inputmode: "numeric", "aria-label": "Page" } });
-		this.pageCountEl = nav.createSpan({ cls: "ppp-page-count", text: "/ –" });
+		this.pageInput = nav.createEl("input", { cls: "pendf-page-input", attr: { type: "text", inputmode: "numeric", "aria-label": "Page" } });
+		this.pageCountEl = nav.createSpan({ cls: "pendf-page-count", text: "/ –" });
 		this.button(nav, "chevron-down", "Next page", () => this.session?.viewer.nextPage());
 		this.pageInput.addEventListener("change", () => this.goToPage(Number(this.pageInput.value)));
 		this.pageInput.addEventListener("keydown", (e) => {
@@ -164,15 +164,15 @@ export class PdfPppView extends FileView {
 			}
 		});
 
-		const zoom = tb.createDiv({ cls: "ppp-group" });
+		const zoom = tb.createDiv({ cls: "pendf-group" });
 		this.button(zoom, "zoom-out", "Zoom out", () => this.zoom(-1));
-		this.zoomLabel = zoom.createSpan({ cls: "ppp-zoom-label", text: "–" });
+		this.zoomLabel = zoom.createSpan({ cls: "pendf-zoom-label", text: "–" });
 		this.button(zoom, "zoom-in", "Zoom in", () => this.zoom(1));
 		this.button(zoom, "move-horizontal", "Fit width", () => this.setScale("page-width"));
 		this.button(zoom, "rotate-cw", "Rotate view", () => this.rotate(90));
 
-		tb.createDiv({ cls: "ppp-spacer" });
-		const tools = tb.createDiv({ cls: "ppp-group" });
+		tb.createDiv({ cls: "pendf-spacer" });
+		const tools = tb.createDiv({ cls: "pendf-group" });
 		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
 		this.button(tools, "undo-2", "Undo", () => this.undo());
 		this.button(tools, "redo-2", "Redo", () => this.redo());
@@ -180,8 +180,8 @@ export class PdfPppView extends FileView {
 	}
 
 	private buildSearchBar(bar: HTMLElement): void {
-		this.searchInput = bar.createEl("input", { cls: "ppp-search-input", attr: { type: "search", placeholder: "Find in PDF…", "aria-label": "Find in PDF" } });
-		this.searchCount = bar.createSpan({ cls: "ppp-search-count" });
+		this.searchInput = bar.createEl("input", { cls: "pendf-search-input", attr: { type: "search", placeholder: "Find in PDF…", "aria-label": "Find in PDF" } });
+		this.searchCount = bar.createSpan({ cls: "pendf-search-count" });
 		this.button(bar, "arrow-up", "Previous match", () => this.find("again", true));
 		this.button(bar, "arrow-down", "Next match", () => this.find("again", false));
 		this.button(bar, "x", "Close", () => this.closeSearch());
@@ -199,7 +199,7 @@ export class PdfPppView extends FileView {
 
 	applySettings(): void {
 		if (!this.viewerRoot) return;
-		this.viewerRoot.toggleClass("pdf-ppp-invert", this.plugin.settings.invertPages);
+		this.viewerRoot.toggleClass("pendf-invert", this.plugin.settings.invertPages);
 		if (this.plugin.settings.debugHud && !this.hud) {
 			this.hud = new DebugHud(this.viewerRoot, () => this.hudData());
 		} else if (!this.plugin.settings.debugHud && this.hud) {
@@ -216,7 +216,7 @@ export class PdfPppView extends FileView {
 		await this.teardown();
 		if (!this.showEngineWarning()) this.setBanner(null);
 		this.viewerEl.empty();
-		const loading = this.viewerRoot.createDiv({ cls: "ppp-loading", text: "Loading…" });
+		const loading = this.viewerRoot.createDiv({ cls: "pendf-loading", text: "Loading…" });
 		try {
 			const data = await this.app.vault.readBinary(file);
 			if (token !== this.loadToken) return;
@@ -689,7 +689,7 @@ function isScaleValue(v: string): boolean {
 	return ["page-width", "page-fit", "page-actual", "auto"].includes(v) || (Number.isFinite(Number(v)) && Number(v) > 0);
 }
 
-function askPassword(plugin: PdfPppPlugin, name: string, retry: boolean): Promise<string | null> {
+function askPassword(plugin: PenDFPlugin, name: string, retry: boolean): Promise<string | null> {
 	return new Promise((resolve) => {
 		const m = new (class extends Modal {
 			value = "";

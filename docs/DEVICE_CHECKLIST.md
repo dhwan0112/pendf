@@ -4,10 +4,10 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 
 ## 준비
 
-1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pdf_ppp`를 설치한다(`0.1.0` 릴리스가 생긴 뒤). 릴리스가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pdf-ppp/`에 복사한다.
-2. `pnpm fixtures`로 만든 `fixtures/out/*.pdf`를 볼트의 `pdf-ppp-fixtures/` 폴더에 넣는다.
+1. 별도 테스트 볼트를 만들고 BRAT로 `dhwan0112/pendf`를 설치한다(`0.1.0` 릴리스가 생긴 뒤). 릴리스가 아직 없으면 `main.js`, `manifest.json`, `styles.css`를 iCloud 등으로 `<볼트>/.obsidian/plugins/pendf/`에 복사한다.
+2. `pnpm fixtures`로 만든 `fixtures/out/*.pdf`를 볼트의 `pendf-fixtures/` 폴더에 넣는다.
 3. 설정 → penDF에서 **Debug overlay**를 켠다. 펜 프로브 항목을 확인할 때는 **Pen probe**도 켠다.
-4. 문제가 생기면 명령 팔레트 → **penDF: Export log to vault**를 실행해 만들어지는 `pdf-ppp-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
+4. 문제가 생기면 명령 팔레트 → **penDF: Export log to vault**를 실행해 만들어지는 `pendf-log-*.md`를 가져온다. Linux에서는 iPad 웹뷰를 원격으로 검사할 수 없을 수 있으므로, 이 로그가 주 진단 수단이다.
 
 모든 항목은 **확인 절차 / 기대 결과 / 실패 시 의심 지점** 순서다.
 
@@ -26,9 +26,9 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | 1-1 | 파일 목록에서 `a4.pdf`를 길게 눌러 **Open in penDF** | 페이지가 렌더링되고 툴바에 `/ 3`이 보인다 | 0-1, 0-2 |
 | 1-2 | `long-300.pdf`를 열고 손가락으로 끝까지 빠르게 스크롤, 중간중간 핀치 줌(50%~300%), 다시 처음으로 | 앱이 종료되지 않는다. HUD의 `canvases`가 대략 10~20 사이를 유지한다 | 캔버스 메모리. `PdfView.ts`의 `maxCanvasPixels`(모바일 2^23)를 낮춘다 |
 | 1-3 | 1-2 직후 HUD의 `renderMs`와 체감 속도를 기록한다 | 한 페이지가 1초 안에 그려진다 | 0-2 폴백 여부 |
-| 1-4 | `korean-cmap.pdf`(글꼴 미포함, CMap 필요)와 `korean-embedded.pdf`를 연다 | 두 파일 모두 한글이 깨지지 않는다 | CMap 임베드(`ppp:assets`) 또는 iOS의 CJK 대체 글꼴 |
+| 1-4 | `korean-cmap.pdf`(글꼴 미포함, CMap 필요)와 `korean-embedded.pdf`를 연다 | 두 파일 모두 한글이 깨지지 않는다 | CMap 임베드(`pendf:assets`) 또는 iOS의 CJK 대체 글꼴 |
 | 1-5 | `a4.pdf`에서 손가락으로 단어를 길게 눌러 선택하고 핸들을 끈다 | 텍스트가 선택되고, 선택 영역이 글자와 겹친다 | 텍스트 레이어 CSS(중첩 규칙 스코핑, `box-sizing`) |
-| 1-6 | 같은 PDF를 코어 PDF 뷰어로도 열어 분할 화면으로 나란히 둔다. 양쪽을 스크롤·줌한다 | 둘 다 정상 표시. 코어 뷰어의 모양이 평소와 같다 | CSS 누출(`.pdf-ppp-root` 범위), 전역 충돌(이론상 없음) |
+| 1-6 | 같은 PDF를 코어 PDF 뷰어로도 열어 분할 화면으로 나란히 둔다. 양쪽을 스크롤·줌한다 | 둘 다 정상 표시. 코어 뷰어의 모양이 평소와 같다 | CSS 누출(`.pendf-root` 범위), 전역 충돌(이론상 없음) |
 | 1-7 | 돋보기 버튼으로 "spectra"를 검색하고 Enter로 다음 결과로 이동 | `1 / N`, `2 / N`으로 바뀌고 일치 항목이 강조된다 | `PDFFindController` 이벤트 |
 | 1-8 | `links.pdf`에서 "Go to page 2"를 탭, `long-300.pdf` 1쪽 목차의 링크를 탭 | 해당 페이지로 이동한다 | 주석 레이어 링크 |
 | 1-9 | `links.pdf`의 "External" 링크를 탭 | 시스템 브라우저(또는 Obsidian 내장 브라우저)가 열린다 | iOS의 `window.open` 처리. 열리지 않으면 BLOCKERS에 기록 |
@@ -66,7 +66,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | --- | --- | --- |
 | C-1 | PDF++를 설치·활성화한 볼트에서 위 Phase 1·2 항목을 반복한다 | 결과가 같다 |
 | C-2 | penDF를 켜기 전과 후에 PDF++의 하이라이트·백링크 기능을 비교한다 | 바뀐 것이 없다 |
-| C-3 | penDF를 제거한 뒤 볼트를 살펴본다 | `*.pdf.ppp.json` 사이드카만 남는다 |
+| C-3 | penDF를 제거한 뒤 볼트를 살펴본다 | `*.pdf.pendf.json` 사이드카만 남는다 |
 
 ## Phase 6 — 필기 (지금은 측정만)
 

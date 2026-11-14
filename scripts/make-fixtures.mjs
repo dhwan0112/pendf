@@ -56,9 +56,9 @@ function expect(file, page, text, x, baseline, size, font) {
 async function newDoc(title) {
 	const doc = await PDFDocument.create();
 	doc.setTitle(title);
-	doc.setAuthor("pdf-ppp fixtures");
-	doc.setProducer("pdf-ppp make-fixtures");
-	doc.setCreator("pdf-ppp make-fixtures");
+	doc.setAuthor("pendf fixtures");
+	doc.setProducer("pendf make-fixtures");
+	doc.setCreator("pendf make-fixtures");
 	doc.setCreationDate(EPOCH);
 	doc.setModificationDate(EPOCH);
 	return doc;

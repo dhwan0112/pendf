@@ -63,7 +63,7 @@
 - **근거:** iOS에서는 버튼을 탭하는 순간 선택이 사라질 수 있다.
 
 ## D-12 매니페스트
-- **결정:** id `pdf-ppp`, 이름 `penDF`(D-19에서 확정), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
+- **결정:** id `pendf`, 이름 `penDF`(D-19에서 확정), author `Denny Kim`, authorUrl `https://github.com/dhwan0112`, `minAppVersion` 1.5.0, `isDesktopOnly: false`. LICENSE 저작권자와 git 작성자는 Kim Donghwan이다.
 - **근거:** 기존 플러그인(Wikiwurzel 등)과 같은 표기. 쓰는 API(`FileView`, `Scope`, `Platform`, `setIcon`)는 1.5 이전부터 공개되어 있다.
 
 ## D-13 내장 객체 무변경을 검증 기준으로 삼음
@@ -85,7 +85,7 @@
   - 모든 개발 의존성은 `.npmrc`의 `save-exact`로 고정된다.
 
 ## D-15 Obsidian Sync와 `.json` 사이드카
-- **결정:** 사이드카 이름은 지시문대로 `<이름>.pdf.ppp.json`을 유지한다.
+- **결정:** 사이드카 이름은 지시문대로 `<이름>.pdf.pendf.json`을 유지한다.
 - **주의:** Obsidian Sync는 기본 설정에서 "기타 파일 형식"을 동기화하지 않는다. Obsidian Sync를 쓰면 *Settings → Sync → Sync all other types*를 켜야 사이드카가 기기 사이에 오간다. iCloud와 Git은 상관없다. REPORT의 열린 질문에 올렸다.
 - **대안:** `.md` 확장자 사이드카. 항상 동기화되지만 노트 목록·검색·그래프에 보인다.
 
@@ -108,3 +108,8 @@
 - **결정:** 표시 이름을 `penDF`로 바꾼다. id `pdf-ppp`와 저장소 `dhwan0112/pdf_ppp`는 그대로 둔다. 로그 접두사도 `[penDF:…]`가 된다.
 - **근거:** Obsidian 커뮤니티 등록 페이지가 `PDF+++`를 "An entry with this name already exists"로 막았다. 기호를 빼면 기존 `PDF++`(id `pdf-plus`)와 같은 `pdf`가 되기 때문으로 보인다. `penDF`는 2026-11-14 기준 community-plugins.json(10,375개)의 이름·id 어디와도 겹치지 않는다.
 - **되돌리기:** `manifest.json`의 `name`과 소스·문서의 표시 문자열을 바꾼다. 사이드카 형식과 설정에는 이름이 들어가지 않는다.
+
+## D-20 id·저장소·코드 이름을 모두 `pendf`로 통일 (2026-11-14, 사용자 결정)
+- **결정:** plugin id `pendf`, 저장소 `dhwan0112/pendf`, 로컬 폴더 `C:\Users\denny\pendf`, 패키지 이름 `pendf`. 코드 안의 `ppp` 접두사도 바꿨다: 뷰 타입 `pendf-view`·`pendf-pen-probe`, CSS 클래스 `pendf-*`와 루트 `.pendf-root`, 빌드 helper `__pendf_*`, 가상 모듈 `pendf:assets`, 사이드카 `<pdf>.pendf.json`, fixture 폴더 `pendf-fixtures`.
+- **근거:** 표시 이름이 `penDF`로 바뀌었고(D-19), 아직 릴리스 전이라 기존 설치나 사이드카가 없다. `pendf`는 커뮤니티 목록의 id와 겹치지 않는다.
+- **주의:** `docs/evidence/`의 JSON, REPORT의 커밋 목록, D-02·D-18·D-19는 당시 기록이라 옛 이름(`pdf-ppp`, `ppp-*`, `.ppp.json`)을 그대로 둔다.

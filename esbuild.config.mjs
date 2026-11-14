@@ -91,8 +91,8 @@ const pdfjsStandalone = {
 			const key = args.path.endsWith("pdf_viewer.mjs") ? "pdf_viewer.mjs" : "pdf.mjs";
 			return { contents: pdfjsSource(key, args.path), loader: "js", resolveDir: path.dirname(args.path) };
 		});
-		build.onResolve({ filter: /^ppp:assets$/ }, () => ({ path: "ppp:assets", namespace: "ppp-assets" }));
-		build.onLoad({ filter: /.*/, namespace: "ppp-assets" }, () => {
+		build.onResolve({ filter: /^pendf:assets$/ }, () => ({ path: "pendf:assets", namespace: "pendf-assets" }));
+		build.onLoad({ filter: /.*/, namespace: "pendf-assets" }, () => {
 			const { code, sizes } = buildAssetsModule();
 			assetSizes = sizes;
 			return { contents: code, loader: "js" };
@@ -101,9 +101,9 @@ const pdfjsStandalone = {
 };
 
 function buildCss() {
-	const pdfCss = scopeCss(readFileSync(CSS, "utf8"), ".pdf-ppp-root");
+	const pdfCss = scopeCss(readFileSync(CSS, "utf8"), ".pendf-root");
 	const own = readFileSync(path.join(root, "src", "styles.css"), "utf8");
-	const header = "/* penDF styles. The pdf.js viewer CSS below is scoped to .pdf-ppp-root (Apache-2.0, Mozilla Foundation). */\n";
+	const header = "/* penDF styles. The pdf.js viewer CSS below is scoped to .pendf-root (Apache-2.0, Mozilla Foundation). */\n";
 	writeFileSync(path.join(root, "styles.css"), header + own + "\n/* ---- pdf.js viewer (scoped) ---- */\n" + pdfCss);
 }
 

@@ -125,16 +125,16 @@ async function createWorker(): Promise<PDFWorker> {
 	// Module-scoped option of *our* pdf.js copy (not a global).
 	GlobalWorkerOptions.workerSrc = url;
 	try {
-		const w = new Worker(url, { type: "module", name: "pdf-ppp-worker" });
+		const w = new Worker(url, { type: "module", name: "pendf-worker" });
 		await probeWorker(w, 15_000);
 		webWorker = w;
 		mode = "web-worker";
 		log.info("web worker ready (blob URL, module)");
-		return new PDFWorker({ port: w, name: "pdf-ppp" } as unknown as PDFWorkerParams);
+		return new PDFWorker({ port: w, name: "pendf" } as unknown as PDFWorkerParams);
 	} catch (e) {
 		log.warn("web worker unavailable, falling back to main-thread pdf.js", e);
 		// pdf.js "fake worker": imports the same Blob URL on the main thread.
-		const fw = new PDFWorker({ name: "pdf-ppp-fake" } as unknown as PDFWorkerParams);
+		const fw = new PDFWorker({ name: "pendf-fake" } as unknown as PDFWorkerParams);
 		await fw.promise;
 		mode = "main-thread";
 		return fw;

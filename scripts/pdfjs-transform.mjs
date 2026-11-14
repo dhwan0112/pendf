@@ -39,7 +39,7 @@ export const RULES = {
     {
       name: "read pdf.js API from the bundled module, not globalThis.pdfjsLib",
       find: /\} = globalThis\.pdfjsLib;/g,
-      replace: "} = __pppPdfjs;",
+      replace: "} = __pendfPdfjs;",
       count: 1,
     },
     {
@@ -67,7 +67,7 @@ export const RULES = {
   ],
 };
 
-export const VIEWER_PRELUDE = 'import * as __pppPdfjs from "pdfjs-dist/build/pdf.mjs";\n';
+export const VIEWER_PRELUDE = 'import * as __pendfPdfjs from "pdfjs-dist/build/pdf.mjs";\n';
 
 /**
  * Apply the rules for `key` to `src`. Throws if any rule matches a different

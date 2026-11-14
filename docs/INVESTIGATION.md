@@ -25,7 +25,7 @@ Chromium 138에 무엇이 없는지는 기억이 아니라, Obsidian 안의 깨�
 
 **legacy 빌드를 쓰지 않은 이유(10절 실측).** legacy 빌드는 core-js 폴리필을 품고 있다. 이 폴리필은 모든 플러그인이 함께 쓰는 Obsidian 창의 내장 객체를 고친다. 기능을 **추가**하고, Chromium 138에서는 네이티브 구현까지 **교체**한다. 스탠드얼론 원칙의 "다른 플러그인과 접점 없음"에 어긋나고, 플러그인을 꺼도 되돌아가지 않는다. pdf.js modern 빌드 자체에도 전역 폴리필이 한 군데 있다(`Iterator.prototype.join`).
 
-**채택: modern 빌드 + 빌드 시 호출 지점 치환(ponyfill).** `scripts/pdfjs-ponyfill.mjs`가 acorn AST로 해당 호출 지점을 모듈 지역 함수 호출로 바꾼다. 예를 들어 `m.getOrInsertComputed(k, f)`는 `__ppp_getOrInsertComputed(m, k, f)`가 된다. 이 함수는 네이티브 메서드가 있으면 그것을 부르고, 없으면 지역 구현을 쓴다. 전역은 하나도 건드리지 않는다.
+**채택: modern 빌드 + 빌드 시 호출 지점 치환(ponyfill).** `scripts/pdfjs-ponyfill.mjs`가 acorn AST로 해당 호출 지점을 모듈 지역 함수 호출로 바꾼다. 예를 들어 `m.getOrInsertComputed(k, f)`는 `__pendf_getOrInsertComputed(m, k, f)`가 된다. 이 함수는 네이티브 메서드가 있으면 그것을 부르고, 없으면 지역 구현을 쓴다. 전역은 하나도 건드리지 않는다.
 
 | 치환 대상 | pdf.mjs | pdf_viewer.mjs | worker |
 | --- | --- | --- | --- |
@@ -47,10 +47,10 @@ Chromium 138에 무엇이 없는지는 기억이 아니라, Obsidian 안의 깨�
 | `build/pdf.mjs` 끝 | **쓰기** `globalThis.pdfjsLib = {…}` | 제거. 남겨 두면 코어 Obsidian의 `window.pdfjsLib`을 덮어쓴다 |
 | `build/pdf.mjs` | 쓰기 `globalThis._pdfjsTestingUtils` | 제거 |
 | `build/pdf.mjs` `PDFWorker` | 읽기 `globalThis.pdfjsWorker?.WorkerMessageHandler`(fake worker 지름길) | `null`로 치환. 다른 플러그인의 워커를 집어 올 수 있기 때문 |
-| `web/pdf_viewer.mjs` 머리 | **읽기** `const {…} = globalThis.pdfjsLib;`(표시 계층 전체가 이 전역에 의존) | 번들 내부 모듈 import(`import * as __pppPdfjs from "pdfjs-dist/build/pdf.mjs"`)로 치환 |
+| `web/pdf_viewer.mjs` 머리 | **읽기** `const {…} = globalThis.pdfjsLib;`(표시 계층 전체가 이 전역에 의존) | 번들 내부 모듈 import(`import * as __pendfPdfjs from "pdfjs-dist/build/pdf.mjs"`)로 치환 |
 | `web/pdf_viewer.mjs` 끝 | 쓰기 `globalThis.pdfjsViewer = {…}` | 제거 |
 | `build/pdf.worker.mjs` 끝 | 쓰기 `globalThis.pdfjsWorker = {…}` | 제거. 메인 스레드 폴백에서는 이 코드가 `window`에서 돈다 |
-| `build/pdf.mjs`·worker | 쓰기 `Iterator.prototype.join = …`(없을 때만) | 제거하고 `.join()` 호출을 `__ppp_join`으로 치환 |
+| `build/pdf.mjs`·worker | 쓰기 `Iterator.prototype.join = …`(없을 때만) | 제거하고 `.join()` 호출을 `__pendf_join`으로 치환 |
 | `build/pdf.mjs` Node 분기 | `globalThis.DOMMatrix/Path2D/navigator` 쓰기 | `isNodeJS`일 때만 실행된다. Electron 렌더러(`process.type === "renderer"`)와 iOS에서는 실행되지 않음 |
 
 구현은 `scripts/pdfjs-transform.mjs`다. esbuild `onLoad` 단계에서 치환하고, 각 규칙이 **정확히 기대한 횟수만큼** 맞지 않으면 빌드를 실패시킨다. pdf.js를 올려 소스 모양이 바뀌면 조용히 새는 번들이 나가지 않고 빌드가 깨진다. `scripts/check-standalone.mjs`는 빌드된 `main.js`와 그 안에 gzip으로 들어간 워커 소스를 풀어 다음이 0건인지 다시 검사한다: `pdfjsLib`·`pdfjsViewer`·`pdfjsWorker`·`loadPdfJs`·`core-js`·내장 객체 대입.
@@ -90,7 +90,7 @@ CMap을 gzip 하나로 묶으면 약 0.15 MB를 더 줄일 수 있다. 다만 �
 
 `web/pdf_viewer.css`(168 KB)는 `:root` 변수와 `.pdfViewer`, `.page`, `.textLayer` 같은 전역 셀렉터를 쓰고, **CSS 네이티브 중첩**도 쓴다(예: `.textLayer { > :not(.markedContent) { … } }`). 코어 Obsidian PDF 뷰어도 같은 클래스 이름을 쓰므로 그대로 넣으면 코어 뷰어의 모양이 바뀐다. `scripts/scope-css.mjs`(postcss)가 하는 일은 다음과 같다.
 
-- **최상위 규칙에만** `.pdf-ppp-root `를 붙이고, `:root`/`html`/`body`는 `.pdf-ppp-root`로 바꾼다. 중첩 규칙은 이미 범위가 잡힌 부모 규칙의 상대 셀렉터이므로 그대로 둔다. 처음 구현은 중첩 규칙에도 접두사를 붙였는데, 텍스트 레이어 span의 크기와 변환 규칙이 무효가 되어 선택 영역과 하이라이트가 어긋났다. 데스크톱 하네스의 정답 검사로 발견해 고쳤다.
+- **최상위 규칙에만** `.pendf-root `를 붙이고, `:root`/`html`/`body`는 `.pendf-root`로 바꾼다. 중첩 규칙은 이미 범위가 잡힌 부모 규칙의 상대 셀렉터이므로 그대로 둔다. 처음 구현은 중첩 규칙에도 접두사를 붙였는데, 텍스트 레이어 span의 크기와 변환 규칙이 무효가 되어 선택 영역과 하이라이트가 어긋났다. 데스크톱 하네스의 정답 검사로 발견해 고쳤다.
 - `@keyframes` 안은 건드리지 않는다.
 - `url(images/…)` 선언(편집기·툴바 아이콘)을 지운다. 플러그인 폴더에 이미지가 없고, 그 위젯을 그리지 않는다.
 
@@ -113,7 +113,7 @@ CMap을 gzip 하나로 묶으면 약 0.15 MB를 더 줄일 수 있다. 다만 �
 
 ## 8. 기타 확인 사항
 
-- `PDFViewer`는 컨테이너가 `position: absolute`가 아니면 예외를 던진다. `.ppp-container { position: absolute; inset: 0 }`로 둔다.
+- `PDFViewer`는 컨테이너가 `position: absolute`가 아니면 예외를 던진다. `.pendf-container { position: absolute; inset: 0 }`로 둔다.
 - 기본 `GenericL10n()`을 언어 인자 없이 만들면 내장 영어 번들을 쓰고 아무것도 가져오지 않는다.
 - `annotationEditorMode: AnnotationEditorType.DISABLE`로 두면 pdf.js 편집기 UI 관리자를 만들지 않는다.
 - pdf.js는 페이지를 reset할 때(줌, 회전, 재렌더) 모르는 자식 노드를 지운다. 우리 레이어는 `pagerendered`·`textlayerrendered`·`scalechanging` 때 다시 붙인다(`src/layers`).
@@ -124,8 +124,8 @@ CMap을 gzip 하나로 묶으면 약 0.15 MB를 더 줄일 수 있다. 다만 �
 
 데스크톱 하네스의 `css-inward` 검사가 우리 뷰의 페이지 요소에 걸리는 Obsidian `app.css` 규칙을 나열한다.
 
-- `* { box-sizing: border-box; }`: pdf.js는 content-box를 전제로 페이지 크기를 잡는다(테두리는 캔버스 바깥). border-box가 적용되면 캔버스 래퍼가 텍스트 레이어보다 테두리 두 배(18px)만큼 작아져 서로 어긋난다. `src/styles.css`에서 `.pdf-ppp-root .pdfViewer *`를 content-box로 되돌렸다. 고친 뒤 텍스트 레이어와 캔버스의 크기·위치가 일치한다(`aligned: true`).
-- Obsidian `app.css`에는 코어 뷰어용 pdf.js CSS가 범위 없이 들어 있다(`.textLayer span`, `.textLayer > :not(.markedContent)` 등). 우리 규칙은 `.pdf-ppp-root` 접두사 덕분에 명시도가 더 높아 우선한다. 같은 이름의 속성은 결과값이 pdf.js 6.5 규칙과 일치함을 확인했다.
+- `* { box-sizing: border-box; }`: pdf.js는 content-box를 전제로 페이지 크기를 잡는다(테두리는 캔버스 바깥). border-box가 적용되면 캔버스 래퍼가 텍스트 레이어보다 테두리 두 배(18px)만큼 작아져 서로 어긋난다. `src/styles.css`에서 `.pendf-root .pdfViewer *`를 content-box로 되돌렸다. 고친 뒤 텍스트 레이어와 캔버스의 크기·위치가 일치한다(`aligned: true`).
+- Obsidian `app.css`에는 코어 뷰어용 pdf.js CSS가 범위 없이 들어 있다(`.textLayer span`, `.textLayer > :not(.markedContent)` 등). 우리 규칙은 `.pendf-root` 접두사 덕분에 명시도가 더 높아 우선한다. 같은 이름의 속성은 결과값이 pdf.js 6.5 규칙과 일치함을 확인했다.
 - `* { text-shadow: none !important }`, 스크롤바 변수: 영향 없음.
 
 ## 10. core-js 흔적 실측(legacy 빌드를 버린 근거)

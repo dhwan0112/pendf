@@ -190,10 +190,10 @@ describe("sidecar store", () => {
 		const fs = new MemFs();
 		fs.externalWrite(SIDE, "{}");
 		expect(await moveSidecar(fs, PDF, "New/name.pdf")).toBe("moved");
-		expect(fs.files.has("New/name.pdf.ppp.json")).toBe(true);
+		expect(fs.files.has("New/name.pdf.pendf.json")).toBe(true);
 		expect(await moveSidecar(fs, PDF, "x.pdf")).toBe("none");
-		fs.externalWrite("a.pdf.ppp.json", "{}");
-		fs.externalWrite("b.pdf.ppp.json", "{}");
+		fs.externalWrite("a.pdf.pendf.json", "{}");
+		fs.externalWrite("b.pdf.pendf.json", "{}");
 		expect(await moveSidecar(fs, "a.pdf", "b.pdf")).toBe("target-exists");
 	});
 });

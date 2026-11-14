@@ -47,7 +47,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // --- pdf.js-only probe bundle + worker for the clean-realm footprint check.
 // Same transforms as main.js (global stripping + ponyfills, modern build).
 async function buildPdfjsProbe() {
-	const dir = path.join(root, "node_modules", ".cache", "pdf-ppp");
+	const dir = path.join(root, "node_modules", ".cache", "pendf");
 	mkdirSync(dir, { recursive: true });
 	const bundle = path.join(dir, "pdfjs-probe.js");
 	const worker = path.join(dir, "pdfjs-probe-worker.js");
@@ -91,8 +91,8 @@ async function main() {
 		fixturesDir: fwd(path.join(root, "fixtures", "out")),
 		ourVersion: JSON.parse(readFileSync(path.join(root, "node_modules", "pdfjs-dist", "package.json"), "utf8")).version,
 	};
-	writeFileSync(path.join(root, "node_modules", ".cache", "pdf-ppp", "cfg.json"), JSON.stringify(cfg));
-	const cfgPath = fwd(path.join(root, "node_modules", ".cache", "pdf-ppp", "cfg.json"));
+	writeFileSync(path.join(root, "node_modules", ".cache", "pendf", "cfg.json"), JSON.stringify(cfg));
+	const cfgPath = fwd(path.join(root, "node_modules", ".cache", "pendf", "cfg.json"));
 	const start = `(()=>{ const fs = require("fs"); const src = fs.readFileSync(${JSON.stringify(fwd(checksPath))}, "utf8"); const cfg = JSON.parse(fs.readFileSync(${JSON.stringify(cfgPath)}, "utf8")); const harness = (0, eval)(src); harness.start(cfg); return "started"; })()`;
 	console.log("harness:", evalInObsidian(start));
 	const t0 = Date.now();
@@ -100,14 +100,14 @@ async function main() {
 	try {
 		for (;;) {
 			await sleep(1500);
-			state = evalInObsidian(`JSON.stringify({done: !!window.__pppH?.done, step: window.__pppH?.step})`);
+			state = evalInObsidian(`JSON.stringify({done: !!window.__pendfH?.done, step: window.__pendfH?.step})`);
 			const s = JSON.parse(state || "{}");
 			process.stdout.write(`\r  … ${s.step ?? ""}`.padEnd(70));
 			if (s.done) break;
 			if (Date.now() - t0 > 15 * 60_000) throw new Error("harness timed out");
 		}
 		process.stdout.write("\n");
-		const result = evalInObsidian(`JSON.stringify(window.__pppH.result ?? {error: window.__pppH.error})`);
+		const result = evalInObsidian(`JSON.stringify(window.__pendfH.result ?? {error: window.__pendfH.error})`);
 		writeFileSync(outFile, JSON.stringify(JSON.parse(result), null, 2) + "\n");
 		const r = JSON.parse(result);
 		let fails = 0;
@@ -122,7 +122,7 @@ async function main() {
 	} finally {
 		// the page restores itself when the run ends; this is the safety net
 		try {
-			console.log("teardown:", evalInObsidian(`(()=>{ try { window.__pppH?.teardown?.(); return "ok"; } catch (e) { return String(e); } })()`));
+			console.log("teardown:", evalInObsidian(`(()=>{ try { window.__pendfH?.teardown?.(); return "ok"; } catch (e) { return String(e); } })()`));
 		} catch (e) {
 			console.error("teardown eval failed", e);
 		}
@@ -132,7 +132,7 @@ async function main() {
 for (const sig of ["SIGINT", "SIGTERM"]) {
 	process.on(sig, () => {
 		try {
-			evalInObsidian(`(()=>{ window.__pppH?.teardown?.(); return "ok"; })()`);
+			evalInObsidian(`(()=>{ window.__pendfH?.teardown?.(); return "ok"; })()`);
 		} finally {
 			process.exit(130);
 		}

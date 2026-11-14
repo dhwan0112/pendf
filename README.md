@@ -6,7 +6,7 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
   built-in PDF viewer or any other plugin; it bundles its own copy of
   [PDF.js](https://mozilla.github.io/pdf.js/) and uses only Obsidian's public API.
 - **Your PDFs are never modified.** Annotations are stored next to each PDF in
-  `<name>.pdf.ppp.json` — a documented format (see [docs/SCHEMA.md](docs/SCHEMA.md)).
+  `<name>.pdf.pendf.json` — a documented format (see [docs/SCHEMA.md](docs/SCHEMA.md)).
 - Works offline: the PDF.js worker, CMaps (CJK), standard fonts and image
   decoders are embedded in `main.js`; nothing is fetched from the network.
 
@@ -23,9 +23,9 @@ Phase 1 (viewer) and Phase 2 (highlights) of six. See [docs/REPORT.md](docs/REPO
 ## Install
 
 Not in the community plugin list yet. With [BRAT](https://github.com/TfTHacker/obsidian42-brat):
-add `dhwan0112/pdf_ppp`. Or copy `main.js`, `manifest.json` and `styles.css`
-from a [release](https://github.com/dhwan0112/pdf_ppp/releases) into
-`<vault>/.obsidian/plugins/pdf-ppp/`.
+add `dhwan0112/pendf`. Or copy `main.js`, `manifest.json` and `styles.css`
+from a [release](https://github.com/dhwan0112/pendf/releases) into
+`<vault>/.obsidian/plugins/pendf/`.
 
 ## Use
 
@@ -36,7 +36,7 @@ from a [release](https://github.com/dhwan0112/pdf_ppp/releases) into
 - ⌘/Ctrl+F searches.
 
 > Obsidian Sync users: enable *Settings → Sync → Sync all other types* so the
-> `.ppp.json` sidecars sync.
+> `.pendf.json` sidecars sync.
 
 ## Develop
 

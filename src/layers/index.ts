@@ -6,7 +6,7 @@
 // and keep them only on visible pages ±1; everything else is detached and
 // garbage-collectable.
 //
-// Each page gets one host <div class="ppp-layer-host"> placed directly
+// Each page gets one host <div class="pendf-layer-host"> placed directly
 // *below* the text layer (so text selection keeps working) holding an <svg>
 // whose viewBox is the page in PDF points at rotation r. Because the SVG is
 // sized 100%×100% of the page box, zooming needs no re-layout at all; only a
@@ -156,10 +156,10 @@ export class LayerManager {
 			const geom = this.geometry(n);
 			if (!geom) return;
 			const host = document.createElement("div");
-			host.className = "ppp-layer-host";
+			host.className = "pendf-layer-host";
 			host.dataset.page = String(n);
 			const svg = document.createElementNS(SVG_NS, "svg");
-			svg.classList.add("ppp-layer-svg");
+			svg.classList.add("pendf-layer-svg");
 			svg.setAttribute("preserveAspectRatio", "none");
 			const group = document.createElementNS(SVG_NS, "g");
 			svg.appendChild(group);
@@ -244,7 +244,7 @@ export class LayerManager {
  * right under CSS transforms (pinch preview) too.
  */
 export function pageContentRect(pageDiv: HTMLElement): DOMRect {
-	for (const sel of [":scope > .textLayer", ":scope > .canvasWrapper", ":scope > .ppp-layer-host"]) {
+	for (const sel of [":scope > .textLayer", ":scope > .canvasWrapper", ":scope > .pendf-layer-host"]) {
 		const el = pageDiv.querySelector<HTMLElement>(sel);
 		if (!el) continue;
 		const r = el.getBoundingClientRect();

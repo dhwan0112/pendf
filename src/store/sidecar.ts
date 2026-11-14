@@ -1,4 +1,4 @@
-// Sidecar storage for one PDF: `<pdf path>.ppp.json` next to the PDF.
+// Sidecar storage for one PDF: `<pdf path>.pendf.json` next to the PDF.
 //
 // - load → migrate → validate; a fingerprint mismatch makes the store
 //   read-only and hides annotations (they belong to a different PDF)

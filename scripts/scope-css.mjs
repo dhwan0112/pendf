@@ -7,7 +7,7 @@ const IMAGE_URL = /url\(\s*["']?images\//;
 
 /**
  * @param {string} css
- * @param {string} scope e.g. ".pdf-ppp-root"
+ * @param {string} scope e.g. ".pendf-root"
  */
 export function scopeCss(css, scope) {
   const rootAst = postcss.parse(css);

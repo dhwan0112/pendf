@@ -35,17 +35,17 @@ describe("ponyfill helpers (fallback paths, no native support)", () => {
 		const out = runFresh(
 			HELPERS +
 				`const m = new Map(); let calls = 0;
-				 const a = __ppp_getOrInsertComputed(m, "k", (k) => (calls++, k + "!"));
-				 const b = __ppp_getOrInsertComputed(m, "k", () => (calls++, "x"));
-				 const c = __ppp_getOrInsert(m, "z", 5); const d = __ppp_getOrInsert(m, "z", 6);
-				 const w = new WeakMap(); const key = {}; const e = __ppp_getOrInsertComputed(w, key, () => 7);
+				 const a = __pendf_getOrInsertComputed(m, "k", (k) => (calls++, k + "!"));
+				 const b = __pendf_getOrInsertComputed(m, "k", () => (calls++, "x"));
+				 const c = __pendf_getOrInsert(m, "z", 5); const d = __pendf_getOrInsert(m, "z", 6);
+				 const w = new WeakMap(); const key = {}; const e = __pendf_getOrInsertComputed(w, key, () => 7);
 				 const out = { a, b, c, d, e, calls, size: m.size };`,
 		);
 		expect(out).toEqual({ a: "k!", b: "k!", c: 5, d: 5, e: 7, calls: 1, size: 2 });
 	});
 
 	it("sumPrecise beats naive summation", () => {
-		const out = runFresh(HELPERS + `const out = { s: __ppp_sumPrecise([1e20, 0.1, -1e20]), e: __ppp_sumPrecise([]), n: __ppp_sumPrecise([1, 2, 3.5]) };`);
+		const out = runFresh(HELPERS + `const out = { s: __pendf_sumPrecise([1e20, 0.1, -1e20]), e: __pendf_sumPrecise([]), n: __pendf_sumPrecise([1, 2, 3.5]) };`);
 		expect(out.s).toBeCloseTo(0.1, 12);
 		expect(Object.is(out.e, -0)).toBe(true);
 		expect(out.n).toBe(6.5);
@@ -55,13 +55,13 @@ describe("ponyfill helpers (fallback paths, no native support)", () => {
 		const out = runFresh(
 			HELPERS +
 				`const u = new Uint8Array([0, 1, 2, 250, 251, 255, 62, 63]);
-				 const b64 = __ppp_toBase64(u);
-				 const url = __ppp_toBase64(u, { alphabet: "base64url", omitPadding: true });
-				 const back = Array.from(__ppp_fromBase64(b64));
-				 const backUrl = Array.from(__ppp_fromBase64(url, { alphabet: "base64url" }));
-				 const hex = __ppp_toHex(u);
-				 const t = new Uint8Array(3); const r = __ppp_setFromHex(t, "0aff10");
-				 const t2 = new Uint8Array(8); const r2 = __ppp_setFromBase64(t2, b64);
+				 const b64 = __pendf_toBase64(u);
+				 const url = __pendf_toBase64(u, { alphabet: "base64url", omitPadding: true });
+				 const back = Array.from(__pendf_fromBase64(b64));
+				 const backUrl = Array.from(__pendf_fromBase64(url, { alphabet: "base64url" }));
+				 const hex = __pendf_toHex(u);
+				 const t = new Uint8Array(3); const r = __pendf_setFromHex(t, "0aff10");
+				 const t2 = new Uint8Array(8); const r2 = __pendf_setFromBase64(t2, b64);
 				 const out = { b64, url, back, backUrl, hex, t: Array.from(t), r, t2: Array.from(t2), r2w: r2.written };`,
 		);
 		expect(out.b64).toBe(Buffer.from([0, 1, 2, 250, 251, 255, 62, 63]).toString("base64"));
@@ -78,12 +78,12 @@ describe("ponyfill helpers (fallback paths, no native support)", () => {
 	it("Promise.try, RegExp.escape, URL.parse, join on iterators", async () => {
 		const out = runFresh(
 			HELPERS +
-				`const p = __ppp_promiseTry((a, b) => a + b, 2, 3);
-				 const q = __ppp_promiseTry(() => { throw new Error("boom"); });
+				`const p = __pendf_promiseTry((a, b) => a + b, 2, 3);
+				 const q = __pendf_promiseTry(() => { throw new Error("boom"); });
 				 q.catch(() => {});
-				 const re = new RegExp(__ppp_regExpEscape("a.b*c(1)"));
-				 const out = { p, q, ok: re.test("xa.b*c(1)y"), no: re.test("aXb*c(1)"), url: __ppp_urlParse("https://x.test/a")?.host, bad: __ppp_urlParse("::nope"),
-				   joinIter: __ppp_join(new Set([1, 2, 3]).values(), "-"), joinArr: __ppp_join([1, 2], "+") };`,
+				 const re = new RegExp(__pendf_regExpEscape("a.b*c(1)"));
+				 const out = { p, q, ok: re.test("xa.b*c(1)y"), no: re.test("aXb*c(1)"), url: __pendf_urlParse("https://x.test/a")?.host, bad: __pendf_urlParse("::nope"),
+				   joinIter: __pendf_join(new Set([1, 2, 3]).values(), "-"), joinArr: __pendf_join([1, 2], "+") };`,
 		);
 		expect(await out.p).toBe(5);
 		await expect(out.q as Promise<unknown>).rejects.toThrow("boom");

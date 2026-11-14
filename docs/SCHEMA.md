@@ -5,10 +5,10 @@ the PDF, so they survive without the plugin and can be read by any tool.
 
 ```
 Papers/attention.pdf
-Papers/attention.pdf.ppp.json   ← sidecar
+Papers/attention.pdf.pendf.json   ← sidecar
 ```
 
-The name is always `<pdf file name>.ppp.json`, in the same folder. When the PDF
+The name is always `<pdf file name>.pendf.json`, in the same folder. When the PDF
 is renamed or moved inside Obsidian, the plugin moves the sidecar with it. When
 the PDF is deleted, the sidecar is kept.
 

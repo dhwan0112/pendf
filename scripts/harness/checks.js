@@ -1,12 +1,12 @@
 // Runs INSIDE Obsidian (page context) via scripts/obsidian-harness.mjs.
-// Evaluates to { start(cfg) }. Results land in window.__pppH.result.
+// Evaluates to { start(cfg) }. Results land in window.__pendfH.result.
 // Dev-only: uses app.plugins to reload the plugin under test.
 ({
 	start(cfg) {
-		const H = (window.__pppH = { done: false, step: "setup", result: null, error: null });
-		const FIX = "pdf-ppp-fixtures/";
-		const ID = "pdf-ppp";
-		const VIEW = "pdf-ppp-view";
+		const H = (window.__pendfH = { done: false, step: "setup", result: null, error: null });
+		const FIX = "pendf-fixtures/";
+		const ID = "pendf";
+		const VIEW = "pendf-view";
 		const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 		const waitFor = async (fn, ms = 15000, step = 60) => {
 			const t0 = Date.now();
@@ -71,7 +71,7 @@
 			console.warn("harness: cannot lift background throttling", e);
 		}
 		const scrollPump = setInterval(() => {
-			for (const c of document.querySelectorAll(".ppp-container")) {
+			for (const c of document.querySelectorAll(".pendf-container")) {
 				const pos = c.scrollTop + "," + c.scrollLeft;
 				if (scrollPos.get(c) !== pos) {
 					scrollPos.set(c, pos);
@@ -108,7 +108,7 @@
 				if (await ad.exists(dataJson)) await ad.remove(dataJson);
 				for (const p of createdPaths) if (await ad.exists(p)) await ad.remove(p);
 				const listing = await ad.list(FIX).catch(() => ({ files: [] }));
-				for (const f of listing.files) if (/\.ppp\.json(\.tmp)?$/.test(f) || /-renamed\.pdf$/.test(f)) await ad.remove(f);
+				for (const f of listing.files) if (/\\.pendf\\.json(\.tmp)?$/.test(f) || /-renamed\.pdf$/.test(f)) await ad.remove(f);
 			})().catch((e) => console.error(e));
 		};
 
@@ -129,7 +129,7 @@
 		const pageView = (v, n) => v.debugSession.viewer.getPageView(n - 1);
 		const waitRendered = (v, n) => waitFor(() => pageView(v, n)?.renderingState === 3 && pageView(v, n).div.querySelector("canvas"), 20000);
 		const waitText = (v, n) => waitFor(() => pageView(v, n)?.textLayer?.div?.querySelector("span"), 20000);
-		const openPpp = async (name, state = {}) => {
+		const openPenDF = async (name, state = {}) => {
 			const leaf = app.workspace.getLeaf("tab");
 			await leaf.setViewState({ type: VIEW, state: { file: FIX + name, ...state }, active: true });
 			const v = leaf.view;
@@ -164,7 +164,7 @@
 			return { minX, minY, maxX, maxY };
 		};
 		const polyClientRect = (v, id) => {
-			const els = v.containerEl.querySelectorAll(`.ppp-hl[data-id="${id}"] polygon`);
+			const els = v.containerEl.querySelectorAll(`.pendf-hl[data-id="${id}"] polygon`);
 			if (!els.length) return null;
 			let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
 			for (const e of els) {
@@ -257,13 +257,13 @@
 			const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
 			await app.plugins.disablePlugin(ID);
 			if (await ad.exists(dataJson)) await ad.remove(dataJson);
-			for (const f of (await ad.list(FIX)).files) if (/\.ppp\.json(\.tmp)?$/.test(f)) await ad.remove(f);
+			for (const f of (await ad.list(FIX)).files) if (/\\.pendf\\.json(\.tmp)?$/.test(f)) await ad.remove(f);
 			await reloadPlugin();
 
 			await check("fixtures-render", async () => {
 				const out = {};
 				for (const name of ["a4.pdf", "letter.pdf", "rotations.pdf", "cropbox.pdf", "two-column.pdf", "korean-cmap.pdf", "korean-embedded.pdf", "links.pdf", "long-300.pdf"]) {
-					const { v } = await openPpp(name);
+					const { v } = await openPenDF(name);
 					await waitText(v, 1);
 					const text = pageView(v, 1).textLayer.div.textContent;
 					out[name] = { pages: v.debugSession.viewer.pagesCount, chars: text.length, sample: text.slice(0, 40) };
@@ -275,7 +275,7 @@
 			});
 
 			await check("search", async () => {
-				const { v } = await openPpp("a4.pdf");
+				const { v } = await openPenDF("a4.pdf");
 				v.openSearch();
 				v.searchInput.value = "spectra";
 				v.searchInput.dispatchEvent(new Event("input"));
@@ -290,7 +290,7 @@
 			});
 
 			await check("links", async () => {
-				const { v } = await openPpp("links.pdf");
+				const { v } = await openPenDF("links.pdf");
 				const s = v.debugSession;
 				const anchors = await waitFor(() => {
 					const a = [...pageView(v, 1).div.querySelectorAll(".annotationLayer a")];
@@ -305,7 +305,7 @@
 				ext.click();
 				await sleep(200);
 				closeOurs();
-				const { v: v2 } = await openPpp("long-300.pdf");
+				const { v: v2 } = await openPenDF("long-300.pdf");
 				const toc = await waitFor(() => {
 					const a = [...pageView(v2, 1).div.querySelectorAll(".annotationLayer a")];
 					return a.length >= 30 && a;
@@ -316,7 +316,7 @@
 			});
 
 			await check("state-restore", async () => {
-				const { leaf, v } = await openPpp("a4.pdf");
+				const { leaf, v } = await openPenDF("a4.pdf");
 				v.debugSession.viewer.currentScaleValue = "1.5";
 				v.goToPage(3);
 				await sleep(1200); // > state save debounce
@@ -346,12 +346,12 @@
 				const lib = window.pdfjsLib;
 				const ver = lib.version;
 				const coreCanvasesBefore = core.view.containerEl.querySelectorAll("canvas").length;
-				const { v } = await openPpp("a4.pdf");
+				const { v } = await openPenDF("a4.pdf");
 				v.zoom(1);
 				await waitIdle(v);
 				await sleep(500);
 				const coreCanvasesAfter = core.view.containerEl.querySelectorAll("canvas").length;
-				const pppCanvases = v.containerEl.querySelectorAll("canvas").length;
+				const pendfCanvases = v.containerEl.querySelectorAll("canvas").length;
 				// core keeps working: scroll it and see it render more
 				const sc = core.view.containerEl.querySelector(".pdf-viewer-container, .pdfViewer")?.closest("[class*=container]") || core.view.containerEl;
 				return {
@@ -364,13 +364,13 @@
 					pdfjsViewerBefore: typeof globalsBefore.pdfjsViewer,
 					coreCanvasesBefore,
 					coreCanvasesAfter,
-					pppCanvases,
-					ok: window.pdfjsLib === lib && window.pdfjsLib.version === ver && coreCanvasesAfter > 0 && pppCanvases > 0 && window.pdfjsWorker === globalsBefore.pdfjsWorker,
+					pendfCanvases,
+					ok: window.pdfjsLib === lib && window.pdfjsLib.version === ver && coreCanvasesAfter > 0 && pendfCanvases > 0 && window.pdfjsWorker === globalsBefore.pdfjsWorker,
 				};
 			});
 
-			await check("coexistence-ppp-first", async () => {
-				const { v } = await openPpp("letter.pdf");
+			await check("coexistence-pendf-first", async () => {
+				const { v } = await openPenDF("letter.pdf");
 				const libBefore = window.pdfjsLib;
 				const core = app.workspace.getLeaf("split", "vertical");
 				await core.openFile(file("letter.pdf"));
@@ -389,13 +389,13 @@
 					coreVersion: window.pdfjsLib?.version,
 					libUntouchedByUs: libBefore === undefined || libBefore === window.pdfjsLib,
 					coreCanvases: core.view.containerEl.querySelectorAll("canvas").length,
-					pppStillRenders: rerendered,
+					pendfStillRenders: rerendered,
 					ok: window.pdfjsLib?.version !== undefined && core.view.containerEl.querySelectorAll("canvas").length > 0 && rerendered,
 				};
 			});
 
 			await check("css-inward", async () => {
-				const { v } = await openPpp("a4.pdf");
+				const { v } = await openPenDF("a4.pdf");
 				const curPage = v.debugSession.viewer.currentPageNumber; // may be a remembered page
 				await waitText(v, curPage);
 				const page = pageView(v, curPage).div;
@@ -409,7 +409,7 @@
 						continue;
 					}
 					const text = [...rules].slice(0, 50).map((r) => r.cssText).join("");
-					if (text.includes(".pdf-ppp-root")) continue; // ours
+					if (text.includes(".pendf-root")) continue; // ours
 					const origin = sheet.href || (sheet.ownerNode && (sheet.ownerNode.id || sheet.ownerNode.className)) || "inline";
 					const walk = (list) => {
 						for (const r of list) {
@@ -439,7 +439,7 @@
 				const out = [];
 				let ok = true;
 				for (const [fname, list] of Object.entries(cfg.expected)) {
-					const { v } = await openPpp(fname);
+					const { v } = await openPenDF(fname);
 					for (const e of list) {
 						await goPage(v, e.page);
 						const range = await waitFor(() => textRange(v, e.page, e.text));
@@ -490,7 +490,7 @@
 			});
 
 			await check("highlight-multiline-columns", async () => {
-				const { v } = await openPpp("two-column.pdf");
+				const { v } = await openPenDF("two-column.pdf");
 				await waitText(v, 1);
 				const sp = spans(v, 1);
 				const i0 = sp.findIndex((s) => s.textContent.startsWith("[1.1.1]"));
@@ -513,7 +513,7 @@
 			await check("highlight-korean", async () => {
 				const res = {};
 				for (const name of ["korean-embedded.pdf", "korean-cmap.pdf"]) {
-					const { v } = await openPpp(name);
+					const { v } = await openPenDF(name);
 					await waitText(v, 1);
 					const sp = spans(v, 1).filter((s) => /[가-힣]/.test(s.textContent));
 					const target = sp[Math.min(2, sp.length - 1)];
@@ -528,7 +528,7 @@
 			});
 
 			await check("highlight-cross-page", async () => {
-				const { v } = await openPpp("a4.pdf");
+				const { v } = await openPenDF("a4.pdf");
 				v.debugSession.viewer.currentScaleValue = "0.5";
 				await waitIdle(v);
 				await waitText(v, 1);
@@ -546,18 +546,18 @@
 				const p = P();
 				// engine check must not raise a false alarm on this engine
 				r.engine = p.engine;
-				const { v } = await openPpp("a4.pdf");
-				r.errorBanner = !!v.containerEl.querySelector(".ppp-banner.is-error:not(.is-hidden)");
+				const { v } = await openPenDF("a4.pdf");
+				r.errorBanner = !!v.containerEl.querySelector(".pendf-banner.is-error:not(.is-hidden)");
 				// HUD via settings
 				p.settings.debugHud = true;
 				await p.saveSettings();
-				const hud = await waitFor(() => v.containerEl.querySelector(".ppp-hud")?.textContent.includes("rendered") && v.containerEl.querySelector(".ppp-hud").textContent, 5000);
+				const hud = await waitFor(() => v.containerEl.querySelector(".pendf-hud")?.textContent.includes("rendered") && v.containerEl.querySelector(".pendf-hud").textContent, 5000);
 				r.hud = hud.split("\n").slice(0, 4).join(" | ");
 				p.settings.debugHud = false;
 				await p.saveSettings();
-				r.hudGone = !v.containerEl.querySelector(".ppp-hud");
+				r.hudGone = !v.containerEl.querySelector(".pendf-hud");
 				// commands (by id) on the active view
-				const run = (id) => app.commands.executeCommandById(`pdf-ppp:${id}`);
+				const run = (id) => app.commands.executeCommandById(`pendf:${id}`);
 				r.commands = {};
 				for (const id of ["find", "zoom-in", "zoom-out", "fit-width", "undo", "redo"]) r.commands[id] = run(id);
 				r.searchOpened = !v.searchBar.hasClass("is-hidden");
@@ -570,10 +570,10 @@
 				const n0 = store(v).all().length;
 				r.commands["highlight-selection"] = run("highlight-selection");
 				r.highlightByCommand = store(v).all().length === n0 + 1;
-				const logsBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-log-")).length;
+				const logsBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pendf-log-")).length;
 				r.commands["export-log"] = run("export-log");
-				const logFile = await waitFor(() => app.vault.getFiles().find((f) => f.name.startsWith("pdf-ppp-log-")), 5000);
-				r.logExported = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-log-")).length === logsBefore + 1;
+				const logFile = await waitFor(() => app.vault.getFiles().find((f) => f.name.startsWith("pendf-log-")), 5000);
+				r.logExported = app.vault.getFiles().filter((f) => f.name.startsWith("pendf-log-")).length === logsBefore + 1;
 				r.logHasEngine = (await app.vault.read(logFile)).includes("engine:");
 				createdPaths.add(logFile.path);
 				// open-current-pdf from the core viewer
@@ -593,22 +593,22 @@
 				// pen probe: command gated by the setting
 				run("open-pen-probe");
 				await sleep(400);
-				r.probeCommandHidden = app.workspace.getLeavesOfType("pdf-ppp-pen-probe").length === 0;
+				r.probeCommandHidden = app.workspace.getLeavesOfType("pendf-pen-probe").length === 0;
 				p.settings.penProbe = true;
 				await p.saveSettings();
 				r.commands["open-pen-probe"] = run("open-pen-probe");
-				const probe = await waitFor(() => app.workspace.getLeavesOfType("pdf-ppp-pen-probe")[0]?.view, 5000);
-				const pad = probe.containerEl.querySelector(".ppp-probe-pad");
+				const probe = await waitFor(() => app.workspace.getLeavesOfType("pendf-pen-probe")[0]?.view, 5000);
+				const pad = probe.containerEl.querySelector(".pendf-probe-pad");
 				const box = pad.getBoundingClientRect();
 				const ev = (type, i) => new PointerEvent(type, { pointerId: 7, pointerType: "pen", pressure: 0.3 + i * 0.05, clientX: box.left + 20.5 + i * 7, clientY: box.top + 30.25 + i * 3, bubbles: true, cancelable: true });
 				pad.dispatchEvent(ev("pointerdown", 0));
 				for (let i = 1; i <= 8; i++) pad.dispatchEvent(ev("pointermove", i));
 				pad.dispatchEvent(ev("pointerup", 9));
-				const summary = JSON.parse(probe.containerEl.querySelector(".ppp-probe-out").textContent);
+				const summary = JSON.parse(probe.containerEl.querySelector(".pendf-probe-out").textContent);
 				r.probe = { penEvents: summary.types.pen?.events, fractional: summary.types.pen?.fractionalCoordinateShare, coalesced: summary.types.pen?.getCoalescedEvents };
-				const probeFilesBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-pen-probe-")).length;
+				const probeFilesBefore = app.vault.getFiles().filter((f) => f.name.startsWith("pendf-pen-probe-")).length;
 				[...probe.containerEl.querySelectorAll("button")].find((b) => b.textContent === "Export JSON").click();
-				const probeFile = await waitFor(() => app.vault.getFiles().filter((f) => f.name.startsWith("pdf-ppp-pen-probe-")).length > probeFilesBefore && app.vault.getFiles().find((f) => f.name.startsWith("pdf-ppp-pen-probe-")), 5000);
+				const probeFile = await waitFor(() => app.vault.getFiles().filter((f) => f.name.startsWith("pendf-pen-probe-")).length > probeFilesBefore && app.vault.getFiles().find((f) => f.name.startsWith("pendf-pen-probe-")), 5000);
 				createdPaths.add(probeFile.path);
 				r.probeExported = JSON.parse(await app.vault.read(probeFile)).types.pen.events === summary.types.pen.events;
 				p.settings.penProbe = false;
@@ -645,7 +645,7 @@
 			});
 
 			await check("rename-while-open", async () => {
-				const { v } = await openPpp("cropbox.pdf");
+				const { v } = await openPenDF("cropbox.pdf");
 				await waitText(v, 1);
 				const range1 = await waitFor(() => textRange(v, 1, "Inside the CropBox"));
 				selectRange(range1);
@@ -658,8 +658,8 @@
 				const [id2] = v.highlights.createFromSelection("#2ea8e5");
 				await v.flush();
 				await sleep(300);
-				const newPath = FIX + "cropbox-renamed.pdf.ppp.json";
-				const oldPath = FIX + "cropbox.pdf.ppp.json";
+				const newPath = FIX + "cropbox-renamed.pdf.pendf.json";
+				const oldPath = FIX + "cropbox.pdf.pendf.json";
 				const saved = (await ad.exists(newPath)) ? JSON.parse(await ad.read(newPath)).annotations.map((a) => a.id) : [];
 				const oldExists = await ad.exists(oldPath);
 				closeOurs();
@@ -670,23 +670,23 @@
 
 			await check("highlight-palette", async () => {
 				// the real UI path: select → palette appears → swatch → highlight
-				const { v } = await openPpp("two-column.pdf");
+				const { v } = await openPenDF("two-column.pdf");
 				await waitText(v, 1);
 				const sp = spans(v, 1);
 				select(sp[4], 0, sp[5]);
-				const palette = await waitFor(() => v.containerEl.querySelector(".ppp-palette"), 5000);
-				const swatches = palette.querySelectorAll(".ppp-swatch");
+				const palette = await waitFor(() => v.containerEl.querySelector(".pendf-palette"), 5000);
+				const swatches = palette.querySelectorAll(".pendf-swatch");
 				const before = store(v).all().length;
 				swatches[2].dispatchEvent(new PointerEvent("pointerup", { bubbles: true, cancelable: true }));
 				swatches[2].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })); // must not double-create
 				const after = store(v).all();
 				const made = after.length - before;
 				const a = after[after.length - 1];
-				return { made, color: a?.color, paletteGone: !v.containerEl.querySelector(".ppp-palette"), selectionCleared: getSelection().isCollapsed, ok: made === 1 && a.color === P().settings.colors[2].hex && !v.containerEl.querySelector(".ppp-palette") };
+				return { made, color: a?.color, paletteGone: !v.containerEl.querySelector(".pendf-palette"), selectionCleared: getSelection().isCollapsed, ok: made === 1 && a.color === P().settings.colors[2].hex && !v.containerEl.querySelector(".pendf-palette") };
 			});
 
 			await check("highlight-menu-undo", async () => {
-				const { v } = await openPpp("letter.pdf");
+				const { v } = await openPenDF("letter.pdf");
 				await waitText(v, 1);
 				const sp = spans(v, 1);
 				select(sp[2], 0, sp[2]);
@@ -697,13 +697,13 @@
 				getSelection().removeAllRanges();
 				const target = document.elementFromPoint(x, y);
 				target.dispatchEvent(new MouseEvent("click", { clientX: x, clientY: y, bubbles: true, cancelable: true }));
-				const menu = await waitFor(() => v.containerEl.querySelector(".ppp-hl-menu"));
+				const menu = await waitFor(() => v.containerEl.querySelector(".pendf-hl-menu"));
 				// recolor via menu
-				menu.querySelectorAll(".ppp-swatch")[1].click();
+				menu.querySelectorAll(".pendf-swatch")[1].click();
 				const recolored = hlById(v, id).color;
 				// delete via menu
 				target.dispatchEvent(new MouseEvent("click", { clientX: x, clientY: y, bubbles: true, cancelable: true }));
-				const menu2 = await waitFor(() => v.containerEl.querySelector(".ppp-hl-menu"));
+				const menu2 = await waitFor(() => v.containerEl.querySelector(".pendf-hl-menu"));
 				menu2.querySelector(".mod-warning").click();
 				const deleted = hlById(v, id).deleted;
 				const polyGone = !polyClientRect(v, id);
@@ -716,41 +716,41 @@
 			});
 
 			await check("persist-restart-rename", async () => {
-				const before = (await ad.exists(FIX + "rotations.pdf.ppp.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.ppp.json"));
+				const before = (await ad.exists(FIX + "rotations.pdf.pendf.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.pendf.json"));
 				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;
 				await reloadPlugin();
-				const { v } = await openPpp("rotations.pdf");
+				const { v } = await openPenDF("rotations.pdf");
 				const afterRestart = store(v).all().length;
-				await waitFor(() => v.containerEl.querySelector(".ppp-hl polygon"));
+				await waitFor(() => v.containerEl.querySelector(".pendf-hl polygon"));
 				closeOurs();
 				const f = file("rotations.pdf");
 				await app.fileManager.renameFile(f, FIX + "rotations-renamed.pdf");
-				const moved = await waitFor(() => ad.exists(FIX + "rotations-renamed.pdf.ppp.json"), 5000);
-				const oldGone = !(await ad.exists(FIX + "rotations.pdf.ppp.json"));
-				const { v: v2 } = await openPpp("rotations-renamed.pdf");
+				const moved = await waitFor(() => ad.exists(FIX + "rotations-renamed.pdf.pendf.json"), 5000);
+				const oldGone = !(await ad.exists(FIX + "rotations.pdf.pendf.json"));
+				const { v: v2 } = await openPenDF("rotations-renamed.pdf");
 				const afterRename = store(v2).all().length;
 				closeOurs();
 				await app.fileManager.renameFile(file("rotations-renamed.pdf"), FIX + "rotations.pdf");
-				await waitFor(() => ad.exists(FIX + "rotations.pdf.ppp.json"), 5000);
+				await waitFor(() => ad.exists(FIX + "rotations.pdf.pendf.json"), 5000);
 				return { saved: n, afterRestart, moved: !!moved, oldGone, afterRename, ok: n > 0 && afterRestart === n && oldGone && afterRename === n };
 			});
 
 			await check("fingerprint-mismatch", async () => {
 				// put a4's sidecar next to letter.pdf
-				await ad.write(FIX + "letter.pdf.ppp.json", JSON.stringify({ schemaVersion: 1, pdfFingerprint: "not-this-pdf", annotations: [] }));
-				const { v } = await openPpp("letter.pdf");
-				const banner = v.containerEl.querySelector(".ppp-banner")?.textContent || "";
+				await ad.write(FIX + "letter.pdf.pendf.json", JSON.stringify({ schemaVersion: 1, pdfFingerprint: "not-this-pdf", annotations: [] }));
+				const { v } = await openPenDF("letter.pdf");
+				const banner = v.containerEl.querySelector(".pendf-banner")?.textContent || "";
 				const status = store(v).status;
-				const before = await ad.read(FIX + "letter.pdf.ppp.json");
+				const before = await ad.read(FIX + "letter.pdf.pendf.json");
 				await v.flush();
 				closeOurs();
-				const after = await ad.read(FIX + "letter.pdf.ppp.json");
-				await ad.remove(FIX + "letter.pdf.ppp.json");
+				const after = await ad.read(FIX + "letter.pdf.pendf.json");
+				await ad.remove(FIX + "letter.pdf.pendf.json");
 				return { status, banner: banner.slice(0, 80), untouched: before === after, ok: status === "fingerprint-mismatch" && before === after && banner.length > 0 };
 			});
 
 			await check("long-300-memory", async () => {
-				const { v } = await openPpp("long-300.pdf");
+				const { v } = await openPenDF("long-300.pdf");
 				const s = v.debugSession;
 				let maxCanvas = 0, maxLayers = 0, maxRendered = 0;
 				const t0 = performance.now();
@@ -796,7 +796,7 @@
 				try {
 					await app.plugins.enablePlugin(ID);
 					await waitFor(() => P());
-					const { v } = await openPpp("a4.pdf");
+					const { v } = await openPenDF("a4.pdf");
 					await waitText(v, v.debugSession.viewer.currentPageNumber);
 					const log = P().getLogText();
 					return {
@@ -816,7 +816,7 @@
 			});
 
 			await check("unload-cleanup", async () => {
-				const { v } = await openPpp("a4.pdf");
+				const { v } = await openPenDF("a4.pdf");
 				await waitText(v, v.debugSession.viewer.currentPageNumber);
 				// a pending (debounced, unsaved) highlight must be written on unload
 				const sp = spans(v, v.debugSession.viewer.currentPageNumber);
@@ -826,7 +826,7 @@
 				const urls = [...new Set(ours.map((w) => w.url))];
 				await app.plugins.disablePlugin(ID);
 				await sleep(1500);
-				const leftovers = document.querySelectorAll(".pdf-ppp-view, .pdf-ppp-root, .ppp-floating, .ppp-layer-host, .ppp-hud").length;
+				const leftovers = document.querySelectorAll(".pendf-view, .pendf-root, .pendf-floating, .pendf-layer-host, .pendf-hud").length;
 				const revoked = [];
 				for (const u of urls) {
 					try {
@@ -836,8 +836,8 @@
 						revoked.push(true);
 					}
 				}
-				const saved = JSON.parse(await ad.read(FIX + "a4.pdf.ppp.json")).annotations.some((a) => a.id === id);
-				const styleLeft = [...document.querySelectorAll("style")].some((s) => s.textContent.includes(".pdf-ppp-root"));
+				const saved = JSON.parse(await ad.read(FIX + "a4.pdf.pendf.json")).annotations.some((a) => a.id === id);
+				const styleLeft = [...document.querySelectorAll("style")].some((s) => s.textContent.includes(".pendf-root"));
 				const res = {
 					leaves: app.workspace.getLeavesOfType(VIEW).length,
 					leftovers,
@@ -899,8 +899,8 @@
 						inRealm[k] = new w.Uint8Array(v.length);
 						inRealm[k].set(v);
 					}
-					const viaWorker = await w.__pppProbe(inRealm, workerSrc, "web-worker");
-					const viaMainThread = await w.__pppProbe(inRealm, workerSrc, "main-thread");
+					const viaWorker = await w.__pendfProbe(inRealm, workerSrc, "web-worker");
+					const viaMainThread = await w.__pendfProbe(inRealm, workerSrc, "main-thread");
 					const after = snap();
 					const added = [], replaced = [], removed = [];
 					for (const [k, v] of Object.entries(after)) {
@@ -908,7 +908,7 @@
 						else if (before[k] !== v && (typeof before[k] === "function" || typeof v === "function")) replaced.push(k);
 					}
 					for (const k of Object.keys(before)) if (!(k in after)) removed.push(k);
-					const ownAdded = added.filter((k) => k !== "globalThis.__pppProbe");
+					const ownAdded = added.filter((k) => k !== "globalThis.__pendfProbe");
 					const rendersOk = (r) => Object.values(r).every((x) => x.rendered > 0 && x.ops > 0) && r["korean-embedded.pdf"].text > 0;
 					return {
 						viaWorker,

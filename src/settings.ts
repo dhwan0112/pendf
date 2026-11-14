@@ -1,12 +1,12 @@
 import { type App, PluginSettingTab, Setting } from "obsidian";
-import type PdfPppPlugin from "./main";
+import type PenDFPlugin from "./main";
 
 export interface HighlightColor {
 	name: string;
 	hex: string;
 }
 
-export interface PdfPppSettings {
+export interface PenDFSettings {
 	colors: HighlightColor[];
 	defaultColor: number;
 	/** invert page colors (canvas only) — for dark mode reading */
@@ -18,7 +18,7 @@ export interface PdfPppSettings {
 	positions: Record<string, { page: number; scale: string; t: number }>;
 }
 
-export const DEFAULT_SETTINGS: PdfPppSettings = {
+export const DEFAULT_SETTINGS: PenDFSettings = {
 	colors: [
 		{ name: "Yellow", hex: "#ffd400" },
 		{ name: "Green", hex: "#5fb236" },
@@ -35,8 +35,8 @@ export const DEFAULT_SETTINGS: PdfPppSettings = {
 
 export const MAX_POSITIONS = 300;
 
-export class PdfPppSettingTab extends PluginSettingTab {
-	constructor(app: App, private readonly plugin: PdfPppPlugin) {
+export class PenDFSettingTab extends PluginSettingTab {
+	constructor(app: App, private readonly plugin: PenDFPlugin) {
 		super(app, plugin);
 	}
 

@@ -1,7 +1,7 @@
 import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile } from "obsidian";
-import { PdfPppView, VIEW_TYPE } from "./view/PdfView";
+import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
-import { DEFAULT_SETTINGS, MAX_POSITIONS, PdfPppSettingTab, type PdfPppSettings } from "./settings";
+import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type PenDFSettings } from "./settings";
 import { destroyWorker } from "./pdfjs";
 import { checkEngine, type EngineReport } from "./pdfjs/engine";
 import { moveSidecar, type SidecarStore } from "./store/sidecar";
@@ -11,8 +11,8 @@ import { formatLog, logger } from "./util/log";
 
 const log = logger("plugin");
 
-export default class PdfPppPlugin extends Plugin {
-	settings: PdfPppSettings = structuredClone(DEFAULT_SETTINGS);
+export default class PenDFPlugin extends Plugin {
+	settings: PenDFSettings = structuredClone(DEFAULT_SETTINGS);
 	engine: EngineReport = { ok: true, missing: [], ponyfilled: {} };
 	private stores = new Set<SidecarStore>();
 	private saveSettingsTimer: number | null = null;
@@ -22,9 +22,9 @@ export default class PdfPppPlugin extends Plugin {
 		this.engine = checkEngine();
 		log.info(`engine: ${navigator.userAgent} → ${JSON.stringify(this.engine)}`);
 		if (!this.engine.ok) log.warn(`missing JavaScript features: ${this.engine.missing.join(", ")}`);
-		this.registerView(VIEW_TYPE, (leaf) => new PdfPppView(leaf, this));
+		this.registerView(VIEW_TYPE, (leaf) => new PenDFView(leaf, this));
 		this.registerView(PEN_PROBE_VIEW, (leaf) => new PenProbeView(leaf));
-		this.addSettingTab(new PdfPppSettingTab(this.app, this));
+		this.addSettingTab(new PenDFSettingTab(this.app, this));
 
 		// Entry points. PDF is a core extension, so plugins cannot become its
 		// default view through the public API; we offer explicit "open with".
@@ -119,7 +119,7 @@ export default class PdfPppPlugin extends Plugin {
 		const views = this.app.workspace
 			.getLeavesOfType(VIEW_TYPE)
 			.map((l) => l.view)
-			.filter((v): v is PdfPppView => v instanceof PdfPppView);
+			.filter((v): v is PenDFView => v instanceof PenDFView);
 		await Promise.all(views.map((v) => v.closeSession().catch((e) => log.error("closing view failed", e))));
 		await this.flushAll();
 		if (this.saveSettingsTimer !== null) {
@@ -135,8 +135,8 @@ export default class PdfPppPlugin extends Plugin {
 		return formatLog();
 	}
 
-	private withView(checking: boolean, fn: (v: PdfPppView) => void): boolean {
-		const v = this.app.workspace.getActiveViewOfType(PdfPppView);
+	private withView(checking: boolean, fn: (v: PenDFView) => void): boolean {
+		const v = this.app.workspace.getActiveViewOfType(PenDFView);
 		if (!v) return false;
 		if (!checking) fn(v);
 		return true;
@@ -205,7 +205,7 @@ export default class PdfPppPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		const data = ((await this.loadData()) ?? {}) as Partial<PdfPppSettings>;
+		const data = ((await this.loadData()) ?? {}) as Partial<PenDFSettings>;
 		this.settings = { ...structuredClone(DEFAULT_SETTINGS), ...data };
 		if (!Array.isArray(this.settings.colors) || this.settings.colors.length !== 4) this.settings.colors = structuredClone(DEFAULT_SETTINGS.colors);
 		if (typeof this.settings.positions !== "object" || !this.settings.positions) this.settings.positions = {};
@@ -214,13 +214,13 @@ export default class PdfPppPlugin extends Plugin {
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
-			if (leaf.view instanceof PdfPppView) leaf.view.applySettings();
+			if (leaf.view instanceof PenDFView) leaf.view.applySettings();
 		}
 	}
 
 	private async exportLog(): Promise<void> {
 		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-		const path = normalizePath(`pdf-ppp-log-${stamp}.md`);
+		const path = normalizePath(`pendf-log-${stamp}.md`);
 		const body = "```\n" + formatLog() + "\n```\n";
 		await this.app.vault.create(path, `# penDF log ${stamp}\n\n${body}`);
 		new Notice(`penDF log saved to ${path}`);

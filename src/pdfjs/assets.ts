@@ -2,7 +2,7 @@
 // decoders). The build stores each as gzip+base64 inside main.js so the plugin
 // is a single file that works on iOS and never fetches anything over the
 // network. See esbuild.config.mjs and docs/INVESTIGATION.md.
-import { ASSETS_GZ, WORKER_GZ } from "ppp:assets";
+import { ASSETS_GZ, WORKER_GZ } from "pendf:assets";
 
 export function base64ToBytes(b64: string): Uint8Array {
 	const bin = atob(b64);

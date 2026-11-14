@@ -8,7 +8,7 @@ export class DebugHud {
 	private lastRenderMs: number[] = [];
 
 	constructor(parent: HTMLElement, private readonly data: () => Record<string, string | number>) {
-		this.el = parent.createDiv({ cls: "ppp-hud" });
+		this.el = parent.createDiv({ cls: "pendf-hud" });
 		this.timer = window.setInterval(() => this.update(), 500);
 		this.update();
 	}

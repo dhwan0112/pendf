@@ -32,7 +32,7 @@ async function renderAll(pdfBytes, worker) {
 	return out;
 }
 
-globalThis.__pppProbe = async function (files, workerSource, mode) {
+globalThis.__pendfProbe = async function (files, workerSource, mode) {
 	const url = URL.createObjectURL(new Blob([workerSource], { type: "text/javascript" }));
 	const results = {};
 	try {

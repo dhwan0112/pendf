@@ -19,7 +19,7 @@ const pdfjsRoot = path.dirname(require.resolve("pdfjs-dist/package.json"));
 type Violation = { rule: string; file: string };
 
 function project(files: Record<string, string>): string {
-	const dir = mkdtempSync(path.join(tmpdir(), "ppp-check-"));
+	const dir = mkdtempSync(path.join(tmpdir(), "pendf-check-"));
 	for (const [rel, content] of Object.entries(files)) {
 		const p = path.join(dir, rel);
 		mkdirSync(path.dirname(p), { recursive: true });
@@ -110,8 +110,8 @@ describe("pdfjs-transform on the real pdf.js 6.5.438 sources", () => {
 	});
 	it("viewer reads the bundled module instead of the global", () => {
 		const out = transform("pdf_viewer.mjs", readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.mjs"), "utf8")) as string;
-		expect(out.startsWith('import * as __pppPdfjs from "pdfjs-dist/build/pdf.mjs";')).toBe(true);
-		expect(out).toContain("} = __pppPdfjs;");
+		expect(out.startsWith('import * as __pendfPdfjs from "pdfjs-dist/build/pdf.mjs";')).toBe(true);
+		expect(out).toContain("} = __pendfPdfjs;");
 	});
 });
 
@@ -122,7 +122,7 @@ describe("scope-css", () => {
 		expect(scopeSelector(":root:not(.x)", ".s")).toBe(".s:not(.x)");
 	});
 	it("scopes the real pdf_viewer.css: no unscoped rule, no image urls", () => {
-		const css = scopeCss(readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.css"), "utf8"), ".pdf-ppp-root") as string;
+		const css = scopeCss(readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.css"), "utf8"), ".pendf-root") as string;
 		expect(css).not.toMatch(/url\(\s*["']?images\//);
 		// every rule outside @keyframes starts with the scope
 		const selectors: string[] = [];
@@ -136,10 +136,10 @@ describe("scope-css", () => {
 			(insideRule ? nested : selectors).push(...rule.selectors);
 		});
 		expect(selectors.length).toBeGreaterThan(100);
-		expect(selectors.filter((s) => !s.startsWith(".pdf-ppp-root"))).toEqual([]);
+		expect(selectors.filter((s) => !s.startsWith(".pendf-root"))).toEqual([]);
 		// pdf.js 6 uses native CSS nesting: nested rules stay relative to their parent
 		expect(nested.length).toBeGreaterThan(10);
-		expect(nested.filter((s) => s.includes(".pdf-ppp-root"))).toEqual([]);
-		expect(css).toMatch(/\.pdf-ppp-root \.textLayer\s*\{[\s\S]*?> :not\(\.markedContent\)/);
+		expect(nested.filter((s) => s.includes(".pendf-root"))).toEqual([]);
+		expect(css).toMatch(/\.pendf-root \.textLayer\s*\{[\s\S]*?> :not\(\.markedContent\)/);
 	});
 });

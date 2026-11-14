@@ -4,7 +4,7 @@
 import type { Quad } from "../geometry";
 
 export const SCHEMA_VERSION = 1;
-export const SIDECAR_SUFFIX = ".ppp.json";
+export const SIDECAR_SUFFIX = ".pendf.json";
 
 export interface AnnotationBase {
 	/** UUID v4 */

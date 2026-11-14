@@ -71,7 +71,7 @@ export class HighlightController implements LayerRenderer {
 		if (!store || !store.writable) return;
 		for (const a of store.all()) {
 			if (a.type !== "highlight" || a.page !== layer.pageNumber) continue;
-			const g = svgEl("g", { class: "ppp-hl", "data-id": a.id });
+			const g = svgEl("g", { class: "pendf-hl", "data-id": a.id });
 			if (a.id === this.selectedId) g.classList.add("is-selected");
 			for (const q of a.quads) {
 				const pts = layer.geom.quadToViewPolygon(q);
@@ -165,7 +165,7 @@ export class HighlightController implements LayerRenderer {
 		const p = this.pending;
 		if (!p) return;
 		if (!this.palette) {
-			const el = this.host.root.createDiv({ cls: "ppp-palette ppp-floating" });
+			const el = this.host.root.createDiv({ cls: "pendf-palette pendf-floating" });
 			// Keep the selection alive while the palette is touched: mouse/pen
 			// down (desktop) and touchstart (iOS collapses the selection on
 			// touchstart otherwise). With touchstart's default prevented iOS
@@ -177,8 +177,8 @@ export class HighlightController implements LayerRenderer {
 		const el = this.palette;
 		el.empty();
 		this.host.colors().forEach((c) => {
-			const b = el.createEl("button", { cls: "ppp-swatch", attr: { "aria-label": `Highlight ${c.name}`, title: c.name } });
-			b.style.setProperty("--ppp-swatch", c.hex);
+			const b = el.createEl("button", { cls: "pendf-swatch", attr: { "aria-label": `Highlight ${c.name}`, title: c.name } });
+			b.style.setProperty("--pendf-swatch", c.hex);
 			const apply = (e: Event) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -218,7 +218,7 @@ export class HighlightController implements LayerRenderer {
 
 	private onClick(e: MouseEvent): void {
 		const target = e.target as HTMLElement | null;
-		if (!target || target.closest("a, .ppp-floating, input, button, textarea")) return;
+		if (!target || target.closest("a, .pendf-floating, input, button, textarea")) return;
 		const sel = this.host.root.ownerDocument.getSelection();
 		if (sel && !sel.isCollapsed) return;
 		const hit = this.hitTest(e.clientX, e.clientY);
@@ -257,27 +257,27 @@ export class HighlightController implements LayerRenderer {
 		this.closeMenu();
 		this.hidePalette();
 		this.setSelected(a.id);
-		const el = this.host.root.createDiv({ cls: "ppp-hl-menu ppp-floating" });
+		const el = this.host.root.createDiv({ cls: "pendf-hl-menu pendf-floating" });
 		el.addEventListener("pointerdown", (e) => e.stopPropagation());
 		this.menu = el;
-		const swatches = el.createDiv({ cls: "ppp-hl-menu-colors" });
+		const swatches = el.createDiv({ cls: "pendf-hl-menu-colors" });
 		for (const c of this.host.colors()) {
-			const b = swatches.createEl("button", { cls: "ppp-swatch", attr: { "aria-label": `Change to ${c.name}`, title: c.name } });
-			b.style.setProperty("--ppp-swatch", c.hex);
+			const b = swatches.createEl("button", { cls: "pendf-swatch", attr: { "aria-label": `Change to ${c.name}`, title: c.name } });
+			b.style.setProperty("--pendf-swatch", c.hex);
 			if (c.hex.toLowerCase() === a.color.toLowerCase()) b.addClass("is-active");
 			b.addEventListener("click", () => {
 				this.recolor(a, c.hex);
 				this.closeMenu();
 			});
 		}
-		const actions = el.createDiv({ cls: "ppp-hl-menu-actions" });
-		const copy = actions.createEl("button", { cls: "ppp-icon-btn", attr: { "aria-label": "Copy text", title: "Copy text" } });
+		const actions = el.createDiv({ cls: "pendf-hl-menu-actions" });
+		const copy = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Copy text", title: "Copy text" } });
 		setIcon(copy, "copy");
 		copy.addEventListener("click", () => {
 			this.host.copy(this.group(a).map((x) => x.text).join(" "));
 			this.closeMenu();
 		});
-		const del = actions.createEl("button", { cls: "ppp-icon-btn mod-warning", attr: { "aria-label": "Delete highlight", title: "Delete highlight" } });
+		const del = actions.createEl("button", { cls: "pendf-icon-btn mod-warning", attr: { "aria-label": "Delete highlight", title: "Delete highlight" } });
 		setIcon(del, "trash-2");
 		del.addEventListener("click", () => {
 			this.deleteHighlight(a);

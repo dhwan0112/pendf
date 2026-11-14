@@ -8,7 +8,7 @@
 
 import { ItemView, Notice, normalizePath, type WorkspaceLeaf } from "obsidian";
 
-export const PEN_PROBE_VIEW = "pdf-ppp-pen-probe";
+export const PEN_PROBE_VIEW = "pendf-pen-probe";
 
 const TOUCH_ACTIONS = ["auto", "none", "pan-x pan-y", "manipulation", "pinch-zoom", "pan-y"];
 
@@ -82,8 +82,8 @@ export class PenProbeView extends ItemView {
 	async onOpen(): Promise<void> {
 		const el = this.contentEl;
 		el.empty();
-		el.addClass("ppp-probe");
-		const bar = el.createDiv({ cls: "ppp-probe-bar" });
+		el.addClass("pendf-probe");
+		const bar = el.createDiv({ cls: "pendf-probe-bar" });
 		bar.createSpan({ text: "touch-action: " });
 		const sel = bar.createEl("select");
 		for (const ta of TOUCH_ACTIONS) sel.createEl("option", { text: ta, value: ta });
@@ -95,14 +95,14 @@ export class PenProbeView extends ItemView {
 		bar.createEl("button", { text: "Reset" }).addEventListener("click", () => this.reset());
 		bar.createEl("button", { text: "Export JSON" }).addEventListener("click", () => void this.export());
 		el.createDiv({
-			cls: "ppp-probe-help",
+			cls: "pendf-probe-help",
 			text: "Write with the Pencil and drag with a finger inside the box, once per touch-action value. The box scrolls, so 'scrolled' tells whether input of that type scrolls the page.",
 		});
-		this.scroller = el.createDiv({ cls: "ppp-probe-scroller" });
-		this.pad = this.scroller.createDiv({ cls: "ppp-probe-pad" });
+		this.scroller = el.createDiv({ cls: "pendf-probe-scroller" });
+		this.pad = this.scroller.createDiv({ cls: "pendf-probe-pad" });
 		this.pad.style.touchAction = this.touchAction;
 		this.canvas = this.pad.createEl("canvas");
-		this.out = el.createEl("pre", { cls: "ppp-probe-out" });
+		this.out = el.createEl("pre", { cls: "pendf-probe-out" });
 
 		const opts = { passive: false } as AddEventListenerOptions;
 		this.registerDomEvent(this.pad, "pointerdown", (e) => this.onDown(e), opts);
@@ -264,7 +264,7 @@ export class PenProbeView extends ItemView {
 			};
 		}
 		return {
-			probe: "pdf-ppp pen probe v1",
+			probe: "pendf pen probe v1",
 			at: new Date().toISOString(),
 			userAgent: navigator.userAgent,
 			devicePixelRatio: window.devicePixelRatio,
@@ -290,7 +290,7 @@ export class PenProbeView extends ItemView {
 
 	private async export(): Promise<void> {
 		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-		const path = normalizePath(`pdf-ppp-pen-probe-${stamp}.json`);
+		const path = normalizePath(`pendf-pen-probe-${stamp}.json`);
 		await this.app.vault.create(path, JSON.stringify(this.summary(), null, 2) + "\n");
 		new Notice(`Pen probe saved to ${path}`);
 	}
