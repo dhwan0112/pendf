@@ -19,6 +19,9 @@ import {
 } from "../pdfjs";
 import { LayerManager } from "../layers";
 import { HighlightController } from "../highlight/controller";
+import { NoteController } from "../notes/controller";
+import { noteAnchor } from "../notes/model";
+import type { Annotation } from "../store/schema";
 import { SidecarStore } from "../store/sidecar";
 import { UndoStack } from "../store/undo";
 import { adapterFs } from "../store/obsidianFs";
@@ -43,6 +46,7 @@ interface Session {
 	viewer: PDFViewer;
 	layers: LayerManager;
 	highlights: HighlightController;
+	notes: NoteController;
 	store: SidecarStore | null;
 	undo: UndoStack | null;
 	ac: AbortController;
@@ -71,6 +75,8 @@ export class PenDFView extends FileView {
 	private viewerEl!: HTMLDivElement;
 	private hud: DebugHud | null = null;
 	private saveStateTimer: number | null = null;
+	private noteButton: HTMLButtonElement | null = null;
+	private changeListeners = new Set<() => void>();
 
 	constructor(leaf: WorkspaceLeaf, private readonly plugin: PenDFPlugin) {
 		super(leaf);
@@ -174,9 +180,14 @@ export class PenDFView extends FileView {
 		tb.createDiv({ cls: "pendf-spacer" });
 		const tools = tb.createDiv({ cls: "pendf-group" });
 		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
+		this.noteButton = this.button(tools, "message-square-plus", "Add note (then tap the page)", () => {
+			const n = this.session?.notes;
+			if (n) n.setPlacing(!n.placing);
+		});
 		this.button(tools, "undo-2", "Undo", () => this.undo());
 		this.button(tools, "redo-2", "Redo", () => this.redo());
 		this.button(tools, "search", "Find in PDF", () => this.openSearch());
+		this.button(tools, "list", "Annotations", () => void this.plugin.showAnnotationsPanel());
 	}
 
 	private buildSearchBar(bar: HTMLElement): void {
@@ -288,6 +299,7 @@ export class PenDFView extends FileView {
 			viewer,
 			layers,
 			highlights: null as unknown as HighlightController,
+			notes: null as unknown as NoteController,
 			store: null,
 			undo: null,
 			ac,
@@ -303,6 +315,22 @@ export class PenDFView extends FileView {
 			defaultColor: () => this.plugin.settings.defaultColor,
 			notice: (m) => new Notice(m),
 			copy: (t) => void navigator.clipboard.writeText(t),
+			note: (a) => session.notes.noteOnHighlight(a),
+		});
+		session.notes = new NoteController({
+			app: this.app,
+			root: this.viewerRoot,
+			container: this.container,
+			layers,
+			store: () => session.store,
+			undo: () => session.undo,
+			sourcePath: () => session.file.path,
+			notice: (m) => new Notice(m),
+			onPlacingChange: (on) => this.noteButton?.toggleClass("is-active", on),
+			closeOthers: () => {
+				session.highlights.hidePalette();
+				session.highlights.closeMenu();
+			},
 		});
 		this.session = session;
 
@@ -338,6 +366,7 @@ export class PenDFView extends FileView {
 				if (source === "external") log.info(`merged external changes into ${store.path}`);
 				layers.refresh();
 				if (store.status !== "ok") this.showStoreStatus(store);
+				this.notifyChange();
 			},
 			onProblem: (m) => log.warn(`${store.path}: ${m}`),
 		});
@@ -351,6 +380,59 @@ export class PenDFView extends FileView {
 		this.plugin.trackStore(store);
 		this.showStoreStatus(store);
 		layers.refresh();
+		this.notifyChange();
+	}
+
+	// ------------------------------------------------- annotations (panel API)
+
+	/** Subscribe to annotation changes and document switches. Returns the unsubscribe function. */
+	onAnnotationsChange(fn: () => void): () => void {
+		this.changeListeners.add(fn);
+		return () => this.changeListeners.delete(fn);
+	}
+
+	private notifyChange(): void {
+		for (const fn of this.changeListeners) {
+			try {
+				fn();
+			} catch (e) {
+				log.error("annotation listener failed", e);
+			}
+		}
+	}
+
+	/** The open document's live annotations (empty while loading or read-only). */
+	annotations(): Annotation[] {
+		const store = this.session?.store;
+		return store && store.writable ? store.all() : [];
+	}
+
+	/** Scroll an annotation into view; a note also opens its popover. */
+	revealAnnotation(a: Annotation): void {
+		const s = this.session;
+		const store = s?.store;
+		if (!s?.ready || !store) return;
+		let at: [number, number] | null = null;
+		if (a.type === "highlight") {
+			const xs = a.quads.flatMap((q) => [q[0], q[2], q[4], q[6]]);
+			const ys = a.quads.flatMap((q) => [q[1], q[3], q[5], q[7]]);
+			at = [Math.min(...xs), Math.max(...ys)];
+		} else if (a.type === "note") {
+			at = noteAnchor(a, (id) => store.get(id));
+		} else if (a.type === "bookmark") {
+			at = [0, a.y];
+		}
+		const dest = at ? [null, { name: "XYZ" }, at[0] - 24, at[1] + 48, null] : undefined;
+		s.viewer.scrollPageIntoView({ pageNumber: a.page, destArray: dest, allowNegativeOffset: true, ignoreDestinationZoom: true });
+		if (a.type === "note") {
+			// once the page layer is (re)attached, open the popover over the marker
+			window.setTimeout(() => {
+				const layer = s.layers.getLayer(a.page);
+				const marker = layer?.overlay.querySelector(`.pendf-note[data-id="${a.id}"]`);
+				const r = marker?.getBoundingClientRect();
+				if (r && this.session === s) s.notes.openPopover(a, r.left + r.width / 2, r.top + r.height / 2);
+			}, 350);
+		}
 	}
 
 	private showEngineWarning(): boolean {
@@ -641,6 +723,7 @@ export class PenDFView extends FileView {
 			new Notice("penDF: could not save annotations — see the log (command: Export log).");
 		}
 		s.highlights.destroy();
+		s.notes.destroy();
 		s.layers.destroy();
 		this.hud?.detach();
 		s.ac.abort();
@@ -657,6 +740,7 @@ export class PenDFView extends FileView {
 		this.pageCountEl?.setText("/ –");
 		this.zoomLabel?.setText("–");
 		await s.opened.close();
+		this.notifyChange();
 	}
 
 	async onClose(): Promise<void> {
@@ -664,6 +748,7 @@ export class PenDFView extends FileView {
 		await this.teardown();
 		this.hud?.destroy();
 		this.hud = null;
+		this.changeListeners.clear();
 		this.contentEl.empty();
 	}
 

@@ -69,12 +69,17 @@ upper-left, upper-right, lower-left, lower-right, flattened as
 | `text` | string | the selected text, whitespace-normalized |
 | `groupId` | string, optional | shared by the per-page pieces of a selection that crosses pages |
 
-### `note` (Phase 3, reserved)
+### `note` (Phase 3)
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `body` | string | Markdown |
 | `target` | object | `{ "kind": "highlight", "highlightId": "<id>" }` or `{ "kind": "point", "x": <pt>, "y": <pt> }` |
+
+A highlight note is drawn at the top-right corner of the highlight's first quad (its `UR` point);
+`page` is the highlight's page. A point note is drawn at `(x, y)` in PDF user space. Deleting a
+highlight in penDF also tombstones its notes. A note whose highlight no longer exists (for
+example after a merge) is kept and listed in the annotations panel, but has no marker on the page.
 
 ### `bookmark` (Phase 5, reserved)
 

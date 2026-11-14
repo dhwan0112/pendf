@@ -12,13 +12,14 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
 ## Status
 
-Phase 1 (viewer) and Phase 2 (highlights) of six. See [docs/REPORT.md](docs/REPORT.md).
+Phases 1–3 (viewer, highlights, notes) of six. See [docs/REPORT.md](docs/REPORT.md).
 
 | Phase | Feature | State |
 | --- | --- | --- |
 | 1 | Viewer: continuous scroll, virtualized pages, pinch/⌘-wheel zoom, fit width, rotation, text selection, search, internal/external links, per-file position memory, dark (inverted) pages | done (desktop-verified, iPad checklist pending) |
 | 2 | Highlights: 4 colors, multi-line / multi-column / cross-page, tap to recolor / copy / delete, undo/redo | done (desktop-verified, iPad checklist pending) |
-| 3–6 | Notes, links, bookmarks, handwriting | schema reserved, not implemented |
+| 3 | Notes: on a highlight or a point of the page, Markdown (links, lists, tasks…), annotations panel by page | done (desktop-verified, iPad checklist pending) |
+| 4–6 | Links, bookmarks, handwriting | schema reserved, not implemented |
 
 ## Install
 
@@ -37,6 +38,11 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
   link to a page (`[[file.pdf#page=3]]`) opens penDF at your last position, not that page.
 - Select text → pick a color from the palette that appears. Tap a highlight to
   recolor, copy or delete it. ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z undo/redo.
+- Notes: tap a highlight → note button, or toolbar **Add note** then tap the page. Tap a
+  note marker to read it (Markdown), edit or delete it. Deleting a highlight deletes its notes
+  too (undo brings both back).
+- Toolbar **Annotations** (or command **penDF: Show annotations panel**) lists the highlights
+  and notes of the open PDF page by page; tap one to jump there.
 - ⌘/Ctrl+F searches.
 
 > Obsidian Sync users: enable *Settings → Sync → Sync all other types* so the

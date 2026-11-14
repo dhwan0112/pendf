@@ -143,6 +143,152 @@
 	vector-effect: non-scaling-stroke;
 }
 
+.pendf-root .pendf-layer-svg.pendf-layer-overlay,
+.pendf-root.pendf-invert .pendf-layer-svg.pendf-layer-overlay {
+	mix-blend-mode: normal;
+}
+
+/* ---- notes (Phase 3) ---- */
+.pendf-root .pendf-note circle {
+	fill: var(--color-accent);
+	stroke: var(--background-primary);
+	stroke-width: 1;
+}
+.pendf-root .pendf-note path {
+	fill: none;
+	stroke: var(--text-on-accent);
+	stroke-width: 1.1;
+	stroke-linecap: round;
+}
+.pendf-root.pendf-invert .pendf-layer-overlay {
+	/* markers sit outside the inverted canvas; keep them readable */
+	filter: none;
+}
+.pendf-root.is-placing-note .pendf-container,
+.pendf-root.is-placing-note .textLayer {
+	cursor: crosshair;
+}
+.pendf-view .pendf-icon-btn.is-active {
+	color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+.pendf-root .pendf-floating.pendf-note-popover {
+	flex-direction: column;
+	align-items: stretch;
+	width: min(340px, calc(100% - 16px));
+	padding: var(--size-4-2) var(--size-4-3);
+}
+.pendf-root .pendf-note-body {
+	max-height: 40vh;
+	overflow-y: hidden;
+	font-size: var(--font-ui-medium);
+	user-select: text;
+	-webkit-user-select: text;
+}
+.pendf-root .pendf-note-body.is-scrollable {
+	overflow-y: auto;
+}
+.pendf-root .pendf-note-body :is(p, ul, ol, blockquote, pre, h1, h2, h3, h4, h5, h6):first-child {
+	margin-top: 0;
+}
+.pendf-root .pendf-note-body :is(p, ul, ol, blockquote, pre, h1, h2, h3, h4, h5, h6):last-child {
+	margin-bottom: 0;
+}
+.pendf-root .pendf-note-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--size-4-1);
+	border-top: var(--border-width) solid var(--background-modifier-border);
+	padding-top: var(--size-4-1);
+}
+
+/* note editor modal */
+.pendf-note-editor .pendf-note-quote {
+	margin: 0 0 var(--size-4-2);
+	padding-left: var(--size-4-2);
+	border-left: 3px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	max-height: 6em;
+	overflow-y: auto;
+}
+.pendf-note-editor .pendf-note-input {
+	width: 100%;
+	min-height: 8em;
+	font-family: var(--font-text);
+	resize: vertical;
+}
+
+/* annotations panel */
+.pendf-panel {
+	padding: var(--size-4-2);
+}
+.pendf-panel .pendf-panel-title {
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-4-2);
+	overflow-wrap: anywhere;
+}
+.pendf-panel .pendf-panel-empty {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+.pendf-panel .pendf-panel-page {
+	margin-bottom: var(--size-4-3);
+}
+.pendf-panel .pendf-panel-page-title {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin-bottom: var(--size-4-1);
+}
+.pendf-panel .pendf-panel-item {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-1);
+	padding: var(--size-4-1) var(--size-4-2);
+	margin-bottom: var(--size-4-1);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+.pendf-panel .pendf-panel-item:hover,
+.pendf-panel .pendf-panel-item:focus-visible {
+	background: var(--background-modifier-hover);
+}
+.pendf-panel .pendf-panel-item.is-highlight {
+	border-left: 4px solid var(--pendf-item-color, var(--color-yellow));
+}
+.pendf-panel .pendf-panel-item.is-note {
+	flex-direction: row;
+	align-items: flex-start;
+}
+.pendf-panel .pendf-panel-icon {
+	color: var(--color-accent);
+	flex: none;
+	padding-top: 2px;
+}
+.pendf-panel .pendf-panel-quote {
+	font-size: var(--font-ui-small);
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+.pendf-panel .pendf-panel-note {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	min-width: 0;
+}
+.pendf-panel .pendf-panel-item.is-highlight .pendf-panel-note {
+	padding-left: var(--size-4-2);
+	border-left: 2px solid var(--background-modifier-border);
+}
+.pendf-panel .pendf-panel-note :is(p, ul, ol, blockquote, pre, h1, h2, h3, h4, h5, h6):first-child {
+	margin-top: 0;
+}
+.pendf-panel .pendf-panel-note :is(p, ul, ol, blockquote, pre, h1, h2, h3, h4, h5, h6):last-child {
+	margin-bottom: 0;
+}
+
 /* ---- floating palette & highlight menu ---- */
 .pendf-root .pendf-floating {
 	position: absolute;

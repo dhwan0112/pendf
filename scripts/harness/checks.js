@@ -759,6 +759,72 @@
 				return { recolored, deleted, polyGone, back, colorBack, ok: recolored !== "#ffd400" && deleted && polyGone && back && colorBack === "#ffd400" && hlById(v, id).color === recolored };
 			});
 
+			await check("notes", async () => {
+				const { v, leaf } = await openPenDF("a4.pdf");
+				await waitText(v, 1);
+				const s = v.debugSession;
+				const store = s.store;
+				const res = {};
+				const clickAt = (x, y) => {
+					const t = document.elementFromPoint(x, y);
+					t.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
+				};
+				// 1. place mode → tap the page → editor modal → save
+				s.notes.setPlacing(true);
+				const pr = s.viewer.getPageView(0).div.getBoundingClientRect();
+				clickAt(pr.left + pr.width * 0.3, pr.top + pr.height * 0.25);
+				const ta = await waitFor(() => document.querySelector(".pendf-note-editor textarea"), 5000);
+				ta.value = "**bold** from the editor";
+				ta.dispatchEvent(new Event("input", { bubbles: true }));
+				document.querySelector(".pendf-note-editor").closest(".modal").querySelector("button.mod-cta").click();
+				await sleep(200);
+				const point = store.all().find((a) => a.type === "note" && a.target.kind === "point");
+				res.placed = point ? { page: point.page, body: point.body, x: point.target.x, y: point.target.y } : null;
+				res.placingOff = !s.notes.placing;
+				// 2. marker drawn; tapping it opens the rendered popover
+				const marker = await waitFor(() => s.layers.getLayer(1)?.overlay.querySelector(`.pendf-note[data-id="${point.id}"]`), 5000);
+				const mr = marker.getBoundingClientRect();
+				const mx = mr.left + mr.width / 2;
+				const my = mr.top + mr.height / 2;
+				res.markerPx = Math.round(mr.width);
+				res.hitTest = s.notes.hitTest(mx, my)?.id === point.id;
+				clickAt(mx, my);
+				await waitFor(() => s.notes.popoverEl?.querySelector("strong"), 5000).catch(() => {});
+				res.popoverBold = s.notes.popoverEl?.querySelector("strong")?.textContent ?? null;
+				res.highlightMenuNotOpened = !s.viewerRoot?.querySelector?.(".pendf-hl-menu") && !document.querySelector(".pendf-hl-menu");
+				s.notes.closePopover();
+				// 3. note on a highlight; deleting the highlight takes the note along, one undo restores both
+				const now = Date.now();
+				const h = { id: "h-notes-check", type: "highlight", page: 1, createdAt: now, updatedAt: now, deleted: false, quads: [[100, 700, 300, 700, 100, 690, 300, 690]], color: "#ffd400", text: "quoted text" };
+				s.undo.record("highlight", [h.id], () => store.upsert(h));
+				const hn = s.notes.noteOnHighlight(store.get(h.id), "note on *highlight*");
+				const live = () => store.all().filter((a) => a.id === h.id || a.id === hn).length;
+				res.beforeDelete = live();
+				s.highlights.deleteHighlight(store.get(h.id));
+				res.afterDelete = live();
+				v.undo();
+				res.afterUndo = live();
+				// 4. panel lists both, renders Markdown, and follows the view
+				await P().showAnnotationsPanel();
+				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
+				await waitFor(() => panel.contentEl.querySelectorAll(".pendf-panel-item").length >= 2, 5000).catch(() => {});
+				res.panelItems = panel.contentEl.querySelectorAll(".pendf-panel-item").length;
+				res.panelBold = panel.contentEl.querySelector(".pendf-panel-note strong")?.textContent ?? null;
+				res.panelHighlightNote = !!panel.contentEl.querySelector(".pendf-panel-item.is-highlight .pendf-panel-note em");
+				// 5. saved to the sidecar and back after reopening
+				await store.flush();
+				leaf.detach();
+				const again = await openPenDF("a4.pdf");
+				const notes = again.v.debugSession.store.all().filter((a) => a.type === "note");
+				res.reopened = notes.map((n) => n.body).sort();
+				res.ok =
+					!!res.placed && res.placed.page === 1 && res.placed.body === "**bold** from the editor" && res.placingOff &&
+					res.hitTest && res.popoverBold === "bold" && res.highlightMenuNotOpened &&
+					res.beforeDelete === 2 && res.afterDelete === 0 && res.afterUndo === 2 &&
+					res.panelItems >= 2 && res.panelBold === "bold" && res.panelHighlightNote &&
+					res.reopened.length === 2 && res.reopened.includes("note on *highlight*");
+				return res;
+			});
 			await check("persist-restart-rename", async () => {
 				const before = (await ad.exists(FIX + "rotations.pdf.pendf.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.pendf.json"));
 				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;

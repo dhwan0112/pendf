@@ -185,3 +185,7 @@ export function pointInPolygon(p: Point, poly: Point[], tol = 0): boolean {
 	const b = polygonBounds(poly);
 	return p[0] >= b.x - tol && p[0] <= b.x + b.w + tol && p[1] >= b.y - tol && p[1] <= b.y + b.h + tol;
 }
+
+export function distance(a: Point, b: Point): number {
+	return Math.hypot(a[0] - b[0], a[1] - b[1]);
+}

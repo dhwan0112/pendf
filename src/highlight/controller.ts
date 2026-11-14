@@ -2,7 +2,8 @@
 //
 // select text → palette appears next to the selection → pick a color →
 // one highlight per page (pieces of a cross-page selection share a groupId).
-// Tap a highlight → menu: recolor, copy text, delete. Undo/redo per document.
+// Tap a highlight → menu: recolor, note, copy text, delete. Undo/redo per document.
+// Deleting a highlight also deletes the notes attached to it (one undo step).
 
 import { setIcon } from "obsidian";
 import type { Quad, Rect } from "../geometry";
@@ -15,6 +16,7 @@ import { uuid } from "../store/schema";
 import type { SidecarStore } from "../store/sidecar";
 import type { UndoStack } from "../store/undo";
 import { logger } from "../util/log";
+import { notesForHighlights } from "../notes/model";
 import { mergeLineRects, normalizeText } from "./rects";
 import { currentRange, piecesFromRange, type PagePiece } from "./selection";
 
@@ -32,6 +34,8 @@ export interface HighlightHost {
 	defaultColor: () => number;
 	notice: (msg: string) => void;
 	copy: (text: string) => void;
+	/** open the note editor for a highlight (Phase 3) */
+	note?: (a: HighlightAnnotation) => void;
 }
 
 interface PendingSelection {
@@ -270,6 +274,17 @@ export class HighlightController implements LayerRenderer {
 			});
 		}
 		const actions = el.createDiv({ cls: "pendf-hl-menu-actions" });
+		if (this.host.note) {
+			const store = this.host.store();
+			const has = !!store && notesForHighlights(store.all(), [a.id]).length > 0;
+			const label = has ? "Edit note" : "Add note";
+			const nb = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": label, title: label } });
+			setIcon(nb, has ? "message-square" : "message-square-plus");
+			nb.addEventListener("click", () => {
+				this.closeMenu();
+				this.host.note?.(a);
+			});
+		}
 		const copy = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Copy text", title: "Copy text" } });
 		setIcon(copy, "copy");
 		copy.addEventListener("click", () => {
@@ -321,10 +336,11 @@ export class HighlightController implements LayerRenderer {
 		const undo = this.host.undo();
 		if (!store || !undo || !store.writable) return;
 		const members = this.group(a);
-		undo.record("delete", members.map((m) => m.id), () => {
-			for (const m of members) store.remove(m.id);
+		const notes = notesForHighlights(store.all(), members.map((m) => m.id));
+		undo.record("delete", [...members, ...notes].map((m) => m.id), () => {
+			for (const m of [...members, ...notes]) store.remove(m.id);
 		});
-		for (const m of members) this.host.layers.refresh(m.page);
+		for (const m of [...members, ...notes]) this.host.layers.refresh(m.page);
 	}
 
 	destroy(): void {

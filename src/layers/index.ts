@@ -23,8 +23,12 @@ export interface PageLayer {
 	svg: SVGSVGElement;
 	/** geometry in PDF points (scale = userUnit), current rotation */
 	geom: PageGeometry;
-	/** content group renderers draw into */
+	/** content group renderers draw into (blended: multiply, like ink on paper) */
 	group: SVGGElement;
+	/** unblended group above `group`, for markers/icons that must keep their colors */
+	overlay: SVGGElement;
+	/** the <svg> holding `overlay` */
+	overlaySvg: SVGSVGElement;
 }
 
 export interface LayerRenderer {
@@ -162,7 +166,13 @@ export class LayerManager {
 			const group = host.doc.createElementNS(SVG_NS, "g");
 			svg.appendChild(group);
 			host.appendChild(svg);
-			layer = { pageNumber: n, host, svg, geom, group };
+			const overlaySvg = host.doc.createElementNS(SVG_NS, "svg");
+			overlaySvg.classList.add("pendf-layer-svg", "pendf-layer-overlay");
+			overlaySvg.setAttribute("preserveAspectRatio", "none");
+			const overlay = host.doc.createElementNS(SVG_NS, "g");
+			overlaySvg.appendChild(overlay);
+			host.appendChild(overlaySvg);
+			layer = { pageNumber: n, host, svg, geom, group, overlay, overlaySvg };
 			this.layers.set(n, layer);
 			this.applyGeometry(layer);
 			this.render(layer);
@@ -178,7 +188,9 @@ export class LayerManager {
 	}
 
 	private applyGeometry(layer: PageLayer): void {
-		layer.svg.setAttribute("viewBox", `0 0 ${layer.geom.width} ${layer.geom.height}`);
+		const vb = `0 0 ${layer.geom.width} ${layer.geom.height}`;
+		layer.svg.setAttribute("viewBox", vb);
+		layer.overlaySvg.setAttribute("viewBox", vb);
 	}
 
 	/** Insert the host right below the text layer (or after the canvas). */
@@ -207,6 +219,7 @@ export class LayerManager {
 
 	private render(layer: PageLayer): void {
 		layer.group.replaceChildren();
+		layer.overlay.replaceChildren();
 		for (const r of this.renderers) {
 			try {
 				r.renderPage(layer);

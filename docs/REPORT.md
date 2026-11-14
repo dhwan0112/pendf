@@ -106,3 +106,28 @@ f8f38b7 docs: REPORT for Phase 1-2
 96a69f5 test: vitest suite, check-standalone, worker shutdown safety
 0e44ede chore: scaffold PDF+++ plugin with bundled, global-free pdf.js
 ```
+
+---
+
+# Phase 3 — 텍스트 주석 (2026-11-15, 0.2.0)
+
+## 완료 기준 대조
+
+| 기준(목표 문서 1.3) | 결과 | 근거 |
+| --- | --- | --- |
+| 하이라이트 또는 페이지 지점에 붙는 메모 | 완료 | `src/notes/controller.ts`, 하네스 `notes` |
+| 마크다운 렌더링 | 완료 | 팝오버·패널 모두 `MarkdownRenderer.render`, 하네스가 `<strong>` 렌더 확인 |
+| 페이지별 목록 패널 | 완료 | `src/panel/AnnotationsView.ts`, 항목 탭 → 위치 이동 |
+| 생성·수정·삭제가 기기 간 동기화 후에도 보존 | 데스크톱 검증 완료, 실기기 대기 | 단위 테스트(두 저장소 사이 병합: 최신 수정 반영, 삭제 우선), 하네스 다시 열기, DEVICE_CHECKLIST 3-7 |
+
+## 바뀐 것
+
+- 하이라이트 메뉴에 메모 버튼, 툴바에 "Add note"(배치 모드)와 "Annotations"(패널), 명령 "Show annotations panel"·"Add note".
+- 하이라이트 삭제가 붙은 메모까지 지운다(실행 취소 한 번으로 함께 복원).
+- 페이지 레이어에 합성하지 않는 overlay SVG 추가(마커용).
+- 검증: 단위 테스트 133개(새 11개), lint(Obsidian 규칙 포함) 통과, 하네스 `notes`·`highlight-palette`·`highlight-menu-undo`·`unload-cleanup` 통과. 메모리 압박 때문에 전체 하네스 대신 영향받는 검사만 돌렸다.
+
+## 남은 것
+
+- iPad: DEVICE_CHECKLIST 3-1 ~ 3-7.
+- 다음: Phase 4 링크(선택·하이라이트·메모·페이지 링크 복사, 정확한 위치 이동).

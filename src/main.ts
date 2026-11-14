@@ -1,6 +1,7 @@
 import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile, type WorkspaceLeaf } from "obsidian";
 import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
+import { ANNOTATIONS_VIEW, AnnotationsView } from "./panel/AnnotationsView";
 import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type PenDFSettings } from "./settings";
 import { destroyWorker } from "./pdfjs";
 import { checkEngine, type EngineReport } from "./pdfjs/engine";
@@ -28,6 +29,7 @@ export default class PenDFPlugin extends Plugin {
 		if (!this.engine.ok) log.warn(`missing JavaScript features: ${this.engine.missing.join(", ")}`);
 		this.registerView(VIEW_TYPE, (leaf) => new PenDFView(leaf, this));
 		this.registerView(PEN_PROBE_VIEW, (leaf) => new PenProbeView(leaf));
+		this.registerView(ANNOTATIONS_VIEW, (leaf) => new AnnotationsView(leaf));
 		this.addSettingTab(new PenDFSettingTab(this.app, this));
 
 		// Entry points. PDF is a core extension, so a plugin cannot register
@@ -108,6 +110,12 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "zoom-out", name: "Zoom out", checkCallback: (c) => this.withView(c, (v) => v.zoom(-1)) });
 		this.addCommand({ id: "fit-width", name: "Fit width", checkCallback: (c) => this.withView(c, (v) => v.setScale("page-width")) });
 		this.addCommand({ id: "export-log", name: "Export log to vault", callback: () => void this.exportLog() });
+		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel() });
+		this.addCommand({
+			id: "add-note",
+			name: "Add note (then tap the page)",
+			checkCallback: (c) => this.withView(c, (v) => v.debugSession?.notes.setPlacing(true)),
+		});
 		this.addCommand({
 			id: "open-pen-probe",
 			name: "Open pen probe (diagnostics)",
@@ -179,6 +187,18 @@ export default class PenDFPlugin extends Plugin {
 	async openPdf(file: TFile, newTab = true): Promise<void> {
 		const leaf = newTab ? this.app.workspace.getLeaf("tab") : this.app.workspace.getLeaf(false);
 		await leaf.setViewState({ type: VIEW_TYPE, state: { file: file.path }, active: true });
+	}
+
+	/** Reveal the annotations panel in the right sidebar (creating it once). */
+	async showAnnotationsPanel(): Promise<void> {
+		const ws = this.app.workspace;
+		let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(ANNOTATIONS_VIEW)[0] ?? null;
+		if (!leaf) {
+			leaf = ws.getRightLeaf(false);
+			if (!leaf) return;
+			await leaf.setViewState({ type: ANNOTATIONS_VIEW, active: true });
+		}
+		await ws.revealLeaf(leaf);
 	}
 
 	/** Open a PDF in Obsidian's own viewer, exempt from "Open PDFs in penDF". */
