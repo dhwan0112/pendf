@@ -10,6 +10,8 @@ import { adapterFs } from "./store/obsidianFs";
 import { sidecarPathFor } from "./store/schema";
 import { formatLog, logger } from "./util/log";
 import { describePlatform } from "./util/platform";
+import { LinkRecorder } from "./links/recorder";
+import { aliasFrom } from "./links/format";
 
 const log = logger("plugin");
 
@@ -21,6 +23,9 @@ export default class PenDFPlugin extends Plugin {
 	/** Leaves the user deliberately opened in Obsidian's PDF viewer, with that file's path. */
 	private keepCore = new WeakMap<WorkspaceLeaf, string>();
 	private takingOver = new WeakSet<WorkspaceLeaf>();
+	private links!: LinkRecorder;
+	/** link position handed to a tab; reused if Obsidian's own, slower open puts its viewer back once more */
+	private leafLink = new WeakMap<WorkspaceLeaf, { path: string; subpath: string; t: number }>();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -57,6 +62,15 @@ export default class PenDFPlugin extends Plugin {
 							.onClick(() => void this.openPdf(file)),
 					);
 				}
+			}),
+		);
+		// remember which PDF link was pressed, so its position survives the takeover (Phase 4)
+		this.links = new LinkRecorder(this.app);
+		this.registerEditorExtension(this.links.editorExtension());
+		this.registerDomEvent(activeDocument, "pointerdown", this.links.onPointerDown, { capture: true });
+		this.registerEvent(
+			this.app.workspace.on("window-open", (_w, win) => {
+				this.registerDomEvent(win.document, "pointerdown", this.links.onPointerDown, { capture: true });
 			}),
 		);
 		this.app.workspace.onLayoutReady(() => {
@@ -111,6 +125,17 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "fit-width", name: "Fit width", checkCallback: (c) => this.withView(c, (v) => v.setScale("page-width")) });
 		this.addCommand({ id: "export-log", name: "Export log to vault", callback: () => void this.exportLog() });
 		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel() });
+		this.addCommand({ id: "copy-page-link", name: "Copy link to current page", checkCallback: (c) => this.withView(c, (v) => v.copyPageLink()) });
+		this.addCommand({
+			id: "copy-selection-link",
+			name: "Copy link to selection",
+			checkCallback: (c) =>
+				this.withView(c, (v) => {
+					const t = v.highlights?.selectionTarget();
+					if (t) v.copyLink({ page: t.page, rect: t.rect }, aliasFrom(t.text) || `p. ${t.page}`);
+					else new Notice("penDF: select some text first");
+				}),
+		});
 		this.addCommand({
 			id: "add-note",
 			name: "Add note (then tap the page)",
@@ -221,9 +246,13 @@ export default class PenDFPlugin extends Plugin {
 		if (this.keepCore.get(leaf) === path) return;
 		this.keepCore.delete(leaf);
 		this.takingOver.add(leaf);
-		log.info(`opening ${path} in penDF instead of the core PDF viewer`);
+		let subpath = this.links.take(path);
+		const prev = this.leafLink.get(leaf);
+		if (subpath) this.leafLink.set(leaf, { path, subpath, t: Date.now() });
+		else if (prev && prev.path === path && Date.now() - prev.t < 5000) subpath = prev.subpath;
+		log.info(`opening ${path}${subpath ?? ""} in penDF instead of the core PDF viewer`);
 		leaf
-			.setViewState({ type: VIEW_TYPE, state: { file: path }, active: vs.active ?? true })
+			.setViewState({ type: VIEW_TYPE, state: { file: path }, active: vs.active ?? true }, subpath ? { subpath } : undefined)
 			.catch((e) => log.error(`switching ${path} to penDF failed`, e))
 			.finally(() => this.takingOver.delete(leaf));
 	}

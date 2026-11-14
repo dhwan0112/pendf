@@ -131,3 +131,27 @@ f8f38b7 docs: REPORT for Phase 1-2
 
 - iPad: DEVICE_CHECKLIST 3-1 ~ 3-7.
 - 다음: Phase 4 링크(선택·하이라이트·메모·페이지 링크 복사, 정확한 위치 이동).
+
+---
+
+# Phase 4 — 링크 (2026-11-15, 0.3.0)
+
+## 완료 기준 대조
+
+| 기준(목표 문서 1.3) | 결과 | 근거 |
+| --- | --- | --- |
+| 선택·하이라이트·주석·페이지 링크 복사 | 완료 | 선택 팔레트, 하이라이트 메뉴, 메모 팝오버, 툴바의 링크 버튼과 명령 2개 |
+| 링크로 정확한 위치 이동 | 완료(노트에서 누른 링크) | 하네스 `pdf-links`: 읽기 보기·편집기·선택 링크 |
+| 노트 임베드(옵션) | 하지 않음 | D-25 |
+| 플러그인이 없어도 링크가 해당 PDF 페이지로 열림 | 완료 | penDF를 끈 상태에서 코어 뷰어가 `#page=7&pendf=…`를 7쪽으로 여는 것을 실측 |
+
+## 바뀐 것
+
+- `src/links/format.ts`(형식), `src/links/recorder.ts`(누른 링크 기록, CodeMirror 확장), 탭 전환 시 subpath 전달과 탭별 재사용.
+- 뷰: `pendf=`·`pendf-rect=` 해석, 주석·사각형으로 이동하고 강조. 이로써 D-23의 "페이지 링크가 마지막 위치로 열림" 한계도 노트에서 누른 링크에 대해서는 풀렸다.
+- 검증: 단위 테스트 143개(새 10개), lint 통과, 하네스 `pdf-links`·`open-by-default`·`notes`·`highlight-palette`·`highlight-menu-undo`·`unload-cleanup` 통과.
+
+## 남은 것
+
+- iPad: DEVICE_CHECKLIST 4-1 ~ 4-5. 특히 4-3(iOS 라이브 프리뷰에서 탭이 CodeMirror `mousedown`으로 오는지).
+- 다음: Phase 5 북마크(PDF 개요, 사용자 북마크).

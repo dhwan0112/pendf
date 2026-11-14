@@ -22,6 +22,7 @@ import { HighlightController } from "../highlight/controller";
 import { NoteController } from "../notes/controller";
 import { noteAnchor } from "../notes/model";
 import type { Annotation } from "../store/schema";
+import { aliasFrom, buildSubpath, parseSubpath, type PdfTarget } from "../links/format";
 import { SidecarStore } from "../store/sidecar";
 import { UndoStack } from "../store/undo";
 import { adapterFs } from "../store/obsidianFs";
@@ -60,6 +61,8 @@ export class PenDFView extends FileView {
 	private session: Session | null = null;
 	private loadToken = 0;
 	private pendingState: ViewerState | null = null;
+	/** annotation / selection to go to once the document and its annotations are loaded */
+	private pendingNav: PdfTarget | null = null;
 
 	// DOM
 	private toolbarEl!: HTMLElement;
@@ -187,6 +190,7 @@ export class PenDFView extends FileView {
 		this.button(tools, "undo-2", "Undo", () => this.undo());
 		this.button(tools, "redo-2", "Redo", () => this.redo());
 		this.button(tools, "search", "Find in PDF", () => this.openSearch());
+		this.button(tools, "link", "Copy link to this page", () => this.copyPageLink());
 		this.button(tools, "list", "Annotations", () => void this.plugin.showAnnotationsPanel());
 	}
 
@@ -316,6 +320,8 @@ export class PenDFView extends FileView {
 			notice: (m) => new Notice(m),
 			copy: (t) => void navigator.clipboard.writeText(t),
 			note: (a) => session.notes.noteOnHighlight(a),
+			copyLink: (a, text) => this.copyLink({ page: a.page, id: a.id }, aliasFrom(text) || `p. ${a.page}`),
+			copySelectionLink: (t) => this.copyLink({ page: t.page, rect: t.rect }, aliasFrom(t.text) || `p. ${t.page}`),
 		});
 		session.notes = new NoteController({
 			app: this.app,
@@ -331,12 +337,14 @@ export class PenDFView extends FileView {
 				session.highlights.hidePalette();
 				session.highlights.closeMenu();
 			},
+			copyLink: (n) => this.copyLink({ page: n.page, id: n.id }, aliasFrom(n.body.split("\n").find((l) => l.trim()) ?? "") || `p. ${n.page}`),
 		});
 		this.session = session;
 
 		eventBus.on("pagesinit", () => {
 			session.ready = true;
 			this.applyInitialState(file);
+			this.tryNav();
 		}, { signal: ac.signal });
 		eventBus.on("pagechanging", (e: { pageNumber: number }) => {
 			this.pageInput.value = String(e.pageNumber);
@@ -381,6 +389,77 @@ export class PenDFView extends FileView {
 		this.showStoreStatus(store);
 		layers.refresh();
 		this.notifyChange();
+		this.tryNav();
+	}
+
+	// ------------------------------------------------------- links (Phase 4)
+
+	/** A link to this PDF (Obsidian's link format settings apply). */
+	linkTo(target: PdfTarget, alias?: string): string | null {
+		const file = this.session?.file ?? this.file;
+		if (!file) return null;
+		return this.app.fileManager.generateMarkdownLink(file, "", buildSubpath(target), alias);
+	}
+
+	copyLink(target: PdfTarget, alias?: string): void {
+		const link = this.linkTo(target, alias);
+		if (!link) return;
+		void navigator.clipboard.writeText(link).then(
+			() => new Notice("Link copied"),
+			() => new Notice("penDF: could not copy the link"),
+		);
+	}
+
+	copyPageLink(): void {
+		const s = this.session;
+		if (!s?.ready) return;
+		const page = s.viewer.currentPageNumber;
+		this.copyLink({ page }, `${s.file.basename}, p. ${page}`);
+	}
+
+	/** Go to a pending link target once the document and its annotations are there. */
+	private tryNav(): void {
+		const s = this.session;
+		const nav = this.pendingNav;
+		if (!nav || !s?.ready || !s.store) return;
+		this.pendingNav = null;
+		if (nav.id) {
+			const a = s.store.get(nav.id);
+			if (a && !a.deleted) {
+				this.revealAnnotation(a);
+				return;
+			}
+			log.info(`link target ${nav.id} not found; showing page ${nav.page ?? "?"}`);
+		}
+		if (nav.rect && nav.page) {
+			this.revealRect(nav.page, nav.rect);
+			return;
+		}
+		if (nav.page) this.goToPage(nav.page);
+	}
+
+	/** Scroll a PDF-space box into view and flash it. */
+	revealRect(page: number, rect: [number, number, number, number]): void {
+		const s = this.session;
+		if (!s?.ready) return;
+		const [x0, y0, x1, y1] = rect;
+		s.viewer.scrollPageIntoView({ pageNumber: page, destArray: [null, { name: "XYZ" }, x0 - 24, y1 + 48, null], allowNegativeOffset: true, ignoreDestinationZoom: true });
+		let tries = 0;
+		const draw = () => {
+			if (this.session !== s) return;
+			const layer = s.layers.getLayer(page);
+			if (!layer) {
+				if (++tries < 20) window.setTimeout(draw, 100);
+				return;
+			}
+			const pts = [layer.geom.toView(x0, y1), layer.geom.toView(x1, y1), layer.geom.toView(x1, y0), layer.geom.toView(x0, y0)];
+			const poly = layer.overlay.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "polygon");
+			poly.setAttribute("class", "pendf-flash");
+			poly.setAttribute("points", pts.map((p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" "));
+			layer.overlay.appendChild(poly);
+			window.setTimeout(() => poly.remove(), 2200);
+		};
+		window.setTimeout(draw, 150);
 	}
 
 	// ------------------------------------------------- annotations (panel API)
@@ -424,6 +503,7 @@ export class PenDFView extends FileView {
 		}
 		const dest = at ? [null, { name: "XYZ" }, at[0] - 24, at[1] + 48, null] : undefined;
 		s.viewer.scrollPageIntoView({ pageNumber: a.page, destArray: dest, allowNegativeOffset: true, ignoreDestinationZoom: true });
+		if (a.type === "highlight") s.highlights.flash(a.id);
 		if (a.type === "note") {
 			// once the page layer is (re)attached, open the popover over the marker
 			window.setTimeout(() => {
@@ -655,10 +735,14 @@ export class PenDFView extends FileView {
 
 	setEphemeralState(state: unknown): void {
 		const st = state as { page?: unknown; subpath?: unknown } | null;
-		// links like [[file.pdf#page=3]] arrive as { subpath: "#page=3" }
-		const fromLink = typeof st?.subpath === "string" ? /[#&]page=(\d+)/.exec(st.subpath) : null;
-		const page = fromLink ? Number(fromLink[1]) : st?.page;
-		if (typeof page === "number") {
+		// links like [[file.pdf#page=3&pendf=<id>]] arrive as { subpath: "#page=3&pendf=<id>" }
+		const target: PdfTarget = typeof st?.subpath === "string" ? parseSubpath(st.subpath) : {};
+		const page = target.page ?? (typeof st?.page === "number" ? st.page : undefined);
+		if (target.id || target.rect) {
+			this.pendingNav = { ...target, page };
+			if (page && !this.session?.ready) this.pendingState = { ...(this.pendingState ?? {}), page };
+			this.tryNav();
+		} else if (typeof page === "number") {
 			if (this.session?.ready) this.goToPage(page);
 			else this.pendingState = { ...(this.pendingState ?? {}), page };
 		}

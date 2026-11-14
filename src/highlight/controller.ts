@@ -36,6 +36,10 @@ export interface HighlightHost {
 	copy: (text: string) => void;
 	/** open the note editor for a highlight (Phase 3) */
 	note?: (a: HighlightAnnotation) => void;
+	/** copy a link to a highlight (Phase 4); `text` is the whole group's text */
+	copyLink?: (a: HighlightAnnotation, text: string) => void;
+	/** copy a link to the current selection without highlighting it (Phase 4) */
+	copySelectionLink?: (t: { page: number; rect: [number, number, number, number]; text: string }) => void;
 }
 
 interface PendingSelection {
@@ -165,6 +169,36 @@ export class HighlightController implements LayerRenderer {
 		return made.map((m) => m.id);
 	}
 
+	/** The current selection as a link target: first page touched, its bounding box in PDF points. */
+	selectionTarget(): { page: number; rect: [number, number, number, number]; text: string } | null {
+		if (currentRange(this.host.container) || !this.pending) this.captureSelection();
+		const piece = this.pending?.pieces[0];
+		if (!piece) return null;
+		const geom = this.host.layers.geometry(piece.pageNumber);
+		if (!geom) return null;
+		const pageRect = pageContentRect(piece.pageDiv);
+		const xs: number[] = [];
+		const ys: number[] = [];
+		for (const r of piece.rects) {
+			const v = geom.clientRectToView(r, pageRect);
+			for (const [x, y] of [geom.toPdf(v.x, v.y), geom.toPdf(v.x + v.w, v.y + v.h)]) {
+				xs.push(x);
+				ys.push(y);
+			}
+		}
+		if (xs.length === 0) return null;
+		const text = this.pending?.pieces.map((p) => p.text).join(" ") ?? piece.text;
+		return { page: piece.pageNumber, rect: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], text: normalizeText(text) };
+	}
+
+	/** Briefly mark a highlight (after jumping to it from a link or the panel). */
+	flash(id: string, ms = 1600): void {
+		this.setSelected(id);
+		window.setTimeout(() => {
+			if (this.selectedId === id && !this.menu) this.setSelected(null);
+		}, ms);
+	}
+
 	private showPalette(): void {
 		const p = this.pending;
 		if (!p) return;
@@ -193,6 +227,22 @@ export class HighlightController implements LayerRenderer {
 			b.addEventListener("pointerup", apply);
 			b.addEventListener("click", apply);
 		});
+		if (this.host.copySelectionLink) {
+			const lb = el.createEl("button", { cls: "pendf-icon-btn pendf-palette-link", attr: { "aria-label": "Copy link to selection", title: "Copy link to selection" } });
+			setIcon(lb, "link");
+			const copy = (e: Event) => {
+				e.preventDefault();
+				e.stopPropagation();
+				const t = this.selectionTarget();
+				if (!t) return;
+				this.host.copySelectionLink?.(t);
+				this.host.root.ownerDocument.getSelection()?.removeAllRanges();
+				this.pending = null;
+				this.hidePalette();
+			};
+			lb.addEventListener("pointerup", copy);
+			lb.addEventListener("click", copy);
+		}
 		this.place(el, p.anchor, p.first);
 	}
 
@@ -283,6 +333,14 @@ export class HighlightController implements LayerRenderer {
 			nb.addEventListener("click", () => {
 				this.closeMenu();
 				this.host.note?.(a);
+			});
+		}
+		if (this.host.copyLink) {
+			const lb = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Copy link", title: "Copy link" } });
+			setIcon(lb, "link");
+			lb.addEventListener("click", () => {
+				this.host.copyLink?.(a, this.group(a).map((x) => x.text).join(" "));
+				this.closeMenu();
 			});
 		}
 		const copy = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Copy text", title: "Copy text" } });

@@ -98,6 +98,22 @@ example after a merge) is kept and listed in the annotations panel, but has no m
 | `width` | number > 0 | stroke width in points |
 | `points` | number[] | one stroke, flattened `[x0, y0, x1, y1, …]` |
 
+## Links (Phase 4)
+
+penDF links are ordinary Obsidian links to the PDF with a subpath, created with
+Obsidian's own link settings (wikilink or Markdown, shortest or full path):
+
+```
+[[paper.pdf#page=5&pendf=<annotation id>|quoted text]]      a highlight or a note
+[[paper.pdf#page=12&pendf-rect=72,500,300,520|quoted text]]  a text selection (x0,y0,x1,y1 in PDF points)
+[[paper.pdf#page=3|paper, p. 3]]                             a page
+```
+
+`page` is Obsidian's own parameter: without penDF, Obsidian's PDF viewer opens the PDF on that
+page and ignores the `pendf…` parameters. With penDF, the link opens penDF, scrolls to the
+annotation or rectangle and flashes it (a note also opens its popover). If the annotation no
+longer exists, the page is shown.
+
 ## Merging (sync conflicts)
 
 When the file changed on disk since penDF last read it (another device, a sync

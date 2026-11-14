@@ -825,6 +825,102 @@
 					res.reopened.length === 2 && res.reopened.includes("note on *highlight*");
 				return res;
 			});
+			await check("pdf-links", async () => {
+				// Phase 4: copy links, follow them from a note (reading view click and editor press)
+				const pl = P();
+				const ws = app.workspace;
+				const res = {};
+				pl.settings.openPdfsInPenDF = true;
+				const notePath = FIX + "pendf-links-check.md";
+				createdPaths.add(notePath);
+				try {
+					// a highlight and a note in long-300.pdf, page 5
+					const { v, leaf } = await openPenDF("long-300.pdf");
+					const s = v.debugSession;
+					const now = Date.now();
+					const h = { id: "links-check-h", type: "highlight", page: 5, createdAt: now, updatedAt: now, deleted: false, quads: [[72, 700, 300, 700, 72, 688, 300, 688]], color: "#5fb236", text: "linked text" };
+					s.store.upsert(h);
+					const nid = s.notes.createPointNote(9, 200, 400, "linked **note**");
+					await s.store.flush();
+					const hlLink = v.linkTo({ page: 5, id: h.id }, "linked text");
+					const noteLink = v.linkTo({ page: 9, id: nid }, "note");
+					const rectLink = v.linkTo({ page: 12, rect: [72, 500, 300, 520] }, "sel");
+					res.hlLink = hlLink;
+					res.formats = [hlLink, noteLink, rectLink].every((l) => /^\[\[long-300\.pdf#page=\d+&pendf(-rect)?=[^|\]]+\|[^\]]+\]\]$/.test(l));
+					leaf.detach();
+					await app.vault.create(notePath, `# links\n\nA ${hlLink} B\n\nC ${noteLink} D\n\nE ${rectLink} F\n`);
+					const md = app.vault.getAbstractFileByPath(notePath);
+					const waitPdf = async (fn) => {
+						const l = await waitFor(() => { const x = ws.getMostRecentLeaf(); return x && x.view.getViewType() === VIEW && x.view.debugSession?.ready && x.view.debugSession.store ? x : null; }, 20000);
+						await sleep(900);
+						return fn(l.view.debugSession, l);
+					};
+					// 1. reading view: press + click the highlight link
+					const nl = ws.getLeaf("tab");
+					await nl.setViewState({ type: "markdown", state: { file: md.path, mode: "preview" }, active: true });
+					const a = await waitFor(() => nl.view.containerEl.querySelector('a.internal-link[data-href*="links-check-h"]'), 10000);
+					a.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 }));
+					a.click();
+					res.reading = await waitPdf((ss, l) => {
+						const r = { page: ss.viewer.currentPageNumber, flashed: !!ss.layers.getLayer(5)?.group.querySelector('.pendf-hl.is-selected[data-id="links-check-h"]') };
+						l.detach();
+						return r;
+					});
+					// 2. editor (source mode): press on the note link, then let Obsidian open it
+					const el = ws.getLeaf("tab");
+					await el.setViewState({ type: "markdown", state: { file: md.path, mode: "source", source: true }, active: true });
+					const cm = await waitFor(() => el.view.containerEl.querySelector(".cm-content"), 10000);
+					await sleep(300);
+					const line = [...cm.querySelectorAll(".cm-line")].find((x) => x.textContent.includes("pendf=" + nid));
+					const range = document.createRange();
+					const tn = [...line.childNodes].length ? line : line;
+					range.selectNodeContents(tn);
+					const lr = range.getClientRects()[0] || line.getBoundingClientRect();
+					const txt = line.textContent;
+					// pointer over the middle of the link text
+					const frac = (txt.indexOf("[[") + 6) / txt.length;
+					const x = lr.left + Math.max(4, (line.getBoundingClientRect().width) * frac);
+					const y = lr.top + lr.height / 2;
+					const target = document.elementFromPoint(x, y) || line;
+					target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, view: window }));
+					target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, view: window }));
+					const linktext = noteLink.slice(2, noteLink.indexOf("|"));
+					await ws.openLinkText(linktext, md.path, false);
+					res.editor = await waitPdf((ss, l) => {
+						const r = { page: ss.viewer.currentPageNumber, popover: ss.notes.popoverEl?.querySelector("strong")?.textContent ?? null };
+						l.detach();
+						return r;
+					});
+					// 3. selection link: rectangle flashed on its page
+					const rl = ws.getLeaf("tab");
+					await rl.setViewState({ type: "markdown", state: { file: md.path, mode: "preview" }, active: true });
+					const ra = await waitFor(() => rl.view.containerEl.querySelector('a.internal-link[data-href*="pendf-rect"]'), 10000);
+					ra.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 }));
+					ra.click();
+					res.rect = await waitPdf((ss, l) => {
+						const r = { page: ss.viewer.currentPageNumber, flash: !!ss.layers.getLayer(12)?.overlay.querySelector(".pendf-flash") };
+						l.detach();
+						return r;
+					});
+					// 4. a plain open (no link pressed) still uses the remembered position, not a stale link
+					const pl2 = ws.getLeaf("tab");
+					await pl2.openFile(app.vault.getAbstractFileByPath(FIX + "long-300.pdf"), { active: true });
+					res.plainOpen = await waitPdf((ss, l) => {
+						const r = { type: l.view.getViewType(), page: ss.viewer.currentPageNumber };
+						l.detach();
+						return r;
+					});
+					res.ok =
+						res.formats &&
+						res.reading.page === 5 && res.reading.flashed &&
+						res.editor.page === 9 && res.editor.popover === "note" &&
+						res.rect.page === 12 && res.rect.flash &&
+						res.plainOpen.type === VIEW;
+					return res;
+				} finally {
+					pl.settings.openPdfsInPenDF = false;
+				}
+			});
 			await check("persist-restart-rename", async () => {
 				const before = (await ad.exists(FIX + "rotations.pdf.pendf.json")) && JSON.parse(await ad.read(FIX + "rotations.pdf.pendf.json"));
 				const n = before ? before.annotations.filter((a) => !a.deleted).length : 0;

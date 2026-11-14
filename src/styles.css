@@ -148,6 +148,26 @@
 	mix-blend-mode: normal;
 }
 
+/* ---- links (Phase 4) ---- */
+.pendf-root .pendf-flash {
+	fill: var(--interactive-accent);
+	fill-opacity: 0.25;
+	stroke: var(--interactive-accent);
+	stroke-width: 1.5;
+	vector-effect: non-scaling-stroke;
+	animation: pendf-flash 2.2s ease-out forwards;
+}
+@keyframes pendf-flash {
+	0%, 60% { opacity: 1; }
+	100% { opacity: 0; }
+}
+.pendf-root .pendf-palette .pendf-palette-link {
+	margin-left: var(--size-4-1);
+	border-left: var(--border-width) solid var(--background-modifier-border);
+	padding-left: var(--size-4-2);
+	border-radius: 0;
+}
+
 /* ---- notes (Phase 3) ---- */
 .pendf-root .pendf-note circle {
 	fill: var(--color-accent);

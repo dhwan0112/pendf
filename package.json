@@ -1,6 +1,6 @@
 {
   "name": "pendf",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Standalone, iPad-first PDF viewer and annotator for Obsidian",
   "main": "main.js",
@@ -24,6 +24,8 @@
     "pdfjs-dist": "6.5.438"
   },
   "devDependencies": {
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.13",
     "@pdf-lib/fontkit": "1.1.1",
     "@types/node": "26.6.6",
     "acorn": "8.19.0",

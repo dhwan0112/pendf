@@ -37,6 +37,8 @@ export interface NoteHost {
 	onPlacingChange?: (on: boolean) => void;
 	/** dismiss other floating UI (highlight palette/menu) */
 	closeOthers?: () => void;
+	/** copy a link to a note (Phase 4) */
+	copyLink?: (note: NoteAnnotation) => void;
 }
 
 export class NoteController implements LayerRenderer {
@@ -270,6 +272,14 @@ export class NoteController implements LayerRenderer {
 			body.toggleClass("is-scrollable", body.scrollHeight > body.clientHeight + 2);
 		});
 		const actions = el.createDiv({ cls: "pendf-note-actions" });
+		if (this.host.copyLink) {
+			const lb = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Copy link", title: "Copy link" } });
+			setIcon(lb, "link");
+			lb.addEventListener("click", () => {
+				this.host.copyLink?.(note);
+				this.closePopover();
+			});
+		}
 		const edit = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Edit note", title: "Edit note" } });
 		setIcon(edit, "pencil");
 		edit.addEventListener("click", () => this.edit(note));
