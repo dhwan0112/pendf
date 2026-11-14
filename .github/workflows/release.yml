@@ -1,8 +1,10 @@
 name: Release
 
-# Push a tag equal to manifest.json's version (e.g. `0.1.0`, no "v") to
+# Push a tag equal to manifest.json's version (e.g. `0.1.1`, no "v") to
 # build, test and publish main.js, manifest.json and styles.css — the three
-# files Obsidian / BRAT install.
+# files Obsidian / BRAT install. Each asset gets a signed build-provenance
+# attestation; verify with:
+#   gh attestation verify main.js --repo dhwan0112/pendf
 on:
   push:
     tags:
@@ -10,32 +12,44 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Check tag matches manifest version
+      - name: Check tag matches manifest and versions.json
         run: |
           v=$(node -p "require('./manifest.json').version")
           if [ "$v" != "${GITHUB_REF_NAME}" ]; then
             echo "tag ${GITHUB_REF_NAME} != manifest.json version $v"; exit 1
           fi
+          node -e "const v=require('./versions.json'), m=require('./manifest.json'); if (v[m.version] !== m.minAppVersion) { console.error('versions.json lacks ' + m.version + ': ' + m.minAppVersion); process.exit(1); }"
 
       - run: pnpm build
       - run: pnpm test
       - run: pnpm lint
+
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
 
       - name: Create release
         env:
@@ -43,5 +57,5 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" main.js manifest.json styles.css \
             --title "${GITHUB_REF_NAME}" \
-            --notes "Built from ${GITHUB_SHA}. main.js $(stat -c%s main.js) bytes. Bundles pdf.js 6.5.438 (Apache-2.0); see THIRD_PARTY_NOTICES.md." \
+            --notes "Built from ${GITHUB_SHA}. main.js $(stat -c%s main.js) bytes. Bundles pdf.js 6.5.438 (Apache-2.0); see THIRD_PARTY_NOTICES.md. Assets carry build-provenance attestations: \`gh attestation verify main.js --repo ${GITHUB_REPOSITORY}\`." \
             --draft

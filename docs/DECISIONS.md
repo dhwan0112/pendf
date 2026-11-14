@@ -114,3 +114,8 @@
 - **근거:** 표시 이름이 `penDF`로 바뀌었고(D-19), 아직 릴리스 전이라 기존 설치나 사이드카가 없다. `pendf`는 커뮤니티 목록의 id와 겹치지 않는다.
 - **주의:** `docs/evidence/`의 JSON, REPORT의 커밋 목록, D-02·D-18·D-19는 당시 기록이라 옛 이름(`pdf-ppp`, `ppp-*`, `.ppp.json`)을 그대로 둔다.
 - **함께 고친 것:** `.gitignore`의 `styles.css`가 빌드 결과물뿐 아니라 `src/styles.css`까지 무시해, 원본 스타일시트가 한 번도 커밋되지 않았다(이름 변경 스크립트가 git 추적 파일만 바꾸다가 드러남). 빌드 결과물 패턴을 저장소 루트(`/main.js`, `/styles.css` 등)로 한정하고 `src/styles.css`를 추가했다. 추적 파일만으로 만든 복사본에서 `pnpm install && pnpm build && pnpm test && pnpm lint`가 통과한다.
+
+## D-21 릴리스 자산에 빌드 출처 증명(attestation) (2026-11-14)
+- **결정:** `release.yml`이 `actions/attest@v4`로 `main.js`·`manifest.json`·`styles.css`에 SLSA build provenance를 서명해 붙인다. 확인: `gh attestation verify main.js --repo dhwan0112/pendf`. 0.1.0에는 없고 0.1.1부터 붙는다.
+- **근거:** Obsidian 커뮤니티 등록 검토가 "Missing GitHub artifact attestations for release assets"를 권고했다. 공개 저장소에서는 무료다.
+- **함께:** 액션을 현재 메이저(checkout v7, setup-node v7, pnpm/action-setup v6)로 올려 Node 20 경고를 없앴다. `main` push마다 도는 `ci.yml`(빌드·테스트·lint)을 추가했다. `versions.json`(버전 → minAppVersion)을 추가하고, 릴리스 워크플로가 태그·manifest·versions.json 일치를 검사한다.
