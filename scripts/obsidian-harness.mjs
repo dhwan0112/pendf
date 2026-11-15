@@ -4,7 +4,11 @@
 // scripts/harness/ are NOT part of the plugin and are not scanned by
 // check-standalone (they deliberately use app.plugins etc. to load/unload it).
 //
-//   node scripts/obsidian-harness.mjs --vault SciWiki --path "<vault dir>" [--only a,b]
+//   node scripts/obsidian-harness.mjs [--vault pendf-testvault] [--path "<vault dir>"] [--only a,b]
+//
+// Runs only in a penDF test vault (scripts/make-test-vault.mjs): the vault root
+// must contain .pendf-test-vault — checked here on disk AND inside Obsidian for
+// the vault the CLI actually talks to.
 //
 // What it does:
 //   1. copies main.js/manifest.json/styles.css + fixtures into the vault
@@ -19,6 +23,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import esbuild from "esbuild";
 import { transform } from "./pdfjs-transform.mjs";
+import { DEFAULT_VAULT_NAME, DEFAULT_VAULT_PATH, MARKER, assertTestVault } from "./test-vault.mjs";
 import { ponyfill } from "./pdfjs-ponyfill.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -26,13 +31,13 @@ const arg = (k, d) => {
 	const i = process.argv.indexOf(k);
 	return i >= 0 ? process.argv[i + 1] : d;
 };
-const vaultName = arg("--vault", "SciWiki");
-const vaultPath = arg("--path");
+const vaultName = arg("--vault", DEFAULT_VAULT_NAME);
+const vaultPath = assertTestVault(arg("--path", DEFAULT_VAULT_PATH), "obsidian-harness");
 const only = arg("--only", "");
 const outFile = arg("--out", path.join(root, "harness-result.json"));
 const OBSIDIAN = process.platform === "win32" ? "C:/Program Files/Obsidian/obsidian" : "obsidian";
-if (!vaultPath || !existsSync(path.join(vaultPath, ".obsidian"))) {
-	console.error("usage: node scripts/obsidian-harness.mjs --vault <name> --path <vault dir> [--only check1,check2]");
+if (!existsSync(path.join(vaultPath, ".obsidian"))) {
+	console.error("usage: node scripts/obsidian-harness.mjs [--vault <name>] [--path <test vault dir>] [--only check1,check2]");
 	process.exit(2);
 }
 
@@ -80,7 +85,30 @@ async function buildPdfjsProbe() {
 const checksPath = path.join(root, "scripts", "harness", "checks.js");
 const fwd = (p) => p.replace(/\\/g, "/");
 
+/** The vault the CLI talks to must be this test vault, marker and all (not just the folder on disk). */
+function assertObsidianVault() {
+	let seen = "";
+	try {
+		seen = evalInObsidian(`JSON.stringify({ base: app.vault.adapter.basePath, marker: require("fs").existsSync(require("path").join(app.vault.adapter.basePath, ${JSON.stringify(MARKER)})) })`);
+	} catch (e) {
+		console.error(`obsidian-harness: Obsidian could not reach vault "${vaultName}". Open ${vaultPath} in Obsidian once ("Open folder as vault"), then retry.
+${String(e).slice(0, 300)}`);
+		process.exit(3);
+	}
+	let info = null;
+	try {
+		info = JSON.parse(seen);
+	} catch {
+		// not JSON: the CLI printed something else
+	}
+	if (!info || !info.marker || path.resolve(info.base) !== path.resolve(vaultPath)) {
+		console.error(`obsidian-harness: vault "${vaultName}" in Obsidian is ${info?.base ?? "(unknown)"}${info && !info.marker ? " and has no " + MARKER : ""}; expected the test vault ${vaultPath}. Refusing to run.`);
+		process.exit(3);
+	}
+}
+
 async function main() {
+	assertObsidianVault();
 	execFileSync(process.execPath, [path.join(root, "scripts", "install-dev.mjs"), vaultPath, "--fixtures"], { stdio: "inherit" });
 	const probe = await buildPdfjsProbe();
 	const cfg = {

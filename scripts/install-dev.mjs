@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // Copy the built plugin (and optionally the fixtures) into a test vault.
-//   node scripts/install-dev.mjs <vault path> [--fixtures]
+//   node scripts/install-dev.mjs <test vault path> [--fixtures]   (only a marked test vault, see scripts/test-vault.mjs)
 import { cpSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertTestVault } from "./test-vault.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const vault = process.argv[2];
-if (!vault || !existsSync(path.join(vault, ".obsidian"))) {
+const vault = assertTestVault(process.argv[2], "install-dev");
+if (!existsSync(path.join(vault, ".obsidian"))) {
 	console.error("usage: node scripts/install-dev.mjs <vault path> [--fixtures]");
 	process.exit(2);
 }

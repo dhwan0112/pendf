@@ -303,6 +303,8 @@
 			// clean slate: sidecars and the plugin's own settings (remembered positions)
 			const ad = app.vault.adapter;
 			const dataJson = app.vault.configDir + "/plugins/" + ID + "/data.json";
+			// a fresh test vault starts in restricted mode (community plugins off)
+			if (typeof app.plugins.isEnabled === "function" && !app.plugins.isEnabled()) await app.plugins.setEnable(true);
 			await app.plugins.disablePlugin(ID);
 			if (await ad.exists(dataJson)) await ad.remove(dataJson);
 			for (const f of (await ad.list(FIX)).files) if (/\.pendf\.json(\.tmp)?$/.test(f)) await ad.remove(f);
