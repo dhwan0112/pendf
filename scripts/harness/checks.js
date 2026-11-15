@@ -33,6 +33,15 @@
 		const leavesBefore = new Set();
 		app.workspace.iterateAllLeaves((l) => leavesBefore.add(l));
 		const activeBefore = app.workspace.getMostRecentLeaf();
+		// sidebars as the user left them: collapsed or open, and which tab is in front
+		const sideOf = (split) => {
+			let front = null;
+			app.workspace.iterateAllLeaves((l) => {
+				if (l.getRoot() === split && l.containerEl.isShown()) front = l;
+			});
+			return { collapsed: split.collapsed, front };
+		};
+		const sidesBefore = { left: sideOf(app.workspace.leftSplit), right: sideOf(app.workspace.rightSplit) };
 		const workers = [];
 		const opened = [];
 		const createdPaths = new Set();
@@ -93,6 +102,12 @@
 				app.workspace.iterateAllLeaves((l) => {
 					if (!leavesBefore.has(l)) l.detach();
 				});
+				// put the sidebars back: the same tab in front, collapsed or open as before
+				for (const [split, before] of [[app.workspace.leftSplit, sidesBefore.left], [app.workspace.rightSplit, sidesBefore.right]]) {
+					if (before.front && before.front.parent) before.front.parent.selectTab?.(before.front);
+					if (before.collapsed) split.collapse();
+					else split.expand();
+				}
 				if (activeBefore && activeBefore.parent) app.workspace.setActiveLeaf(activeBefore, { focus: false });
 			} catch (e) {
 				console.error(e);
