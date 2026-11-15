@@ -206,3 +206,11 @@
 - **결과:** `local()` 시스템 글꼴은 그대로 쓰고, 없으면 브라우저 기본 대체 글꼴. 요청 실패와 콘솔 오류는 0.
 - **대안:** `useSystemFonts: false`로 항상 내장 표준 글꼴(Foxit/Liberation)을 쓰기 — 어디서나 같은 모양이지만 지금 데스크톱 모양이 바뀐다. iPad 결과를 보고 결정한다.
 - **되돌리기:** 변환 규칙을 지운다.
+
+## D-34 전용 테스트 볼트와 안전장치 (2026-11-15, 0.7.1)
+- **결정:** 데스크톱 하네스와 `install-dev`는 루트에 `.pendf-test-vault` 표지 파일이 있는 볼트에서만 돈다. 하네스는 디스크(`--path`)와 Obsidian 안(CLI가 실제로 연결된 볼트의 `basePath`)을 둘 다 확인한다. 경로는 테스트 볼트인데 `--vault SciWiki`처럼 다른 볼트를 가리키면 아무것도 설치하기 전에 멈춘다. 기본값은 볼트 이름 `pendf-testvault`, 경로 `<저장소 옆>/pendf-testvault`(저장소 안은 거부).
+- **생성:** `node scripts/make-test-vault.mjs [<경로>]` — 폴더, 표지 파일, 최소 `.obsidian/`, fixture, 현재 빌드. 비어 있지 않은데 표지가 없는 폴더는 테스트 볼트로 바꾸지 않는다. Obsidian 등록(전역 설정 `obsidian.json`)은 하지 않고 사용자가 "Open folder as vault"를 한 번 한다. 새 볼트의 제한 모드는 하네스가 테스트 볼트 안에서 끈다.
+- **근거:** 지금까지 하네스가 사용자 볼트(SciWiki)에 플러그인·fixture·사이드카를 쓰고 지웠다. 사용자 볼트는 손대지 않는다는 지시.
+- **검증:** SciWiki 경로를 주면 디스크 검사에서, 테스트 볼트 경로에 `--vault SciWiki`를 주면 Obsidian 안 검사에서 거부되는 것을 확인했다(후자는 읽기만 함).
+- **SciWiki에 남은 것(지우지 않음):** `.obsidian/plugins/pendf/{main.js,manifest.json,styles.css}`, `pendf-fixtures/`의 PDF 9개. 사이드카·로그·`data.json` 없음, `community-plugins.json`에 penDF 없음.
+- **되돌리기:** `scripts/test-vault.mjs`의 `assertTestVault` 호출을 지운다.
