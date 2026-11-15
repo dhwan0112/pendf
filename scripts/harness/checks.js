@@ -180,6 +180,37 @@
 			}
 			return { minX, minY, maxX, maxY };
 		};
+		/** dxStart/dxEnd of a highlight made from each ground-truth line (B-06 scenarios). */
+		const groundTruthRows = async (files = ["rotations.pdf", "cropbox.pdf"]) => {
+			const rows = [];
+			for (const fname of files) {
+				const { v, leaf } = await openPenDF(fname);
+				for (const e of cfg.expected[fname] ?? []) {
+					await goPage(v, e.page);
+					const range = await waitFor(() => textRange(v, e.page, e.text));
+					selectRange(range);
+					const ids = v.highlights.createFromSelection("#ff0000");
+					const a = hlById(v, ids[0]);
+					const bb = quadBBox(a.quads);
+					rows.push({ file: fname, page: e.page, quads: a.quads.length, dxStart: +(bb.minX - e.x).toFixed(2), dxEnd: +(bb.maxX - (e.x + e.width)).toFixed(2) });
+					v.debugSession.store.remove(a.id);
+				}
+				await v.debugSession.store.flush();
+				leaf.detach();
+			}
+			return { rows, ok: rows.length > 0 && rows.every((r) => r.quads === 1 && Math.abs(r.dxStart) < 2.5 && Math.abs(r.dxEnd) < 3), maxAbsDxEnd: Math.max(...rows.map((r) => Math.abs(r.dxEnd))) };
+		};
+		/** A note that embeds a PDF, shown in reading view (Obsidian's own PDF embed renders it). */
+		const openEmbedNote = async (pdf) => {
+			const path = FIX + "pendf-embed-" + pdf.replace(/\.pdf$/, "") + ".md";
+			createdPaths.add(path);
+			if (!app.vault.getAbstractFileByPath(path)) await app.vault.create(path, `# embed\n\n![[${pdf}]]\n`);
+			const leaf = app.workspace.getLeaf("split", "vertical");
+			await leaf.setViewState({ type: "markdown", state: { file: path, mode: "preview" }, active: false });
+			const canvas = await waitFor(() => leaf.view.containerEl.querySelector(".internal-embed canvas, .pdf-embed canvas"), 20000);
+			await sleep(800);
+			return { leaf, rendered: !!canvas };
+		};
 		const polyClientRect = (v, id) => {
 			const els = v.containerEl.querySelectorAll(`.pendf-hl[data-id="${id}"] polygon`);
 			if (!els.length) return null;
@@ -552,6 +583,61 @@
 					closeOurs();
 				}
 				return { ok, out };
+			});
+
+			await check("shared-namespace", async () => {
+				// B-06: names Obsidian's pdf.js and penDF's pdf.js put into the shared page
+				const faces = () => [...document.fonts];
+				const fam = (f) => f.family.replace(/^["']|["']$/g, "");
+				const before = new Set(faces());
+				const htmlVar = () => document.documentElement.style.getPropertyValue("--viewer-container-height");
+				const core = app.workspace.getLeaf("split", "vertical");
+				await core.openFile(file("a4.pdf"));
+				await waitFor(() => core.view.getViewType() === "pdf" && core.view.containerEl.querySelector(".textLayer span"), 20000);
+				await document.fonts.ready;
+				const coreFaces = faces().filter((f) => !before.has(f));
+				const afterCore = new Set(faces());
+				const varAfterCore = htmlVar();
+				const { v } = await openPenDF("rotations.pdf");
+				await waitText(v, 1);
+				await document.fonts.ready;
+				const penFaces = faces().filter((f) => !afterCore.has(f));
+				const coreNames = new Set(coreFaces.map(fam));
+				const collisions = penFaces.map(fam).filter((n) => coreNames.has(n));
+				const ids = [...document.querySelectorAll("[id^='g_']")].map((e) => e.id);
+				const duplicateIds = ids.filter((id, i) => ids.indexOf(id) !== i);
+				return {
+					coreFonts: [...coreNames],
+					penFonts: penFaces.map(fam),
+					collisions,
+					duplicateIds,
+					penPrefixed: penFaces.length > 0 && penFaces.every((f) => /^g_pendf_d/.test(fam(f))),
+					htmlVarAfterCore: varAfterCore,
+					htmlVarAfterPenDF: htmlVar(),
+					ok: collisions.length === 0 && duplicateIds.length === 0 && htmlVar() === varAfterCore && (penFaces.length === 0 || penFaces.every((f) => /^g_pendf_d/.test(fam(f)))),
+				};
+			});
+
+			await check("ground-truth-after-core", async () => {
+				// B-06 order: Obsidian's PDF viewer open first (and kept open), then penDF
+				const core = app.workspace.getLeaf("split", "vertical");
+				await core.openFile(file("a4.pdf"));
+				await waitFor(() => core.view.getViewType() === "pdf" && core.view.containerEl.querySelector(".textLayer span"), 20000);
+				return await groundTruthRows();
+			});
+
+			await check("ground-truth-after-embed", async () => {
+				// a note embedding a different PDF (Obsidian's embed renderer) first, then penDF
+				const emb = await openEmbedNote("a4.pdf");
+				const r = await groundTruthRows();
+				return { embedRendered: emb.rendered, ...r, ok: emb.rendered && r.ok };
+			});
+
+			await check("ground-truth-same-pdf-embed", async () => {
+				// the same PDF in Obsidian's embed and in penDF at the same time
+				const emb = await openEmbedNote("rotations.pdf");
+				const r = await groundTruthRows(["rotations.pdf"]);
+				return { embedRendered: emb.rendered, ...r, ok: emb.rendered && r.ok };
 			});
 
 			await check("highlight-multiline-columns", async () => {

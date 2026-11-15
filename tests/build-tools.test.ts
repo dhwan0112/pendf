@@ -31,9 +31,20 @@ function project(files: Record<string, string>): string {
 const GOOD_PKG = JSON.stringify({ dependencies: { "pdfjs-dist": "6.5.438" } });
 // incompressible padding so the literal is long enough to look like an embedded asset
 const workerLiteral = (src: string) => JSON.stringify(gzipSync(Buffer.from(src + "/*" + randomBytes(300).toString("hex") + "*/")).toString("base64"));
-const GOOD_MAIN = `var W=${workerLiteral("class WorkerMessageHandler{}export{WorkerMessageHandler};")};`;
+// a representative clean bundle: embedded worker + the namespace transforms applied (B-06)
+const NS_MAIN = 'class T{docId=`pendf_d${T.#d++}`;static #d=0;u(h){this.container.style.setProperty("--viewer-container-height",`${h}px`)}}';
+const NS_WORKER = 'function f(p){if(p&&!String(p).startsWith("embedded:"))return 1}';
+const GOOD_MAIN = `var W=${workerLiteral("class WorkerMessageHandler{}export{WorkerMessageHandler};" + NS_WORKER)};${NS_MAIN}`;
 
 describe("check-standalone", () => {
+	it("fails a bundle whose pdf.js document ids lost penDF's prefix (B-06)", () => {
+		const stock = GOOD_MAIN.replace("pendf_d", "d").replace("this.container.style.setProperty", "docStyle.setProperty");
+		const dir = project({ "src/a.ts": "export const x = 1;\n", "package.json": GOOD_PKG, "main.js": stock });
+		const rules = runChecks({ root: dir }).map((v: { rule: string }) => v.rule);
+		expect(rules).toContain("namespace-docid");
+		expect(rules).toContain("namespace-docid-original");
+		expect(rules).toContain("namespace-html-var");
+	});
 	it("passes a clean project", () => {
 		const dir = project({ "src/a.ts": "export const x = 1;\n", "package.json": GOOD_PKG, "main.js": GOOD_MAIN });
 		expect(runChecks({ root: dir })).toEqual([]);
@@ -107,6 +118,20 @@ describe("pdfjs-transform on the real pdf.js 6.5.438 sources", () => {
 	}
 	it("fails loudly when the source shape changes", () => {
 		expect(() => transform("pdf.mjs", "nothing to see here")).toThrow(/expected 1 match/);
+	});
+	it("gives pdf.js documents a penDF-unique id prefix (shared font / filter names, B-06)", () => {
+		const out = transform("pdf.mjs", readFileSync(path.join(pdfjsRoot, "build/pdf.mjs"), "utf8")) as string;
+		expect(out).toContain("docId = `pendf_d${PDFDocumentLoadingTask.#docId++}`;");
+		expect(out).not.toMatch(/docId = `d\$\{/);
+	});
+	it("sets --viewer-container-height on the container, not <html>", () => {
+		const out = transform("pdf_viewer.mjs", readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.mjs"), "utf8")) as string;
+		expect(out).toContain('this.container.style.setProperty("--viewer-container-height"');
+		expect(out).not.toMatch(/docStyle\.setProperty\("--viewer-container-height"/);
+	});
+	it("worker skips url() font sources for embedded:// standard fonts", () => {
+		const out = transform("pdf.worker.mjs", readFileSync(path.join(pdfjsRoot, "build/pdf.worker.mjs"), "utf8")) as string;
+		expect(out).toContain('!String(localFontPath).startsWith("embedded:")');
 	});
 	it("viewer reads the bundled module instead of the global", () => {
 		const out = transform("pdf_viewer.mjs", readFileSync(path.join(pdfjsRoot, "web/pdf_viewer.mjs"), "utf8")) as string;

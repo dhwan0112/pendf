@@ -34,6 +34,18 @@ export const RULES = {
       replace: "null",
       count: 1,
     },
+    {
+      // Every pdf.js copy numbers its documents d0, d1, … from zero, and the
+      // document id prefixes names it puts into the *shared* page: font
+      // families in document.fonts (g_d0_f1…) and SVG filter ids
+      // (g_d0_transfer_map_…). Obsidian's own pdf.js would use the same names
+      // for different fonts (B-06, INVESTIGATION §12). The worker builds its
+      // names from the id it receives, so this one place covers both sides.
+      name: "penDF-unique document id prefix (shared font / filter names)",
+      find: /docId = `d\$\{PDFDocumentLoadingTask\.#docId\+\+\}`;/g,
+      replace: "docId = `pendf_d${PDFDocumentLoadingTask.#docId++}`;",
+      count: 1,
+    },
   ],
   "pdf_viewer.mjs": [
     {
@@ -48,12 +60,33 @@ export const RULES = {
       replace: "",
       count: 1,
     },
+    {
+      // PDFViewer writes --viewer-container-height on <html>, which Obsidian's
+      // viewer reads too; penDF's scoped CSS resets it on .pendf-root anyway.
+      // Write it on our own scroll container instead (INVESTIGATION §12).
+      name: "--viewer-container-height on the viewer container, not <html>",
+      find: /docStyle\.setProperty\("--viewer-container-height", `\$\{height\}px`\);/g,
+      replace: "this.container.style.setProperty(\"--viewer-container-height\", `${height}px`);",
+      count: 1,
+    },
   ],
   "pdf.worker.mjs": [
     {
       name: "drop globalThis.pdfjsWorker write in worker",
       find: /globalThis\.pdfjsWorker = \{\s*WorkerMessageHandler: WorkerMessageHandler\s*\};/g,
       replace: "",
+      count: 1,
+    },
+    {
+      // For standard fonts the PDF does not embed, pdf.js builds a CSS font
+      // source "local(<system font>), …, url(<standardFontDataUrl><file>)".
+      // penDF's standardFontDataUrl is the internal "embedded://" address served
+      // by its BinaryDataFactory, which a browser cannot fetch: WebKit logs a
+      // failed request whenever no local font matches (WebKit smoke, D-33).
+      // Keep the local() sources, skip the unfetchable url().
+      name: "no url() font source for penDF's embedded:// standard fonts",
+      find: /if \(usePath && path && localFontPath\) \{/g,
+      replace: 'if (usePath && path && localFontPath && !String(localFontPath).startsWith("embedded:")) {',
       count: 1,
     },
   ],
@@ -75,11 +108,12 @@ export const VIEWER_PRELUDE = 'import * as __pendfPdfjs from "pdfjs-dist/build/p
  * @param {string} key
  * @param {string} src
  */
-export function transform(key, src) {
+export function transform(key, src, { skip = [] } = {}) {
   const rules = RULES[key];
   if (!rules) throw new Error(`no pdfjs transform rules for ${key}`);
   let out = src;
-  for (const rule of rules) {
+  // `skip` exists only for evidence builds (scripts/webkit: "before the fix" bundles)
+  for (const rule of rules.filter((r) => !skip.includes(r.name))) {
     const hits = out.match(rule.find)?.length ?? 0;
     if (hits !== rule.count) {
       throw new Error(

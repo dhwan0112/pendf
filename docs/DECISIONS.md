@@ -191,3 +191,18 @@
 - **전체 검색:** 쪽마다 `getTextContent()`를 한 번 읽어 세션에 캐시하고, NFKC + 소문자 + 공백 하나로 정규화해 찾는다(대소문자·전각/반각·줄바꿈 무시). 결과는 쪽별로 앞뒤 문맥과 함께 보여 주고 최대 500개. 8쪽마다 UI에 양보하며 입력이 바뀌면 이전 검색을 중단한다. 결과를 누르면 텍스트 항목 안의 위치를 비례로 계산한 사각형으로 이동해 깜박인다(근사치). 기존 찾기 막대(⌘/Ctrl+F, 하나씩 이동)는 그대로 둔다.
 - **같이 고친 것:** 펜 프로브 v3에서 펜을 뗀 뒤 화면 갱신이 300 ms 늦어져 `smoke-ui` 검사가 실패하던 것(0.5.1~0.6.0, 내보내는 JSON은 정상) — 즉시 한 번, 300 ms 뒤 한 번 그린다.
 - **검증:** 하네스 `pages-search`: 300칸, 보이는 것만 그림(캔버스 ≤ 40), 썸네일 폭 104 px, 실제 페이지 픽셀, 끝으로 스크롤 시 앞쪽 해제·뒤쪽 그림, 썸네일 탭 이동과 현재 쪽 표시, "page 150" 검색 → 150쪽 이동·깜박임, 한글 검색(임베디드 글꼴 PDF 2쪽 모두).
+
+## D-32 pdf.js 문서 id 접두사와 `--viewer-container-height` (2026-11-15, 0.7.1)
+- **결정:** 빌드 변환으로 pdf.js 문서 id를 `d${n}`에서 `pendf_d${n}`으로 바꾼다. 이 id가 공유 문서의 글꼴 이름(`g_<id>_f…`, `g_<id>_s…`)과 SVG 필터 id(`g_<id>_…`)의 앞부분이라 이것 하나로 둘 다 분리된다. 워커는 메인에서 받은 id를 쓰므로 생성 지점은 메인 한 곳이다. 또 `PDFViewer`가 `<html>`에 쓰던 `--viewer-container-height`를 penDF 스크롤 컨테이너에 쓰게 바꾼다.
+- **근거:** 코어 pdf.js도 `d0`부터 세므로 같은 이름으로 서로 다른 글꼴을 등록할 수 있다(Obsidian 밖 시험에서 실제 충돌 확인, INVESTIGATION §12). `<html>` 변수는 penDF가 코어 뷰어의 값을 덮어쓰고 있었다.
+- **안전장치:** 두 규칙 모두 정확히 1회 일치해야 빌드가 된다(pdf.js를 올렸을 때 조용히 빠지지 않게). `check-standalone`이 빌드된 `main.js`에서 `pendf_d` 1회, 원래 패턴 0회, `--viewer-container-height`는 컨테이너에만 쓰는지 확인하고, `build-tools.test.ts`가 변환 결과를 확인한다.
+- **대안:** 문서를 열 때마다 다른 id를 쓰게 pdf.js를 고치는 것(더 큰 패치), 또는 FontFace 대신 경로 렌더링(`disableFontFace`, 느림).
+- **되돌리기:** `scripts/pdfjs-transform.mjs`의 두 규칙과 check-standalone의 `namespace-*` 검사를 지운다.
+- **B-06:** 이 수정이 B-06을 고치는지는 Obsidian 안에서 확인해야 한다(B-07 해소 후 `ground-truth-after-core`·`-after-embed`·`-same-pdf-embed`).
+
+## D-33 표준 글꼴 대체에서 `url(embedded://…)` 빼기 (2026-11-15, 0.7.1)
+- **결정:** PDF에 들어 있지 않은 표준 글꼴(Helvetica-Bold 등)에 대해 pdf.js가 만드는 CSS 글꼴 소스 `local(…), …, url(<standardFontDataUrl><파일>)`에서, 경로가 penDF 내부 주소 `embedded:`이면 `url()`을 넣지 않는다(워커 변환, 1회 일치).
+- **근거:** WebKit 스모크에서 로컬 글꼴이 없을 때 `embedded://standard_fonts/LiberationSans-Bold.ttf` 요청이 실패하고 콘솔 오류가 6번 났다(Chromium은 로컬 Arial을 찾아 드러나지 않음). iPad에서도 로컬 글꼴이 없으면 같은 일이 생긴다.
+- **결과:** `local()` 시스템 글꼴은 그대로 쓰고, 없으면 브라우저 기본 대체 글꼴. 요청 실패와 콘솔 오류는 0.
+- **대안:** `useSystemFonts: false`로 항상 내장 표준 글꼴(Foxit/Liberation)을 쓰기 — 어디서나 같은 모양이지만 지금 데스크톱 모양이 바뀐다. iPad 결과를 보고 결정한다.
+- **되돌리기:** 변환 규칙을 지운다.

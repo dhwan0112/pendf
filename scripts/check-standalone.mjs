@@ -126,6 +126,18 @@ export function runChecks(opts) {
 			const embedded = embeddedTexts(bundle);
 			if (embedded.length !== 1) violations.push({ file: path.relative(root, mainJs), line: 0, rule: "worker-not-found", why: `expected exactly one embedded worker, found ${embedded.length}`, match: "" });
 			for (const e of embedded) scanText(e.text, BUILD_RULES, path.relative(root, mainJs) + " [embedded worker]", violations);
+			// shared-page namespace (B-06, INVESTIGATION §12): the transforms must have applied
+			const count = (text, re) => text.match(re)?.length ?? 0;
+			const rel = path.relative(root, mainJs);
+			const ns = (rule, why, ok, match = "") => {
+				if (!ok) violations.push({ file: rel, line: 0, rule, why, match });
+			};
+			ns("namespace-docid", "pdf.js document ids must carry penDF's prefix (pendf_d…), exactly once", count(bundle, /docId\s*=\s*`pendf_d\$\{/g) === 1);
+			ns("namespace-docid-original", "the stock document id pattern (`d${…}`) must not remain", count(bundle, /docId\s*=\s*`d\$\{/g) === 0);
+			const allVar = count(bundle, /\.setProperty\(\s*"--viewer-container-height"/g);
+			const ownVar = count(bundle, /container\.style\.setProperty\(\s*"--viewer-container-height"/g);
+			ns("namespace-html-var", "--viewer-container-height may only be set on penDF's container, never on <html>", allVar >= 1 && allVar === ownVar, `${ownVar}/${allVar}`);
+			for (const e of embedded) ns("worker-font-url", "embedded worker must skip url() font sources for embedded:// (D-33)", count(e.text, /startsWith\("embedded:"\)/g) === 1);
 		}
 	}
 	return violations;

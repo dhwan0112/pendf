@@ -7,3 +7,4 @@ fixtures/out/
 .DS_Store
 /harness-result.json
 /harness-run.log
+/scripts/webkit/out/

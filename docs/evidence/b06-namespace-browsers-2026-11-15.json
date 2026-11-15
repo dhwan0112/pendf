@@ -1,0 +1,2670 @@
+{
+ "at": "2026-11-15T12:27:47.401Z",
+ "node": "v22.22.0",
+ "fixtures": [
+  "a4.pdf",
+  "cropbox.pdf",
+  "korean-cmap.pdf",
+  "korean-embedded.pdf",
+  "letter.pdf",
+  "links.pdf",
+  "long-300.pdf",
+  "rotations.pdf",
+  "two-column.pdf"
+ ],
+ "browsers": {
+  "chromium": {
+   "version": "156.0.8078.4",
+   "pdfjs": "6.5.438",
+   "fixtures": {
+    "a4.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 122,
+     "ms": 128
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "rendered": 1,
+     "textItems": 29,
+     "ms": 17
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 114,
+     "ms": 45
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 44,
+     "ms": 34
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 52,
+     "ms": 33
+    },
+    "links.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 9,
+     "ms": 48
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "rendered": 300,
+     "textItems": 5749,
+     "ms": 5000
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "rendered": 4,
+     "textItems": 96,
+     "ms": 69
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 158,
+     "ms": 35
+    }
+   },
+   "viewer": {
+    "textLayerSpans": 78,
+    "searchMatches": 12
+   },
+   "errors": [],
+   "workerMode": "web-worker",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 0.89,
+     "bottomBelowBaseline": 0.24,
+     "quadsRounded": [
+      [
+       110,
+       692.5,
+       345.82,
+       692.5,
+       110,
+       676.6,
+       345.82,
+       676.6
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999899, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 27.3px",
+      "spanText": "Inside the CropBox [100 150 500 700]",
+      "rangeWpt": 235.82,
+      "spanWpt": 235.82,
+      "expectedW": 235.4,
+      "textLen": 36,
+      "spanLen": 36,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "builtins": {
+    "added": [],
+    "replaced": [],
+    "removed": []
+   }
+  },
+  "webkit": {
+   "version": "27.2",
+   "pdfjs": "6.5.438",
+   "fixtures": {
+    "a4.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 122,
+     "ms": 319
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "rendered": 1,
+     "textItems": 29,
+     "ms": 123
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 114,
+     "ms": 265
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 44,
+     "ms": 202
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 52,
+     "ms": 202
+    },
+    "links.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 9,
+     "ms": 280
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "rendered": 300,
+     "textItems": 5749,
+     "ms": 23282
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "rendered": 4,
+     "textItems": 96,
+     "ms": 357
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 158,
+     "ms": 204
+    }
+   },
+   "viewer": {
+    "textLayerSpans": 78,
+    "searchMatches": 12
+   },
+   "errors": [],
+   "workerMode": "web-worker",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 0.89,
+     "bottomBelowBaseline": 0.25,
+     "quadsRounded": [
+      [
+       110,
+       692.43,
+       345.82,
+       692.43,
+       110,
+       676.52,
+       345.82,
+       676.52
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999899, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 27.299999px",
+      "spanText": "Inside the CropBox [100 150 500 700]",
+      "rangeWpt": 235.82,
+      "spanWpt": 235.82,
+      "expectedW": 235.4,
+      "textLen": 36,
+      "spanLen": 36,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "builtins": {
+    "added": [],
+    "replaced": [],
+    "removed": []
+   }
+  }
+ },
+ "b06": [
+  {
+   "coreFirst": false,
+   "variant": "before",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_d0_sf2",
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "chromium",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "a4.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_sf2",
+     "g_d0_sf4",
+     "g_d0_sf6"
+    ],
+    "penDF": [
+     "g_d0_sf2",
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [
+    "g_d0_sf2",
+    "g_d0_sf4"
+   ],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/a4.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_d0_sf2",
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/korean-embedded.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": false,
+   "variant": "before",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 41957,
+    "hash": "8ea11f78"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "chromium",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 41957,
+    "hash": "8ea11f78"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_d0_f1"
+    ]
+   },
+   "fontCollisions": [
+    "g_d0_f1"
+   ],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/korean-embedded.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": false,
+   "variant": "after",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_pendf_d0_sf2",
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "",
+   "containerVar": "760px",
+   "browser": "chromium",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "a4.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_sf2",
+     "g_d0_sf4",
+     "g_d0_sf6"
+    ],
+    "penDF": [
+     "g_pendf_d0_sf2",
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/a4.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 36376,
+    "hash": "53ce5e8c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_pendf_d0_sf2",
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/korean-embedded.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": false,
+   "variant": "after",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 41957,
+    "hash": "8ea11f78"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_pendf_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "",
+   "containerVar": "760px",
+   "browser": "chromium",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 41957,
+    "hash": "8ea11f78"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_pendf_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "chromium",
+   "errors": [
+    "requestfailed: http://127.0.0.1:61654/fixtures/out/korean-embedded.pdf (net::ERR_ABORTED)"
+   ]
+  },
+  {
+   "coreFirst": false,
+   "variant": "before",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "a4.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_sf2",
+     "g_d0_sf4",
+     "g_d0_sf6"
+    ],
+    "penDF": [
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [
+    "g_d0_sf4"
+   ],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": false,
+   "variant": "before",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 43985,
+    "hash": "8306e3c2"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "before",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 43985,
+    "hash": "8306e3c2"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_d0_f1"
+    ]
+   },
+   "fontCollisions": [
+    "g_d0_f1"
+   ],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": false,
+   "variant": "after",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "",
+   "containerVar": "760px",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "a4.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_sf2",
+     "g_d0_sf4",
+     "g_d0_sf6"
+    ],
+    "penDF": [
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "rotations.pdf",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 38840,
+    "hash": "fd882e7c"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_pendf_d0_sf4"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": false,
+   "variant": "after",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 43985,
+    "hash": "8306e3c2"
+   },
+   "fonts": {
+    "core": [],
+    "penDF": [
+     "g_pendf_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "",
+   "containerVar": "760px",
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "coreFirst": true,
+   "variant": "after",
+   "core": {
+    "version": "5.3.31"
+   },
+   "coreFile": "korean-embedded.pdf",
+   "coreDoc": {
+    "docId": "d0"
+   },
+   "rootVarAfterCore": "760px",
+   "penFile": "/scripts/webkit/out/collide-embedded.pdf",
+   "groundTruth": [],
+   "page1": {
+    "w": 780,
+    "h": 1103,
+    "ink": 43985,
+    "hash": "8306e3c2"
+   },
+   "fonts": {
+    "core": [
+     "g_d0_f1"
+    ],
+    "penDF": [
+     "g_pendf_d0_f1"
+    ]
+   },
+   "fontCollisions": [],
+   "duplicateIds": [],
+   "rootVarAfterPenDF": "760px",
+   "containerVar": "760px",
+   "browser": "webkit",
+   "errors": []
+  }
+ ],
+ "webkitVsChromiumMaxQuadDiffPt": 0.28,
+ "failures": []
+}

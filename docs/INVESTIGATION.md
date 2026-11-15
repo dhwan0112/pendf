@@ -148,3 +148,34 @@ Obsidian 창이 가려지거나 최소화되어 있으면 다음 세 가지가 �
 1. `requestAnimationFrame`이 멈춘다. pdf.js 렌더링 루프가 진행되지 않는다. 하네스는 검증하는 동안 rAF를 `setTimeout`으로 바꾼다.
 2. 프로그램으로 `scrollTop`을 바꿔도 `scroll` 이벤트가 오지 않는다. 이벤트가 렌더링 단계에서 발송되기 때문이다. 그래서 pdf.js가 새로 보이는 페이지를 그리지 않는다. 하네스는 컨테이너의 스크롤 위치가 바뀌면 `scroll` 이벤트를 직접 발송한다.
 3. 창이 5분 넘게 숨어 있으면 Chromium의 intensive timer throttling이 연쇄 타이머를 1분에 한 번으로 묶는다. 하네스가 매우 느려진다. Obsidian 창을 보이게 둔 채 돌리는 것이 확실하다.
+
+## 12. 공유 문서 네임스페이스 감사 (B-06, 2026-11-15)
+
+Obsidian 창에는 pdf.js가 두 벌 있다: 코어(5.3.34, Obsidian 자체 빌드라 npm에 없음)와 penDF(6.5.438). 둘은 같은 `document`에 이름이 있는 것을 넣는다. 아래는 pdf.js 6.5.438 소스(`build/pdf.mjs`, `build/pdf.worker.mjs`, `web/pdf_viewer.mjs`, `web/pdf_viewer.css`)를 훑어 공유 문서에 남기는 것을 모두 분류한 결과다.
+
+| 항목 | 이름 | 만드는 곳 | 분류 | 조치 |
+| --- | --- | --- | --- | --- |
+| 글꼴(`document.fonts`, FontFace API) | `g_${docId}_f${n}`, 대체 글꼴 `g_${docId}_s${n}` | 워커가 메인에서 받은 `docId`로 만듦 | **충돌 가능** → **penDF 접두사로 분리됨** | `docId`를 `pendf_d${n}`으로 (변환 규칙, 1회 일치) |
+| 글꼴(@font-face 규칙, FontFace API가 없을 때) | 같은 이름, `adoptedStyleSheets` 또는 `<head>`의 `<style>` | `FontLoader` | 위와 같음 | 위와 같음 |
+| SVG 필터 `<defs>`(본문 끝 숨은 `div` 안) | `g_${docId}_transfer_map_…`, `_hcm_filter`, `_alpha_map_…`, `_luminosity_map_…`, `_knockout_filter_…` | `DOMFilterFactory` | **충돌 가능** → **penDF 접두사로 분리됨** | 위와 같음(같은 `docId`) |
+| CSS 사용자 속성 `--viewer-container-height` | `<html>`의 인라인 스타일 | `PDFViewer.#updateContainerHeightCss` | **충돌 가능**(penDF가 코어 뷰어의 값을 덮어씀. penDF 쪽은 `.pendf-root`의 기본값 0이 이겨 효과도 없었음) | penDF 스크롤 컨테이너에 쓰도록 변환(1회 일치) |
+| 그 밖의 CSS 사용자 속성(`--scale-factor`, `--user-unit`, `--hcm-highlight-filter` 등) | 뷰어·페이지 요소의 인라인 스타일 | `PDFViewer`, `PDFPageView` | 뷰 컨테이너 안에만 존재 | 없음 |
+| `pdf_viewer.css`의 `:root` 변수와 규칙 | `.pendf-root` 아래로 범위 지정 | 빌드(scope-css) | 뷰 컨테이너 안에만 존재 | 없음(`@keyframes`·`@font-face` 없음 확인) |
+| 측정용 canvas, 색 값 측정 span, 최소 글꼴 크기 측정 div, 글꼴 로드 확인 span | 이름 없음, 측정 뒤 제거 또는 사본마다 따로 | `TextLayer`, `getColorValues`, `FontLoader` | 사본마다 따로(충돌 없음) | 없음 |
+| 전역 `pdfjsLib`/`pdfjsViewer`/`pdfjsWorker`/`_pdfjsTestingUtils` | `globalThis` | 원본 빌드 | penDF는 읽지도 쓰지도 않음(0.1.0부터, 변환 규칙) | 없음 |
+| `documentElement`·`body`의 클래스·data 속성 | — | 해당 코드 없음 | 해당 없음 | 없음 |
+| 표준 글꼴 대체의 `url(…)` 소스 | `url(embedded://standard_fonts/…)` | 워커 `generateFont` | 충돌은 아니지만 **브라우저가 가져올 수 없는 주소**(WebKit에서 요청 실패·콘솔 오류) | `embedded:` 경로면 `url()`을 빼도록 변환(D-33) |
+
+### 가설 확인 (수정 전/후, Obsidian 밖)
+
+`scripts/webkit/smoke.mjs --b06`이 한 페이지에 코어 대역(pdfjs-dist 5.3.31, 같은 `d${n}` 규칙)과 penDF 엔진을 함께 올려, 변환 규칙을 뺀 "수정 전" 번들과 넣은 "수정 후" 번들을 비교한다. 증거: `docs/evidence/b06-namespace-browsers-2026-11-15.json`.
+
+| 엔진 | 순서(코어 → penDF) | 글꼴 이름 충돌 수정 전 → 후 | `<html>` 변수 | penDF 1쪽 화면 | 정답 끝 오차 |
+| --- | --- | --- | --- | --- | --- |
+| Chromium 156 | a4 → rotations | **2 → 0** | 수정 전 penDF가 `""`→`760px`로 씀, 수정 후 그대로 | 같음 | −0.18 pt(전후 같음) |
+| WebKit 27.2 | a4 → rotations | **1 → 0** | 같음 | 같음 | −0.11 pt(전후 같음) |
+| 둘 다 | korean-embedded → 다른 임베디드 글꼴(Arial) PDF | **1 → 0**(서로 다른 글꼴이 같은 `g_d0_f1`) | 같음 | 같음 | — |
+
+- **확인된 것:** 두 사본이 같은 글꼴 이름을 실제로 등록한다(수정 전). 수정 후 0. penDF가 `<html>`의 `--viewer-container-height`를 덮어쓰는 것도 실제였고 수정 후 사라졌다.
+- **확인되지 않은 것:** 이 시험들에서는 충돌이 penDF의 렌더링(픽셀 지문 동일)이나 하이라이트 끝 오차를 바꾸지 않았다. 같은 이름의 FontFace가 둘이면 브라우저는 글리프가 없는 쪽에서 다른 쪽으로 넘어가므로, 글리프 범위가 겹치는 서로 다른 글꼴이어야 눈에 보이는 차이가 날 것으로 본다. 즉 B-06(3.21 pt)의 원인이 이것이라는 증거는 아직 없다. Obsidian 안의 재현(`ground-truth-after-core` 등)은 테스트 볼트 등록 뒤에 돌린다(BLOCKERS B-07).
+- **덧붙여 발견한 것:** 시험 페이지에 `<html lang>`이 없으면 정답 끝 오차가 16.67 pt가 됐다. pdf.js 텍스트 레이어는 canvas로 잰 폭에 맞춰 span을 늘이는데, 측정 canvas와 DOM이 `sans-serif`를 서로 다른 글꼴로 고르면(언어에 따른 대체 글꼴 차이) 폭이 어긋난다. Obsidian은 `lang`이 있어 문제가 없었지만, B-06처럼 "환경에 따라 1~3 pt 달라지는" 현상의 다른 후보다.
