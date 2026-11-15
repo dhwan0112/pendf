@@ -66,15 +66,20 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 
 ```sh
 pnpm install
-pnpm build        # main.js + styles.css, fails above 5 MB
-pnpm test         # vitest
-pnpm lint         # tsc + scripts/check-standalone.mjs
-pnpm fixtures     # deterministic test PDFs → fixtures/out/
-node scripts/install-dev.mjs "<vault path>" --fixtures
-node scripts/obsidian-harness.mjs --vault <name> --path "<vault path>"   # desktop end-to-end checks
+pnpm build          # main.js + styles.css, fails above 5 MB
+pnpm test           # vitest (generates the fixtures on first run)
+pnpm lint           # tsc + Obsidian ESLint rules + scripts/check-standalone.mjs
+pnpm fixtures       # deterministic test PDFs → fixtures/out/ (+ manifest.json)
+pnpm smoke:webkit   # PDF engine in Playwright WebKit + Chromium, outside Obsidian
+                    #   (first: pnpm exec playwright install webkit chromium)
+node scripts/make-test-vault.mjs             # dedicated test vault ../pendf-testvault
+node scripts/obsidian-harness.mjs            # desktop end-to-end checks in that vault
 ```
 
-Docs: [INVESTIGATION](docs/INVESTIGATION.md) · [DECISIONS](docs/DECISIONS.md) ·
+The harness and `install-dev` only run in a vault with a `.pendf-test-vault` file at its root;
+open the test vault once in Obsidian ("Open folder as vault") before the first harness run.
+
+Docs: [CHANGELOG](CHANGELOG.md) · [INVESTIGATION](docs/INVESTIGATION.md) · [DECISIONS](docs/DECISIONS.md) ·
 [BLOCKERS](docs/BLOCKERS.md) · [DEVICE_CHECKLIST](docs/DEVICE_CHECKLIST.md) ·
 [SCHEMA](docs/SCHEMA.md) · [REPORT](docs/REPORT.md)
 

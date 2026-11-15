@@ -226,3 +226,10 @@ D-23, D-25, D-30을 합쳐 지금 코드가 실제로 하는 일을 한 곳에 �
   - 기록은 subpath가 있고 PDF로 해석될 때만 하고, **3초** 안에 같은 파일 탭이 전환될 때 한 번 쓰인다. 같은 탭이 위 이유로 다시 전환되면 **5초**까지 같은 subpath를 다시 쓴다.
 - **후퇴(fallback):** 기록이 없으면(다른 플러그인이 코드로 연 링크, 빠른 전환기, 3초 초과) penDF는 그 파일의 기억된 위치에서 연다. `pendf=<id>`의 주석이 없으면(지워짐) 해당 쪽만 연다. 설정을 끄면 코어 뷰어가 `#page=N`을 처리하고 `pendf…` 파라미터는 무시한다(실측). penDF를 지우면 링크는 보통의 PDF 페이지 링크로 남는다.
 - **iPad에서 확인할 것:** 손가락 탭이 읽기 보기에서 `pointerdown`, 라이브 프리뷰에서 CodeMirror `mousedown`으로 오는지(DEVICE_CHECKLIST 4-6, 4-7).
+
+## D-36 WebKit 스모크 (2026-11-15, 0.7.1)
+- **결정:** `pnpm smoke:webkit`(`scripts/webkit/smoke.mjs`)이 penDF의 실제 엔진 코드(`src/pdfjs`, 하이라이트 선택·기하)를 `main.js`와 같은 빌드 플러그인으로 묶어, Playwright의 WebKit과 Chromium에서 Obsidian 없이 돌린다. 확인: Blob 워커, 모든 fixture의 전 페이지 렌더링과 텍스트 추출, 뷰어 텍스트 레이어, 검색, 페이지 오류·콘솔 오류·요청 실패·처리 안 된 Promise 거부 0, 렌더링 전후 내장 객체(약 40종의 정적·프로토타입 속성) 추가·교체·삭제 0, 정답 선택 → quad 계산(기준 끝 오차 3 pt)과 WebKit·Chromium 차이. `--b06`으로 공유 이름 시나리오(D-32)도 돈다. CI의 `smoke-webkit` 작업이 매 push마다 돌린다.
+- **개발 의존성:** `playwright` 1.64.1(한 달 전 판), `pdfjs-dist-core`(= `pdfjs-dist@5.3.31`, Obsidian 코어 pdf.js 5.3.34의 대역; 5.3.34는 npm에 없다). 둘 다 런타임 번들에 들어가지 않는다(check-standalone가 런타임 의존성을 `pdfjs-dist` 하나로 강제).
+- **한계:** Playwright WebKit은 iOS WKWebView가 아니다. OS 글꼴·메모리 한도·터치/Pencil 입력·Obsidian 앱 껍데기·iPadOS 버전별 차이는 검사하지 못한다. 문법·내장 기능·워커·렌더링 문제를 iPad 전에 잡는 용도다.
+- **찾은 것:** 표준 글꼴 `url(embedded://…)` 요청 실패(D-33, 고침). 시험 페이지에 `<html lang>`이 없으면 텍스트 레이어 폭이 5% 어긋남(측정 canvas와 DOM의 글꼴 대체 차이, INVESTIGATION §12).
+- **결과(로컬, 2026-11-15):** WebKit 27.2·Chromium 156 모두 9개 fixture 319쪽, 오류 0, 내장 객체 변경 0, 끝 오차 −0.11/−0.18 pt, 엔진 간 quad 차이 최대 0.28 pt.
