@@ -1,212 +1,74 @@
-# REPORT — penDF Phase 1(뷰어와 공통 기반) + Phase 2(하이라이트)
+# REPORT — penDF 현재 상태 (0.7.1 작업 기준, 2026-11-15)
 
-세션 날짜 2026-11-13. 저장소 `C:\Users\denny\pendf`, 원격은 https://github.com/dhwan0112/pendf (2026-11-14 생성, D-18).
-개발 환경: Windows 11, Obsidian 1.15.1(Electron 37 / Chromium 138), Node 22, pnpm 10.
-(하네스 결과 JSON의 `obsidian: 1.10.6`은 user agent에 찍히는 **설치 파일** 버전이다. 앱 버전은 1.15.1이다.)
+버전별 변경은 [CHANGELOG.md](../CHANGELOG.md), 결정은 [DECISIONS.md](DECISIONS.md), 막힌 것은 [BLOCKERS.md](BLOCKERS.md), iPad 확인 절차는 [DEVICE_CHECKLIST.md](DEVICE_CHECKLIST.md)에 있다. 이 문서는 시간순 기록이 아니라 지금의 상태다.
 
-## 요약
+## 한눈에
 
-- 다른 플러그인 없이 동작하는 독립 `FileView` PDF 뷰어와 하이라이트를 구현했다. pdf.js는 6.5.438 **modern 빌드를 번들**한다. 너무 새로운 내장 기능은 빌드 시 모듈 지역 함수로 치환하므로, Obsidian 창의 전역과 내장 객체를 하나도 바꾸지 않는다.
-- `main.js` 3.21 MB(5 MB 미만). 워커, CJK CMap, 표준 글꼴, JBIG2/JPX 디코더를 모두 넣었고, 네트워크 요청은 0건이다.
-- 단위 테스트 122개(vitest)와 실제 Obsidian에서 돌리는 데스크톱 하네스 21개 검사가 마지막 커밋 기준 전체 실행에서 모두 통과한다(`docs/evidence/harness-2026-11-13-modern.json`). 여기에는 엔진 검사, HUD, 모든 명령, 펜 프로브, 파일 메뉴, 설정 탭, 열린 상태에서의 이름 변경이 포함된다. iPad 항목은 `DEVICE_CHECKLIST.md`로 넘겼다.
-- 진행하면서 지시문에 없던 문제 셋을 찾아 고쳤다. (1) pdf.js가 쓰는 CSS 중첩을 스코핑하다가 깨뜨린 문제. (2) Obsidian의 전역 `border-box`가 페이지 안으로 새는 문제. (3) legacy 빌드의 core-js가 공유 창의 내장 객체를 교체하는 문제. 마지막 것 때문에 처음 계획한 legacy 빌드를 버렸다(D-03, D-13).
+- 목표 문서의 6단계(뷰어, 하이라이트, 텍스트 주석, 링크, 북마크, 필기)와 추가 기능(기본 열기, 썸네일, 전체 검색, Pencil 상시 필기)이 모두 구현되어 있다. 최신 릴리스 0.7.0, 0.7.1은 아래 조건을 채우면 태그한다.
+- **iPad에서는 아직 아무것도 확인되지 않았다.** 데스크톱(Obsidian/Chromium)과 Obsidian 밖 WebKit에서만 검증했다.
+- 0.7.1의 데스크톱 하네스는 **아직 돌리지 못했다**: 전용 테스트 볼트가 Obsidian에 등록되지 않았다(B-07). 그래서 B-06 수정이 Obsidian 안에서 효과가 있는지도 미확인이다.
 
-## 완료 기준 대조
+## 기능별 상태
 
-### Phase 1
+검증 열: **단위** = vitest, **하네스** = 실제 Obsidian 데스크톱 자동 검사(마지막 실행 버전), **WebKit** = Playwright WebKit/Chromium 스모크(Obsidian 밖, 0.7.1), **iPad** = 실기기.
 
-| 기준 | 상태 | 근거 |
+| 기능 | 구현 | 단위 | 하네스 | WebKit | iPad |
+| --- | --- | --- | --- | --- | --- |
+| Phase 1 뷰어: 연속 스크롤, 가상화, 줌, 회전, 검색 막대, 내부·외부 링크, 위치 기억, 다크 페이지 | 0.1.0 | ○ | ○ 0.7.0(`fixtures-render`, `search`, `links`, `state-restore`, `long-300-memory` …) | ○ 모든 fixture 전 페이지 렌더, 텍스트, 검색 | 미확인 |
+| 엔진 격리: 전역·내장 객체 무변경, Blob 워커 | 0.1.0 | ○ | ○ 0.7.0(`pdfjs-footprint`, `fallback-main-thread`) | ○ 내장 객체 변경 0, Blob 워커 | 미확인 |
+| Phase 2 하이라이트: 여러 줄·2단·쪽 넘김, 색 변경, 실행 취소 | 0.1.0 | ○ | ○ 0.7.0(`highlight-*`) | ○ 선택→quad 계산, WebKit·Chromium 차이 0.28 pt | 미확인 |
+| Phase 3 메모: 하이라이트·지점 메모, 마크다운, 패널 | 0.2.0 | ○ | ○ 0.7.0(`notes`) | — | 미확인 |
+| Phase 4 링크: 복사, 정확한 위치 이동, 플러그인 없이 쪽 열기 | 0.3.0 | ○ | ○ 0.7.0(`pdf-links`) | — | 미확인 |
+| Phase 5 북마크: 개요, 사용자 북마크, PDF 무수정 | 0.4.0 | ○ | ○ 0.7.0(`bookmarks`) | — | 미확인 |
+| Phase 6 필기: 펜, 형광펜, 지우개, 실행 취소 | 0.5.0 | ○ | ○ 0.7.0(`ink`, 합성 Pencil 이벤트) | — | **미확인(입력 분기·지연은 실기기로만)** |
+| Pencil 상시 필기 | 0.6.0 | — | ○ 0.7.0(`ink`의 `pencilAlways`) | — | 미확인 |
+| 썸네일·전체 검색 | 0.7.0 | — | ○ 0.7.0(`pages-search`) | — | 미확인 |
+| 기본 열기(탭 전환)와 링크 위치 전달 | 0.1.5 / 0.3.0 | ○ | ○ 0.7.0(`open-by-default`, `pdf-links`) | — | 미확인(D-35) |
+| 공유 이름 분리(B-06 수정) | 0.7.1 | ○ 변환·check-standalone | **미실행(B-07)** `shared-namespace`, `ground-truth-after-*` | ○ 충돌 수정 전 1~2 → 후 0 | 미확인 |
+
+## 0.7.1에서 한 일
+
+1. **B-06 / 공유 이름:** 가설(두 pdf.js가 같은 `g_d0_f1` 같은 이름을 공유 문서에 등록)을 Obsidian 밖에서 실제로 확인했다(충돌 수정 전 Chromium 2·WebKit 1 → 수정 후 0). 문서 id를 `pendf_d…`로 바꾸고, penDF가 `<html>`의 `--viewer-container-height`를 덮어쓰던 것도 고쳤다. 다만 시험한 조합에서는 충돌이 렌더링이나 하이라이트 끝 오차를 바꾸지 않아, B-06(3.21 pt)의 원인이라는 증거는 아직 없다. 감사 표는 INVESTIGATION §12.
+2. **fixture:** `.ttc`(글꼴 모음)에서 한국어 면을 골라 쓰고, 하나가 실패해도 나머지를 만들고 이유를 남긴다. CI가 CJK 글꼴이 있는 경우와 없는 경우를 둘 다 돌린다(둘 다 통과 확인).
+3. **WebKit 스모크:** Playwright WebKit 27.2·Chromium 156에서 9개 fixture 319쪽 전부 렌더, Blob 워커, 텍스트 레이어, 검색, 오류 0, 내장 객체 변경 0, 정답 끝 오차 −0.11(WebKit)·−0.18(Chromium) pt. 이 과정에서 실제 버그 하나(표준 글꼴 `url(embedded://…)` 요청 실패, D-33)를 찾아 고쳤다. **한계:** Playwright WebKit은 iOS WKWebView가 아니다(OS 통합, 메모리 한도, 터치·Pencil, Obsidian 앱 껍데기가 다르다).
+4. **테스트 볼트:** 하네스와 `install-dev`는 `.pendf-test-vault` 표지가 있는 볼트에서만 돈다(디스크와 Obsidian 안 둘 다 확인). `C:\Users\denny\pendf-testvault`를 만들어 두었다.
+5. **문서:** 이 문서를 현재 상태로 다시 쓰고, 버전별 변경을 CHANGELOG로 옮겼다. 기본 열기와 LinkRecorder 동작은 D-35.
+
+## 증거
+
+- `docs/evidence/b06-namespace-browsers-2026-11-15.json` — WebKit/Chromium 스모크와 B-06 시나리오 20개(수정 전/후 × 코어 먼저/안 먼저 × 글꼴 조합).
+- `docs/evidence/harness-2026-11-15-0.5.0.json` — 마지막 전체 하네스(0.5.0, SciWiki, 26개 통과). 0.6.0·0.7.0은 해당 검사를 SciWiki에서 부분 실행했다(커밋 기록). **0.7.1 전체 하네스는 B-07 해소 뒤** `docs/evidence/`에 추가한다.
+
+## 열린 버그
+
+| # | 내용 | 상태 |
 | --- | --- | --- |
-| `pnpm build`, `pnpm test`, `pnpm lint`(check-standalone 포함) 통과, `main.js` 크기 기록 | ✅ | 빌드 3,361,584 B(`build-size.json`, `docs/evidence/build-size-2026-11-13.json`), 테스트 122/122, lint OK |
-| 데스크톱에서 fixture 전부 표시·검색·내부 링크 이동·상태 복원 | ✅ | 하네스 `fixtures-render`(9종), `search`, `links`(페이지 링크, 300쪽 목차 링크, 외부 URL), `state-restore`(작업 공간 상태와 파일별 위치 기억) |
-| 코어 PDF 뷰어로 같은 파일을 동시에 열어도 양쪽 정상 | ✅ | `coexistence-core-first`, `coexistence-pendf-first`: 분할 화면 양쪽 렌더링, `window.pdfjsLib`(코어 5.3.34)의 동일성과 버전 유지 |
-| 플러그인을 끈 뒤 DOM·리스너·워커가 남지 않음 | ✅ | `unload-cleanup`: 우리 DOM 0, 워커 3개 모두 terminate, Blob URL 모두 해제, 저장 전 하이라이트도 디스크에 기록됨, 스타일 제거. 리스너는 `registerEvent`/`registerDomEvent`/AbortController로 묶여 있어 직접 셀 수 없다. 잔여 DOM 0과 워커 종료로 간접 확인했다 |
-| (목표 문서) 300쪽 PDF 끝까지 스크롤·줌, 비공개 API 0 | 데스크톱 ✅ / iPad 대기 | `long-300-memory`: 3가지 배율로 300쪽을 훑는 동안 캔버스 최대 10, 주석 레이어 최대 4, 렌더 상태 페이지 최대 10. check-standalone 통과 |
+| B-06 | 코어 뷰어를 먼저 연 뒤 `rotations.pdf` 하이라이트 끝 3.21 pt(기준 3 pt) | 공유 이름 수정 적용, Obsidian 재검증 대기(B-07). 다른 후보: 측정 canvas와 DOM의 글꼴 대체 차이(INVESTIGATION §12) |
+| B-07 | 테스트 볼트 미등록 | 사용자 작업 대기 |
 
-### Phase 2
+## 알려진 한계
 
-| 기준 | 상태 | 근거 |
-| --- | --- | --- |
-| 여러 줄, 2단 조판, 회전 페이지, 한국어에서 하이라이트가 선택 범위와 일치 | ✅ | `highlight-ground-truth`: `/Rotate` 0·90·180·270 페이지와 CropBox 페이지에서, 저장된 쿼드가 fixture에 그린 위치와 x 기준 0.32 pt 이내로 일치. `highlight-multiline-columns`: 4줄 → 쿼드 4개, 단을 넘지 않음. `highlight-korean`: 임베디드·CMap 한글 모두 IoU 0.6 초과 |
-| 줌·회전·재시작·파일 이름 변경 후에도 위치 유지 | ✅ | 같은 하이라이트를 220%, 80%, 보기 회전 90°·270°에서 다시 재면 화면상 IoU 0.92–1.0. `persist-restart-rename`: 플러그인 재시작과 이름 변경 후 개수 유지, 사이드카가 함께 이동. `rename-while-open`: 연 채로 이름을 바꾼 뒤 추가한 하이라이트까지 새 사이드카에 저장되고 옛 경로에는 아무것도 남지 않음 |
-| 탭하여 색 변경·삭제, 실행 취소 | ✅ | `highlight-menu-undo`(색 변경 → 삭제 → 실행 취소 ×2 → 다시 실행), `highlight-palette`(선택 → 팔레트 → 스와치 → 정확히 1개 생성), `smoke-ui`(명령으로 하이라이트) |
-| 페이지를 넘는 선택은 그룹 id로 묶음 | ✅ | `highlight-cross-page` |
-| PDF 원래 주석은 표시만 | ✅ | pdf.js 주석 레이어(`AnnotationMode.ENABLE`). 편집기는 끔 |
+- 노트 안 PDF 임베드와 호버 미리보기는 Obsidian 자체 뷰어가 그린다(공개 API로 바꿀 수 없음).
+- 기본 열기 때 코어 뷰어가 잠깐 보이고 탭 전환이 2회 일어난다(전체 로드는 1회, D-35).
+- 다른 플러그인이 코드로 연 PDF 링크, 빠른 전환기로 연 PDF는 기억된 위치로 열린다(누른 링크 기록이 없으므로).
+- 표준 글꼴이 PDF에 없고 기기에도 맞는 로컬 글꼴이 없으면 브라우저 기본 대체 글꼴로 그린다(D-33, 대안 `useSystemFonts: false`).
+- 필기: 필압 없음(모노 펜), Pencil로 글자 선택 불가(상시 필기 켜짐 시), 예측 이벤트 미사용.
+- 데스크톱은 개발·디버깅용(마우스 필기는 필기 모드에서만).
 
-### 테스트(지시문 5절)
+## 사용자가 할 일
 
-| 항목 | 결과 |
-| --- | --- |
-| 좌표 변환 왕복(회전 4종 × CropBox 오프셋 유무) 오차 0.01 pt 이내 | ✅ 3종 박스 × 4 회전 × 3 배율. 추가로 fixture 페이지에서 pdf.js 자체 `PageViewport`와 행렬이 일치함(1e-9) |
-| 사이드카 1,000건 왕복 좌표 오차 0.5 pt 이내, 속성 보존 | ✅ 네 종류 모두 |
-| 병합: 동시 추가, 한쪽 삭제, updatedAt 충돌, 중복 id | ✅ 교환법칙·멱등성도 확인 |
-| 줄 사각형 병합, 페이지 경계 선택 분할 | ✅ (jsdom) |
-| 스키마 검증과 마이그레이션 | ✅ |
-| check-standalone 자체 테스트 | ✅ 금지 패턴 11종, 주석 무시, 의존성 버전, `main.js` 누락 시 실패, gzip 워커 내부까지 검사 |
+1. **테스트 볼트 등록(B-07):** Obsidian → 볼트 전환 → "Open folder as vault" → `C:\Users\denny\pendf-testvault` → 작성자 신뢰, 커뮤니티 플러그인 켜기. 그 뒤 `node scripts/obsidian-harness.mjs`(기본값이 이 볼트)로 전체 하네스를 돌리면 B-06 판정과 0.7.1 증거가 나온다.
+2. **iPad:** 펜 프로브부터(DEVICE_CHECKLIST 6장 머리말), 이어서 0~7장과 새 항목 4-6~4-8. 로그(**penDF: Export log**)와 프로브 JSON을 가져온다.
+3. **커뮤니티 심사 스캐너 재실행:** 0.2.0 이후 버전을 아직 거치지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 세 번 결과가 달랐다.
+4. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
+   - `C:\Users\denny\Documents\Obsidian Vault\.obsidian\SciWiki\.obsidian\plugins\pendf\main.js`
+   - `…\SciWiki\.obsidian\plugins\pendf\manifest.json`
+   - `…\SciWiki\.obsidian\plugins\pendf\styles.css`
+   - `…\SciWiki\pendf-fixtures\` 안의 `a4.pdf`, `cropbox.pdf`, `korean-cmap.pdf`, `korean-embedded.pdf`, `letter.pdf`, `links.pdf`, `long-300.pdf`, `rotations.pdf`, `two-column.pdf`
+   - (`*.pendf.json` 사이드카, 로그, `data.json`은 없음. `community-plugins.json`에 penDF 없음)
 
-## 구현 목록
+## 다음 권장 작업
 
-- **뷰(`src/view/PdfView.ts`)**: 파일 메뉴 "Open in penDF", 명령(현재 PDF 열기, PDF 선택, 찾기, 하이라이트, 실행 취소/다시 실행, 줌, 너비 맞춤, 로그 내보내기, 펜 프로브), 연속 스크롤과 가상화, 핀치 줌(`TouchManager`), ⌘/Ctrl+휠 줌, 회전, 페이지 이동, 검색 바, 내부·외부 링크, 비밀번호 PDF, 작업 공간 상태와 파일별 위치 기억(최대 300개), 페이지 색 반전, 디버그 HUD.
-- **공통 기반**: `src/geometry`(PageViewport와 같은 변환, 쿼드, 클라이언트→페이지), `src/store`(스키마 v1 네 종류, 검증, 마이그레이션 골격, 병합, 원자적 저장, `.tmp` 복구, 지문 보호, 외부 변경 병합, 이름 변경 추적, 실행 취소 스택), `src/layers`(보이는 페이지 ±1에만 SVG 레이어).
-- **하이라이트(`src/highlight`)**: 선택 캐시, 4색 팔레트(설정에서 색과 기본색 지정), 줄 병합, 페이지별 분할, 텍스트 정규화, 탭 메뉴(색 변경·복사·삭제), 그룹 단위 편집.
-- **pdf.js 통합(`src/pdfjs`, `scripts/`)**: 전역 제거 변환, ponyfill 치환, Blob module worker와 메인 스레드 폴백, 임베디드 `BinaryDataFactory`, CSS 스코핑, 엔진 검사.
-- **펜 프로브(`src/probe`)**: pointerType, 필압, 소수점 좌표, 이벤트 빈도, coalesced/predicted 지원과 샘플 수, `Touch.touchType`, touch-action 값별 스크롤 여부를 측정해 JSON으로 내보낸다.
-- **도구**: 결정적 fixture 생성기(9종 + 정답 좌표), `install-dev`, 데스크톱 하네스, 태그 릴리스 워크플로(draft).
-
-## 지시문과 달리 한 것
-
-| 내용 | 이유 |
-| --- | --- |
-| legacy가 아니라 modern 빌드 + 빌드 시 ponyfill | legacy core-js가 공유 창의 내장 객체를 추가·교체함을 실측(D-03, D-13). 스탠드얼론 원칙이 우선 |
-| Windows에서 개발 | 세션 환경. 스크립트는 모두 Node라 Ubuntu에서도 그대로 돈다(D-01) |
-| 하이라이트 메뉴에 "텍스트 복사" 추가 | 비용이 작고 Phase 4 링크 복사의 기반이 된다 |
-| 워커를 뷰마다 만들지 않고 공유, 유휴 60초 뒤 종료 | iPad 메모리(D-07). 플러그인을 끄면 즉시 종료 |
-| 데스크톱 하네스 추가 | 완료 기준 대부분이 데스크톱에서 확인 가능하므로, 단위 테스트로 잡을 수 없는 CSS·렌더링 문제를 실제 Obsidian에서 잡기 위해(D-17) |
-
-## 미완료 / 확인 못 한 것
-
-- **iPad 실기기 전 항목**(B-01) → `DEVICE_CHECKLIST.md`. 특히 0-1 엔진 검사, 0-2 Blob module worker, 1-2 300쪽 메모리, 2-1 팔레트와 iOS 선택 메뉴의 겹침, 펜 프로브.
-- **Obsidian 재시작 후 하네스 1회**(B-04): 개발 중인 SciWiki 창에 legacy 빌드의 core-js 흔적이 남아 있다. 깨끗한 realm 검사는 이미 통과했다. 사용자의 Obsidian은 재시작하지 않았다.
-- **원격 저장소와 릴리스**(B-02): 지시문대로 원격을 설정하지 않았다. 워크플로는 작성했지만 실행되지 않았다.
-- 리스너 누수를 직접 세는 검사(간접 확인만 함).
-- **데스크톱에서도 자동 검증하지 못한 것:** 비밀번호 PDF 입력 창, 핀치 줌(`TouchManager`, 터치 입력 필요), 마우스·손가락으로 실제로 끌어서 하는 선택(하네스는 Range로 선택을 만든다), PDF++를 함께 설치한 볼트에서의 공존(코어 PDF 뷰어와의 공존만 확인함). 모두 DEVICE_CHECKLIST에 있다.
-- 데스크톱 Obsidian의 오래된 설치 파일(Chromium < 122)에는 Iterator 헬퍼가 없어 엔진 검사 배너가 뜬다. 데스크톱은 지시문상 개발·디버깅 대상이라 대응하지 않았다.
-
-## 남아 있는 것(사용자 환경)
-
-- SciWiki 테스트 볼트에 `.obsidian/plugins/pendf/`(꺼진 상태, `community-plugins.json`에는 넣지 않음)와 `pendf-fixtures/` 폴더(fixture PDF 9개)를 남겨 두었다. 데스크톱에서 직접 시험해 볼 때 쓰면 된다. 필요 없으면 두 폴더를 지우면 된다. 탭, rAF·Worker·`window.open` 심, background throttling 설정, 사이드카, `data.json`, 내보낸 로그·프로브 파일은 모두 되돌리거나 지웠다.
-- **Obsidian을 재시작해야 사라지는 흔적(현재 실행 중인 창에만 있고 파일로는 남지 않음):** 초기 탐색 때 감싼 `console.warn/error/log` 래퍼(동작은 무력화함). `window.__pendf*`, `__dbg`, `__r` 같은 진단용 전역 변수. 개발 중 legacy 빌드를 로드해 생긴 core-js 폴리필.
-
-## 열린 질문
-
-1. **이름**: 해결. 표시 이름 `penDF`, id `pendf`, 저장소 `dhwan0112/pendf`(D-18, D-19).
-2. **동기화 방식**: Obsidian Sync라면 "Sync all other types"를 켜야 사이드카가 오간다(D-15). iCloud나 Git이면 상관없다. 무엇을 쓰는지 알려 주면 병합 우선순위와 안내를 확정하겠다.
-3. "모노 펜"을 필압 없는 균일 굵기 펜으로 해석했다(목표 문서). 단색 펜을 뜻한 것이라면 알려 달라.
-4. 링크 파라미터(`&ink=` 등)를 코어가 무시하고 해당 페이지로 여는지는 Phase 4 전에 확인해야 한다.
-5. PDF 표준 주석으로 내보낸 항목을 사이드카에서 지울지, 연결만 남길지(Phase 6 이후).
-
-## 다음 세션 권장 작업
-
-1. iPad에서 `DEVICE_CHECKLIST` 0–2절을 진행하고 로그와 펜 프로브 JSON을 가져온다. 결과에 따라 `maxCanvasPixels`, 팔레트 위치, touch-action을 조정한다.
-2. 저장소 `dhwan0112/pendf`(공개, D-18)에 `0.1.0` 태그를 단다. draft 릴리스를 확인하고 BRAT로 설치한다.
-3. Obsidian을 재시작한 뒤 하네스를 한 번 돌린다.
-4. Phase 3(텍스트 주석): 스키마의 `note`는 이미 정의되어 있다. 하이라이트 메뉴에 "메모"를 추가하고, 페이지별 목록 패널(`ItemView`)과 마크다운 렌더링(`MarkdownRenderer`, 공개 API)을 만든다.
-5. pdf.js를 올릴 때: `pnpm add pdfjs-dist@<정확한 버전>`, `pnpm build`. 전역 변환 규칙이나 ponyfill이 소스 모양 변화를 만나면 빌드가 실패하므로 그때 규칙을 고친다. 엔진 검사 목록도 다시 확인한다.
-
-## 커밋
-
-```
-9b7c22c test(harness): full 21-check run on HEAD; docs and pinned dev deps
-820b38f fix(probe): tolerate pointer capture failure; harness smoke + rename-while-open
-f8f38b7 docs: REPORT for Phase 1-2
-1fd42cf fix(highlight): keep the iOS selection while the palette is touched
-044dd65 feat: modern pdf.js with build-time ponyfills instead of core-js
-97d5517 test(harness): reveal the PDF+++ leaf in coexistence checks; diagnostics
-0dfc589 fix: keep pdf.js CSS nesting intact and undo Obsidian's border-box
-96a69f5 test: vitest suite, check-standalone, worker shutdown safety
-0e44ede chore: scaffold PDF+++ plugin with bundled, global-free pdf.js
-```
-
----
-
-# Phase 3 — 텍스트 주석 (2026-11-15, 0.2.0)
-
-## 완료 기준 대조
-
-| 기준(목표 문서 1.3) | 결과 | 근거 |
-| --- | --- | --- |
-| 하이라이트 또는 페이지 지점에 붙는 메모 | 완료 | `src/notes/controller.ts`, 하네스 `notes` |
-| 마크다운 렌더링 | 완료 | 팝오버·패널 모두 `MarkdownRenderer.render`, 하네스가 `<strong>` 렌더 확인 |
-| 페이지별 목록 패널 | 완료 | `src/panel/AnnotationsView.ts`, 항목 탭 → 위치 이동 |
-| 생성·수정·삭제가 기기 간 동기화 후에도 보존 | 데스크톱 검증 완료, 실기기 대기 | 단위 테스트(두 저장소 사이 병합: 최신 수정 반영, 삭제 우선), 하네스 다시 열기, DEVICE_CHECKLIST 3-7 |
-
-## 바뀐 것
-
-- 하이라이트 메뉴에 메모 버튼, 툴바에 "Add note"(배치 모드)와 "Annotations"(패널), 명령 "Show annotations panel"·"Add note".
-- 하이라이트 삭제가 붙은 메모까지 지운다(실행 취소 한 번으로 함께 복원).
-- 페이지 레이어에 합성하지 않는 overlay SVG 추가(마커용).
-- 검증: 단위 테스트 133개(새 11개), lint(Obsidian 규칙 포함) 통과, 하네스 `notes`·`highlight-palette`·`highlight-menu-undo`·`unload-cleanup` 통과. 메모리 압박 때문에 전체 하네스 대신 영향받는 검사만 돌렸다.
-
-## 남은 것
-
-- iPad: DEVICE_CHECKLIST 3-1 ~ 3-7.
-- 다음: Phase 4 링크(선택·하이라이트·메모·페이지 링크 복사, 정확한 위치 이동).
-
----
-
-# Phase 4 — 링크 (2026-11-15, 0.3.0)
-
-## 완료 기준 대조
-
-| 기준(목표 문서 1.3) | 결과 | 근거 |
-| --- | --- | --- |
-| 선택·하이라이트·주석·페이지 링크 복사 | 완료 | 선택 팔레트, 하이라이트 메뉴, 메모 팝오버, 툴바의 링크 버튼과 명령 2개 |
-| 링크로 정확한 위치 이동 | 완료(노트에서 누른 링크) | 하네스 `pdf-links`: 읽기 보기·편집기·선택 링크 |
-| 노트 임베드(옵션) | 하지 않음 | D-25 |
-| 플러그인이 없어도 링크가 해당 PDF 페이지로 열림 | 완료 | penDF를 끈 상태에서 코어 뷰어가 `#page=7&pendf=…`를 7쪽으로 여는 것을 실측 |
-
-## 바뀐 것
-
-- `src/links/format.ts`(형식), `src/links/recorder.ts`(누른 링크 기록, CodeMirror 확장), 탭 전환 시 subpath 전달과 탭별 재사용.
-- 뷰: `pendf=`·`pendf-rect=` 해석, 주석·사각형으로 이동하고 강조. 이로써 D-23의 "페이지 링크가 마지막 위치로 열림" 한계도 노트에서 누른 링크에 대해서는 풀렸다.
-- 검증: 단위 테스트 143개(새 10개), lint 통과, 하네스 `pdf-links`·`open-by-default`·`notes`·`highlight-palette`·`highlight-menu-undo`·`unload-cleanup` 통과.
-
-## 남은 것
-
-- iPad: DEVICE_CHECKLIST 4-1 ~ 4-5. 특히 4-3(iOS 라이브 프리뷰에서 탭이 CodeMirror `mousedown`으로 오는지).
-- 다음: Phase 5 북마크(PDF 개요, 사용자 북마크).
-
----
-
-# Phase 5 — 북마크 (2026-11-15, 0.4.0)
-
-## 완료 기준 대조
-
-| 기준(목표 문서 1.3) | 결과 | 근거 |
-| --- | --- | --- |
-| PDF 기존 개요 표시 | 완료 | 패널 Outline 탭, 쪽 번호, 이름 있는 목적지 |
-| 사용자 북마크 추가·이름 변경·정렬 | 완료 | Bookmarks 탭, 툴바, 명령 |
-| 북마크 이동과 링크 복사 동작 | 완료 | 하네스 `bookmarks` |
-| PDF 원본 무수정 | 완료 | 하네스가 작업 전후 SHA-256·mtime·크기 비교 |
-
-## 바뀐 것
-
-- `src/bookmarks/model.ts`, `src/ui/prompt.ts`, 뷰의 개요·북마크 메서드, 패널 탭. 명령 "Show outline", "Show bookmarks", "Bookmark this spot".
-- 검증: 단위 테스트 150개, lint 통과, 하네스 `bookmarks`·`notes`·`pdf-links`·`fixtures-render`·`unload-cleanup` 통과.
-
-## 남은 것
-
-- iPad: DEVICE_CHECKLIST 5-1 ~ 5-5.
-- 다음: Phase 6 필기. 펜 프로브 결과(iPad)가 아직 없어 입력 처리는 Pointer Events 표준 동작 기준으로 만들고, 실기기 결과로 조정한다.
-
----
-
-# Phase 6 — 간단한 필기 (2026-11-15, 0.5.0)
-
-## 완료 기준 대조
-
-| 기준(목표 문서 1.3) | 결과 | 근거 |
-| --- | --- | --- |
-| 모노 펜, 형광펜, 획 지우개, 실행 취소 | 완료(데스크톱) | `src/ink/`, 하네스 `ink` |
-| Pencil은 필기, 손가락은 스크롤·선택 | 구현, **iPad 미확인** | Pencil `touchstart`만 취소. 대안 설정과 펜 프로브 스위치(D-27) |
-| Excalidraw 대비 펜 끝–잉크 간격 +1프레임 이내 | **iPad 미확인** | DEVICE_CHECKLIST 6-9(240fps 촬영 비교) |
-
-## 전체 검증 상태 (0.5.0)
-
-- 단위 테스트 161개, lint(Obsidian 규칙 포함), check-standalone 통과. `main.js` 3.25 MB.
-- 하네스 26개 검사 전부 통과(메모리 때문에 다섯 묶음으로 나눠 실행). 증거: `docs/evidence/harness-2026-11-15-0.5.0.json`. **단, B-06이 드러나는 순서(`coexistence-core-first` 뒤 `highlight-ground-truth`)는 이 묶음에 없었고, 따로 돌리면 여전히 실패한다(3.21 pt, D-28).**
-- **iPad에서는 아무것도 확인하지 못했다.** Phase 1–6 전부 DEVICE_CHECKLIST 대기. 특히 필기의 입력 분기와 지연은 합성 이벤트로 검증할 수 없다.
-- Obsidian 커뮤니티 심사 스캐너는 0.1.4 이후 버전(0.2.0~0.5.0)을 아직 보지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 이미 두 번 결과가 달랐다(0.1.3, 0.1.4).
-
-## 다음
-
-1. iPad에서 펜 프로브(cancel Pencil touchstart 켜고/끄고) → DEVICE_CHECKLIST 0 → 6장. 로그와 프로브 JSON을 가져오면 입력 기본값·캔버스·`maxCanvasPixels`를 조정한다.
-2. 커뮤니티 심사 다시 실행.
-3. B-06(코어 뷰어를 먼저 연 뒤 하이라이트 끝 오차) 조사.
-
-## 0.5.1 (2026-11-15)
-
-- 펜 프로브가 iPadOS의 포인터 취소를 따로 기록하고 300 ms 뒤 스크롤을 다시 확인한다(판정 오류 방지).
-- 지우개 이동 비용 3.19 → 0.33 ms(1,500획 페이지), 필기 중 자동 저장 보류.
-- 일반 열기에서도 탭 전환이 두 번 일어남을 확인(전체 로드는 한 번)하고 D-25를 정정.
-- B-06 재확인: 여전히 열림.
+1. 테스트 볼트에서 전체 하네스 → B-06 판정. 수정으로 해결되지 않았으면 측정 글꼴 가설(INVESTIGATION §12) 조사.
+2. iPad 체크리스트 결과로 입력 기본값(Pencil 상시 필기, touch 처리), `maxCanvasPixels`, 글꼴 정책(D-33) 조정.
+3. 커뮤니티 심사 재실행 후 0.7.1(또는 iPad 수정 반영 버전) 제출.

@@ -214,3 +214,15 @@
 - **검증:** SciWiki 경로를 주면 디스크 검사에서, 테스트 볼트 경로에 `--vault SciWiki`를 주면 Obsidian 안 검사에서 거부되는 것을 확인했다(후자는 읽기만 함).
 - **SciWiki에 남은 것(지우지 않음):** `.obsidian/plugins/pendf/{main.js,manifest.json,styles.css}`, `pendf-fixtures/`의 PDF 9개. 사이드카·로그·`data.json` 없음, `community-plugins.json`에 penDF 없음.
 - **되돌리기:** `scripts/test-vault.mjs`의 `assertTestVault` 호출을 지운다.
+
+## D-35 기본 열기(탭 전환)와 LinkRecorder — 동작 정리 (2026-11-15, 0.7.1 기준)
+D-23, D-25, D-30을 합쳐 지금 코드가 실제로 하는 일을 한 곳에 적는다.
+
+- **언제 전환하나:** 설정 "Open PDFs in penDF"(기본 켜짐)가 켜져 있을 때, `active-leaf-change`와 `file-open`(레이아웃 준비 뒤)에서 탭의 `getViewState().type`이 `"pdf"`이고 파일이 `.pdf`이면 같은 탭을 `setViewState({ type: "pendf-view", state: { file } }, eState)`로 바꾼다. 활성화되지 않은(지연 로드) 탭은 활성화될 때 바뀐다. 사용자가 "Open in Obsidian's PDF viewer"로 연 탭은 그 파일인 동안 바꾸지 않는다.
+- **탭 전환 횟수:** Obsidian 자신의 열기가 우리 전환보다 늦게 끝나며 코어 뷰어를 한 번 더 세우므로, 보통 **전환이 2회** 일어난다. 첫 번째 penDF 로드는 곧 취소되어 PDF를 끝까지 여는 것은 1회다(하네스 `open-by-default`: 전환 2, "opened" 1). 코어 뷰어의 로드 비용은 그대로 든다.
+- **링크 위치 전달:** Obsidian은 링크의 subpath(`#page=…&pendf=…&pendf-rect=…`)를 코어 뷰어에만 넘기고 공개 API로 알려 주지 않는다. 그래서 클릭을 가로채지 않고 **누른 링크를 기록**한다(`src/links/recorder.ts`).
+  - 읽기 보기·백링크·검색 결과 등: 문서 캡처 단계 `pointerdown`에서 `a.internal-link`의 `data-href`(없으면 `href`).
+  - 라이브 프리뷰·소스 모드: 공개 `registerEditorExtension`의 CodeMirror `mousedown`에서 누른 위치의 줄 텍스트로 `[[…]]`·`[…](…)` 링크를 찾는다.
+  - 기록은 subpath가 있고 PDF로 해석될 때만 하고, **3초** 안에 같은 파일 탭이 전환될 때 한 번 쓰인다. 같은 탭이 위 이유로 다시 전환되면 **5초**까지 같은 subpath를 다시 쓴다.
+- **후퇴(fallback):** 기록이 없으면(다른 플러그인이 코드로 연 링크, 빠른 전환기, 3초 초과) penDF는 그 파일의 기억된 위치에서 연다. `pendf=<id>`의 주석이 없으면(지워짐) 해당 쪽만 연다. 설정을 끄면 코어 뷰어가 `#page=N`을 처리하고 `pendf…` 파라미터는 무시한다(실측). penDF를 지우면 링크는 보통의 PDF 페이지 링크로 남는다.
+- **iPad에서 확인할 것:** 손가락 탭이 읽기 보기에서 `pointerdown`, 라이브 프리뷰에서 CodeMirror `mousedown`으로 오는지(DEVICE_CHECKLIST 4-6, 4-7).
