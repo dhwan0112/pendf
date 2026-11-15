@@ -31,7 +31,9 @@ const arg = (k, d) => {
 };
 const browsers = arg("--browsers", "webkit,chromium").split(",");
 const withB06 = args.includes("--b06");
-const coreFiles = arg("--core-files", "a4.pdf,korean-embedded.pdf").split(",");
+// scenarios only use fixtures that exist (korean-embedded.pdf needs a Hangul font on the machine)
+const haveFixture = (f) => existsSync(path.join(root, "fixtures", "out", f));
+const coreFiles = arg("--core-files", "a4.pdf,korean-embedded.pdf").split(",").filter(haveFixture);
 const outFile = path.resolve(arg("--out", path.join(root, "scripts", "webkit", "out", "result.json")));
 const outDir = path.join(root, "scripts", "webkit", "out");
 mkdirSync(outDir, { recursive: true });
@@ -119,7 +121,11 @@ for (const name of browsers) {
 			// [coreFirst, core PDF, penDF PDF]; the last pair has two *different embedded* fonts at g_d0_f1
 			const collide = "/scripts/webkit/out/collide-embedded.pdf";
 			const scenarios = [[false, null, "rotations.pdf"], ...coreFiles.map((f) => [true, f, "rotations.pdf"])];
-			if (existsSync(path.join(outDir, "collide-embedded.pdf"))) scenarios.push([false, null, collide], [true, "korean-embedded.pdf", collide]);
+			if (existsSync(path.join(outDir, "collide-embedded.pdf"))) {
+				scenarios.push([false, null, collide]);
+				if (haveFixture("korean-embedded.pdf")) scenarios.push([true, "korean-embedded.pdf", collide]);
+				else console.log("B-06: korean-embedded.pdf missing (no Hangul font) — skipping the embedded-vs-embedded collision scenario");
+			}
 			for (const variant of ["before", "after"]) {
 				for (const [coreFirst, coreFile, penFile] of scenarios) {
 					const { page: p, problems: pp } = await openPage(browser);

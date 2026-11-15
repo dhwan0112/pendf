@@ -55,6 +55,8 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Install CJK fonts (Korean fixture + collision scenario)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps webkit chromium
       - run: pnpm fixtures

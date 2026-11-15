@@ -277,7 +277,8 @@ function findKoreanFont() {
  * fontkit for pdf-lib that accepts font *collections* (.ttc/.otc, e.g. Ubuntu's
  * NotoSansCJK-Regular.ttc): fontkit returns a collection object for those,
  * which pdf-lib cannot subset. Pick one face — a Korean one (PostScript name
- * with "KR") if there is one, else the first — and hand pdf-lib that font.
+ * with KR/kr, e.g. NotoSansCJKkr-Regular) if there is one, else the first —
+ * and hand pdf-lib that font.
  */
 export const collectionAwareFontkit = {
 	...fontkit,
@@ -285,7 +286,9 @@ export const collectionAwareFontkit = {
 		const f = fontkit.create(buffer, postscriptName);
 		if (postscriptName || !Array.isArray(f?.fonts)) return f;
 		const faces = f.fonts;
-		const face = faces.find((x) => /KR/.test(x.postscriptName ?? "")) ?? faces[0];
+		// "NotoSansCJKkr-Regular", "SourceHanSansKR-Regular": kr/KR right before "-", "_", " " or the end
+		const isKorean = (x) => /kr(?=[-_ ]|$)|korean/i.test(`${x.postscriptName ?? ""} ${x.familyName ?? ""}`);
+		const face = faces.find(isKorean) ?? faces[0];
 		console.log(`  font collection with ${faces.length} faces: using ${face.postscriptName}`);
 		return fontkit.create(buffer, face.postscriptName);
 	},
