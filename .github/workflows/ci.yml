@@ -10,6 +10,40 @@ permissions:
 
 jobs:
   check:
+    # Fixtures are generated on the runner. With fonts-noto-cjk the Korean
+    # fixture is built from NotoSansCJK-Regular.ttc (a font collection); without
+    # it the Korean fixture is skipped and everything else must still pass.
+    strategy:
+      fail-fast: false
+      matrix:
+        cjk: [with-noto-cjk, without-cjk]
+    name: check (${{ matrix.cjk }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install CJK fonts
+        if: matrix.cjk == 'with-noto-cjk'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+
+      - run: pnpm install --frozen-lockfile
+      # first `pnpm test` on a clean clone: generates the fixtures itself
+      - run: pnpm test
+      - name: Fixture outcome
+        run: cat fixtures/out/manifest.json
+      - run: pnpm build
+      - run: pnpm lint
+
+  smoke-webkit:
+    # penDF's PDF engine in Playwright's WebKit and Chromium, outside Obsidian
+    # (scripts/webkit/smoke.mjs). Not iOS WKWebView — see the script header.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -22,6 +56,13 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit chromium
+      - run: pnpm fixtures
       - run: pnpm build
-      - run: pnpm test
-      - run: pnpm lint
+      - run: pnpm smoke:webkit
+      - name: Keep the smoke result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: webkit-smoke
+          path: scripts/webkit/out/result.json

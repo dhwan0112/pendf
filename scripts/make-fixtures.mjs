@@ -258,6 +258,8 @@ async function koreanCMap() {
 }
 
 function findKoreanFont() {
+	// PENDF_NO_HANGUL_FONT=1 simulates a machine without Hangul fonts (CI path check)
+	if (process.env.PENDF_NO_HANGUL_FONT === "1") return undefined;
 	const explicit = argVal("--korean-font");
 	const candidates = [
 		explicit,
@@ -271,14 +273,30 @@ function findKoreanFont() {
 	return candidates.find((p) => existsSync(p));
 }
 
+/**
+ * fontkit for pdf-lib that accepts font *collections* (.ttc/.otc, e.g. Ubuntu's
+ * NotoSansCJK-Regular.ttc): fontkit returns a collection object for those,
+ * which pdf-lib cannot subset. Pick one face — a Korean one (PostScript name
+ * with "KR") if there is one, else the first — and hand pdf-lib that font.
+ */
+export const collectionAwareFontkit = {
+	...fontkit,
+	create(buffer, postscriptName) {
+		const f = fontkit.create(buffer, postscriptName);
+		if (postscriptName || !Array.isArray(f?.fonts)) return f;
+		const faces = f.fonts;
+		const face = faces.find((x) => /KR/.test(x.postscriptName ?? "")) ?? faces[0];
+		console.log(`  font collection with ${faces.length} faces: using ${face.postscriptName}`);
+		return fontkit.create(buffer, face.postscriptName);
+	},
+};
+
 async function koreanEmbedded() {
 	const fontPath = findKoreanFont();
-	if (!fontPath) {
-		console.log("korean-embedded.pdf    skipped (no Hangul font found; pass --korean-font)");
-		return;
-	}
+	if (!fontPath) return { skipped: "no Hangul font found (install fonts-noto-cjk / fonts-nanum, or pass --korean-font <file>)" };
+	console.log(`  Hangul font: ${fontPath}`);
 	const doc = await newDoc("Korean (embedded) fixture");
-	doc.registerFontkit(fontkit);
+	doc.registerFontkit(collectionAwareFontkit);
 	const font = await doc.embedFont(readFileSync(fontPath), { subset: true });
 	const gen = rng(6);
 	const text =
@@ -401,14 +419,34 @@ async function long300() {
 	await save(doc, "long-300.pdf");
 }
 
-await a4();
-await letter();
-await rotations();
-await cropbox();
-await twoColumn();
-await koreanCMap();
-await koreanEmbedded();
-await links();
-await long300();
+// Each fixture on its own: one failure must not stop the others. The outcome
+// goes to manifest.json, which tests/global-setup.mjs reads.
+const FIXTURES = [
+	["a4.pdf", a4],
+	["letter.pdf", letter],
+	["rotations.pdf", rotations],
+	["cropbox.pdf", cropbox],
+	["two-column.pdf", twoColumn],
+	["korean-cmap.pdf", koreanCMap],
+	["korean-embedded.pdf", koreanEmbedded],
+	["links.pdf", links],
+	["long-300.pdf", long300],
+];
+const manifest = { made: [], skipped: {}, failed: {} };
+for (const [name, make] of FIXTURES) {
+	try {
+		const r = await make();
+		if (r?.skipped) {
+			manifest.skipped[name] = r.skipped;
+			console.log(`${name.padEnd(22)} skipped: ${r.skipped}`);
+		} else manifest.made.push(name);
+	} catch (e) {
+		const why = String(e?.stack ?? e).split("\n").slice(0, 3).join(" | ");
+		manifest.failed[name] = why;
+		console.error(`${name.padEnd(22)} FAILED: ${why}`);
+	}
+}
 writeFileSync(path.join(outDir, "expected.json"), JSON.stringify(expected, null, 2) + "\n");
-console.log(`→ ${outDir}`);
+writeFileSync(path.join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+console.log(`→ ${outDir}  (${manifest.made.length} made, ${Object.keys(manifest.skipped).length} skipped, ${Object.keys(manifest.failed).length} failed)`);
+if (Object.keys(manifest.failed).length) process.exitCode = 1;
