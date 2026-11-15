@@ -1,6 +1,6 @@
 {
   "name": "pendf",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "description": "Standalone, iPad-first PDF viewer and annotator for Obsidian",
   "main": "main.js",
