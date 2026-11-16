@@ -998,7 +998,7 @@
 					const linktext = noteLink.slice(2, noteLink.indexOf("|"));
 					await ws.openLinkText(linktext, md.path, false);
 					res.editor = await waitPdf((ss, l) => {
-						const r = { page: ss.viewer.currentPageNumber, popover: ss.notes.popoverEl?.querySelector("strong")?.textContent ?? null };
+						const r = { page: ss.viewer.currentPageNumber, visible: ss.layers.visiblePages(), popover: ss.notes.popoverEl?.querySelector("strong")?.textContent ?? null };
 						l.detach();
 						return r;
 					});
@@ -1009,7 +1009,7 @@
 					ra.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 }));
 					ra.click();
 					res.rect = await waitPdf((ss, l) => {
-						const r = { page: ss.viewer.currentPageNumber, flash: !!ss.layers.getLayer(12)?.overlay.querySelector(".pendf-flash") };
+						const r = { page: ss.viewer.currentPageNumber, visible: ss.layers.visiblePages(), flash: !!ss.layers.getLayer(12)?.overlay.querySelector(".pendf-flash") };
 						l.detach();
 						return r;
 					});
@@ -1024,8 +1024,10 @@
 					res.ok =
 						res.formats &&
 						res.reading.page === 5 && res.reading.flashed &&
-						res.editor.page === 9 && res.editor.popover === "note" &&
-						res.rect.page === 12 && res.rect.flash &&
+						// the target page is on screen (pdf.js's "current page" depends on the viewer width
+						// earlier checks leave behind, D-37)
+						res.editor.visible.includes(9) && res.editor.popover === "note" &&
+						res.rect.visible.includes(12) && res.rect.flash &&
 						res.plainOpen.type === VIEW;
 					return res;
 				} finally {
@@ -1382,11 +1384,23 @@
 				const dprDesc = Object.getOwnPropertyDescriptor(window, "devicePixelRatio");
 				if (prof.dpr) Object.defineProperty(window, "devicePixelRatio", { configurable: true, get: () => prof.dpr });
 				res.profile = { dpr: window.devicePixelRatio, maxCanvasPixels: null };
+				let viewClass = null;
 				try {
 					const { v } = await openPenDF("long-300.pdf");
+					// mobile render settings: reopen the file with the view class's test override
+					// (0.7.1 has no renderOverride: the profile then only sets the pixel ratio)
+					if (prof.render && "renderOverride" in v.constructor) {
+						viewClass = v.constructor;
+						viewClass.renderOverride = prof.render;
+						await v.onLoadFile(v.file);
+						await waitFor(() => v.debugSession?.ready, 20000);
+						await waitIdle(v);
+					}
 					const s = v.debugSession;
 					const c = s.viewer.container;
 					res.profile.maxCanvasPixels = s.viewer.maxCanvasPixels;
+					res.profile.preset = s.render?.preset ?? null;
+					res.profile.budgetMB = s.render?.budgetMB ?? null;
 					const reset = async (page = 5) => {
 						s.viewer.currentScaleValue = "page-width";
 						await goPage(v, page);
@@ -1441,7 +1455,7 @@
 						let last = performance.now();
 						const frame = (now) => {
 							if (!running) return;
-							st.frames.push({ t: now, gap: now - last });
+							st.frames.push({ t: now, gap: now - last, top: c.scrollTop, left: c.scrollLeft, scale: s.viewer.currentScale });
 							last = now;
 							sampleMem();
 							let blank = false;
@@ -1544,6 +1558,17 @@
 							layerMissingFrames: st.layerMissingFrames,
 							memPeakMB: +(st.memPeak / 1048576).toFixed(1),
 							canvasPeak: st.canvasPeak,
+							// scroll / scale moves from gesture start (ms since start): only the commit should move
+							scrollMovesAfter: (() => {
+								const after = st.frames;
+								const out = [];
+								for (let i = 1; i < after.length; i++) {
+									const a = after[i - 1];
+									const b = after[i];
+									if (a.top !== b.top || a.left !== b.left || a.scale !== b.scale) out.push([Math.round(b.t - start.t), +(b.left - a.left).toFixed(1), +(b.top - a.top).toFixed(1), +b.scale.toFixed(3)]);
+								}
+								return out.slice(0, 8);
+							})(),
 							...extra,
 						};
 					};
@@ -1584,10 +1609,14 @@
 							await sleep(holdMs);
 							await g.move(factor2 ?? 1.3);
 						}
+						await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+						// the composited preview, just before the fingers lift (rects include the transform)
+						const previewErrorPx = anchorError(a, cx, cy);
+						const previewXY = lastXY;
 						pr.mark("end");
 						g.lift();
 						await settle();
-						res.scenarios[name] = summarize(pr, scale0, { anchorErrorPx: anchorError(a, cx, cy), anchorErrXY: lastXY, commit: s.zoom?.lastCommit ?? null });
+						res.scenarios[name] = summarize(pr, scale0, { anchorErrorPx: anchorError(a, cx, cy), anchorErrXY: lastXY, previewErrorPx, previewXY, commit: s.zoom?.lastCommit ?? null });
 					};
 					const wheelScenario = async (name, { n, dy, deltaMode = 0, fx = 0.5, fy = 0.45 }) => {
 						const [cx, cy] = at(fx, fy);
@@ -1667,6 +1696,7 @@
 					res.failed = Object.entries(sc).filter(([k, r]) => (k === "max-zoom" ? r.blankFrames + r.blackFrames + r.layerMissingFrames > 0 || !r.capReached : k === "mouse-notch" ? r.blankFrames + r.blackFrames > 0 || r.anchorErrorPx > 2 : !gestureOk(r))).map(([k]) => k);
 					res.ok = res.failed.length === 0;
 				} finally {
+					if (viewClass) viewClass.renderOverride = null;
 					if (prof.dpr) {
 						if (dprDesc) Object.defineProperty(window, "devicePixelRatio", dprDesc);
 						else delete window.devicePixelRatio;

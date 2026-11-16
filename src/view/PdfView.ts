@@ -107,6 +107,12 @@ export interface OutlineNode {
 }
 
 export class PenDFView extends FileView {
+	/**
+	 * Test hook (Obsidian harness only): render settings that replace the preset's for PDFs
+	 * opened from now on, e.g. the mobile values on desktop. Never set by the plugin itself.
+	 */
+	static renderOverride: Partial<RenderConfig> | null = null;
+
 	allowNoFile = false;
 	navigation = true;
 
@@ -395,7 +401,7 @@ export class PenDFView extends FileView {
 			externalLinkRel: "noopener noreferrer nofollow",
 		});
 		const findController = new PDFFindController({ eventBus, linkService });
-		const render = renderConfig(this.plugin.settings.zoomRendering, Platform.isMobile);
+		const render: RenderConfig = { ...renderConfig(this.plugin.settings.zoomRendering, Platform.isMobile), ...(PenDFView.renderOverride ?? {}) };
 		const viewer = new PDFViewer({
 			container: this.container,
 			viewer: this.viewerEl,
@@ -537,6 +543,9 @@ export class PenDFView extends FileView {
 			else this.showMatches(e.matchesCount);
 		}, { signal: ac.signal });
 
+		eventBus.on("pagerendered", (e: { cssTransform?: boolean }) => {
+			if (!e.cssTransform) zoom.onPageRendered();
+		}, { signal: ac.signal });
 		if (render.budgetMB !== null) {
 			const budget = render.budgetMB * 1048576;
 			eventBus.on("pagerendered", (e: { cssTransform?: boolean }) => {

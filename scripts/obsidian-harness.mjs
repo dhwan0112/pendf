@@ -37,7 +37,7 @@ const only = arg("--only", "");
 const outFile = arg("--out", path.join(root, "harness-result.json"));
 const OBSIDIAN = process.platform === "win32" ? "C:/Program Files/Obsidian/obsidian" : "obsidian";
 if (!existsSync(path.join(vaultPath, ".obsidian"))) {
-	console.error("usage: node scripts/obsidian-harness.mjs [--vault <name>] [--path <test vault dir>] [--only check1,check2] [--zoom-dpr 2]");
+	console.error("usage: node scripts/obsidian-harness.mjs [--vault <name>] [--path <test vault dir>] [--only check1,check2] [--zoom-profile ipad [--zoom-preset default|low-memory|no-detail|pdfjs]] [--zoom-dpr 2]");
 	process.exit(2);
 }
 
@@ -122,9 +122,19 @@ async function main() {
 	writeFileSync(path.join(root, "node_modules", ".cache", "pendf", "cfg.json"), JSON.stringify(cfg));
 	const cfgPath = fwd(path.join(root, "node_modules", ".cache", "pendf", "cfg.json"));
 	const start = `(()=>{ const fs = require("fs"); const src = fs.readFileSync(${JSON.stringify(fwd(checksPath))}, "utf8"); const cfg = JSON.parse(fs.readFileSync(${JSON.stringify(cfgPath)}, "utf8")); const harness = (0, eval)(src); harness.start(cfg); return "started"; })()`;
-	// --zoom-dpr 2: the zoom-gesture check emulates an iPad-like device pixel ratio (that check only)
-	const zoomDpr = Number(arg("--zoom-dpr", "0"));
-	evalInObsidian(zoomDpr > 0 ? `(()=>{ window.__pendfZoomProfile = { dpr: ${zoomDpr} }; return "ok"; })()` : `(()=>{ delete window.__pendfZoomProfile; return "ok"; })()`);
+	// --zoom-profile ipad: the zoom-gesture check emulates an iPad (device pixel ratio 2 and penDF's
+	// mobile render settings for the preset; --zoom-preset picks it). --zoom-dpr N: only the ratio.
+	const zoomProfile = arg("--zoom-profile", "");
+	const zoomDpr = Number(arg("--zoom-dpr", zoomProfile === "ipad" ? "2" : "0"));
+	const MOBILE = {
+		default: { preset: "default", maxCanvasPixels: 5242880, enableDetailCanvas: true, budgetMB: 160, releaseOffscreen: true },
+		"low-memory": { preset: "low-memory", maxCanvasPixels: 2 ** 21, enableDetailCanvas: true, budgetMB: 64, releaseOffscreen: true },
+		"no-detail": { preset: "no-detail", maxCanvasPixels: 5242880, enableDetailCanvas: false, budgetMB: 160, releaseOffscreen: true },
+		pdfjs: { preset: "pdfjs", maxCanvasPixels: 5242880, budgetMB: null, releaseOffscreen: false },
+	};
+	const render = zoomProfile === "ipad" ? MOBILE[arg("--zoom-preset", "default")] : null;
+	const profile = zoomDpr > 0 ? { dpr: zoomDpr, render } : null;
+	evalInObsidian(profile ? `(()=>{ window.__pendfZoomProfile = ${JSON.stringify(profile)}; return "ok"; })()` : `(()=>{ delete window.__pendfZoomProfile; return "ok"; })()`);
 	console.log("harness:", evalInObsidian(start));
 	const t0 = Date.now();
 	let state = "";

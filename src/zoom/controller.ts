@@ -77,14 +77,33 @@ interface PendingCommit {
 
 /** wheel events closer than this belong to one trackpad gesture */
 const WHEEL_IDLE_MS = 160;
+/**
+ * When pdf.js starts drawing a page at the new scale it snaps the page box to the
+ * canvas's pixel grid (--scale-round-x/y), which can move the layout by a few px
+ * after the commit. For this long after a commit, renders re-apply the anchor —
+ * unless the view was scrolled meanwhile (the user took over).
+ */
+const SETTLE_MS = 3000;
+const SETTLE_MAX_PX = 40;
 
 export class ZoomController {
 	private g: Gesture | null = null;
 	private pending: PendingCommit | null = null;
 	private wheelFactor = 1;
 	private wheelTimer: number | null = null;
+	private settle: { page: number; fx: number; fy: number; x: number; y: number; until: number; top: number; left: number } | null = null;
 	/** last commit, for the timeline / tests */
-	lastCommit: { scale: number; anchorErrorPx: number | null; ms: number; released: number } | null = null;
+	lastCommit: {
+		scale: number;
+		anchorErrorPx: number | null;
+		ms: number;
+		released: number;
+		/** how far the reachability clamp moved the preview, and how far the gesture centre moved (CSS px) */
+		clamp: [number, number];
+		moved: [number, number];
+		/** re-anchorings after pdf.js snapped page boxes while rendering */
+		settled: number;
+	} | null = null;
 
 	constructor(private readonly host: ZoomHost) {}
 
@@ -95,6 +114,7 @@ export class ZoomController {
 	/** Start a composited gesture at client point (x, y). */
 	begin(kind: Gesture["kind"], x: number, y: number): void {
 		if (this.g) return;
+		this.settle = null;
 		const { container, viewerEl } = this.host;
 		const r = viewerEl.getBoundingClientRect();
 		const cr = container.getBoundingClientRect();
@@ -186,13 +206,23 @@ export class ZoomController {
 				released = this.pending.released;
 				const r = this.host.pageDiv(page.n)?.getBoundingClientRect();
 				if (r) err = Math.hypot(r.left + a.fx * r.width - g.curX, r.top + a.fy * r.height - g.curY);
+				this.settle = { page: page.n, fx: a.fx, fy: a.fy, x: g.curX, y: g.curY, until: performance.now() + SETTLE_MS, top: container.scrollTop, left: container.scrollLeft };
 			} finally {
 				this.pending = null;
 			}
 		}
 		this.host.freezeLayers(false);
 		const ms = performance.now() - t0;
-		this.lastCommit = { scale: this.host.getScale(), anchorErrorPx: err === null ? null : Math.round(err * 100) / 100, ms, released };
+		const r2 = (n: number) => Math.round(n * 100) / 100;
+		this.lastCommit = {
+			scale: this.host.getScale(),
+			anchorErrorPx: err === null ? null : r2(err),
+			ms,
+			released,
+			clamp: [r2(st.tx - (g.curX - g.startX)), r2(st.ty - (g.curY - g.startY))],
+			moved: [r2(g.curX - g.startX), r2(g.curY - g.startY)],
+			settled: 0,
+		};
 		this.host.timeline?.end(this.host.getScale(), ms, released, this.lastCommit.anchorErrorPx);
 	}
 
@@ -213,8 +243,30 @@ export class ZoomController {
 		}
 	}
 
+	/** Call on pdf.js `pagerendered`: keep the committed anchor in place while page boxes snap. */
+	onPageRendered(): void {
+		const st = this.settle;
+		if (!st || this.g) return;
+		const { container } = this.host;
+		if (performance.now() > st.until || Math.abs(container.scrollTop - st.top) > 0.5 || Math.abs(container.scrollLeft - st.left) > 0.5) {
+			this.settle = null;
+			return;
+		}
+		const div = this.host.pageDiv(st.page);
+		if (!div) return;
+		const { dx, dy } = scrollCorrection(st, div.getBoundingClientRect(), st.x, st.y);
+		const d = Math.hypot(dx, dy);
+		if (d < 0.5 || d > SETTLE_MAX_PX) return;
+		container.scrollLeft += dx;
+		container.scrollTop += dy;
+		st.top = container.scrollTop;
+		st.left = container.scrollLeft;
+		if (this.lastCommit) this.lastCommit.settled++;
+	}
+
 	/** Drop the preview without changing anything (teardown, ink starts, file switch). */
 	cancel(): void {
+		this.settle = null;
 		const g = this.g;
 		if (!g) return;
 		this.g = null;
