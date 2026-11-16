@@ -723,3 +723,15 @@
 	user-select: text;
 	-webkit-user-select: text;
 }
+
+/* 0.7.2: paper under each page's canvas. A canvas that is not painted yet — or that
+   the system could not allocate — shows paper instead of the dark view background.
+   It sits inside .canvasWrapper, so the invert filter turns it dark like the page. */
+.pendf-root .pdfViewer .page .canvasWrapper {
+	background-color: #fff;
+}
+
+/* 0.7.2: during a pinch / trackpad zoom the pages are only composited (transform set inline) */
+.pendf-root .pdfViewer.pendf-zooming {
+	will-change: transform;
+}

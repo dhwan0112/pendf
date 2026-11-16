@@ -34,6 +34,10 @@ import { UndoStack } from "../store/undo";
 import { adapterFs } from "../store/obsidianFs";
 import { logger } from "../util/log";
 import { DebugHud } from "../debug/hud";
+import { ZoomController } from "../zoom/controller";
+import { ZoomTimeline, summary as zoomSummary, type GestureRecord } from "../zoom/timeline";
+import { renderConfig, type RenderConfig } from "../zoom/presets";
+import { canvasBytes, pagesOverBudget, releasePage, type PageViewLike } from "../zoom/budget";
 
 export const VIEW_TYPE = "pendf-view";
 const log = logger("view");
@@ -63,6 +67,10 @@ interface Session {
 	outline: Promise<OutlineNode[]> | null;
 	/** extracted page text for the search panel, by page */
 	text: Map<number, Promise<PageText>>;
+	/** pinch / trackpad zoom (0.7.2) */
+	zoom: ZoomController;
+	timeline: ZoomTimeline;
+	render: RenderConfig;
 }
 
 /** A page's text for searching: items with their PDF-space boxes, and the joined, normalized text. */
@@ -273,6 +281,11 @@ export class PenDFView extends FileView {
 			this.hud.destroy();
 			this.hud = null;
 		}
+		// the zoom rendering preset is a PDFViewer construction option: reopen to apply it
+		if (this.session && this.session.render.preset !== this.plugin.settings.zoomRendering && this.file) {
+			void this.onLoadFile(this.file);
+			return;
+		}
 		this.session?.layers.refresh();
 		this.session?.ink.applyInputMode();
 		if (this.session?.ink.active) this.renderInkBar();
@@ -382,6 +395,7 @@ export class PenDFView extends FileView {
 			externalLinkRel: "noopener noreferrer nofollow",
 		});
 		const findController = new PDFFindController({ eventBus, linkService });
+		const render = renderConfig(this.plugin.settings.zoomRendering, Platform.isMobile);
 		const viewer = new PDFViewer({
 			container: this.container,
 			viewer: this.viewerEl,
@@ -392,13 +406,39 @@ export class PenDFView extends FileView {
 			annotationMode: AnnotationMode.ENABLE,
 			annotationEditorMode: AnnotationEditorType.DISABLE,
 			removePageBorders: false,
-			// iOS caps canvas memory hard; keep each page canvas modest there
-			maxCanvasPixels: Platform.isMobile ? 2 ** 23 : 2 ** 25,
+			// canvas size limits from the zoom rendering preset (D-38); undefined -> pdf.js's own
+			...(render.maxCanvasPixels !== undefined ? { maxCanvasPixels: render.maxCanvasPixels } : {}),
+			...(render.enableDetailCanvas !== undefined ? { enableDetailCanvas: render.enableDetailCanvas } : {}),
 			abortSignal: ac.signal,
 		} as ConstructorParameters<typeof PDFViewer>[0]);
 		linkService.setViewer(viewer);
 
 		const layers = new LayerManager(viewer, eventBus, this.container);
+		const timeline = new ZoomTimeline({
+			root: this.container,
+			eventBus,
+			signal: ac.signal,
+			layerCounters: () => layers.counters,
+			diagnostics: () => this.plugin.settings.debugHud,
+		});
+		const pageView = (n: number) => viewer.getPageView(n - 1) as unknown as PageViewLike | undefined;
+		const zoom = new ZoomController({
+			container: this.container,
+			viewerEl: this.viewerEl,
+			pagesCount: () => viewer.pagesCount,
+			pageDiv: (n) => pageView(n)?.div ?? null,
+			getScale: () => viewer.currentScale,
+			setScale: (scale) => {
+				viewer.currentScale = scale;
+			},
+			freezeLayers: (frozen) => layers.setFrozen(frozen),
+			releaseOffscreen: render.releaseOffscreen ? (visible) => this.releaseCanvases(visible) : undefined,
+			onBegin: () => {
+				session.highlights.hidePalette();
+				session.highlights.closeMenu();
+			},
+			timeline,
+		});
 		const session: Session = {
 			file,
 			opened,
@@ -416,6 +456,9 @@ export class PenDFView extends FileView {
 			ready: false,
 			outline: null,
 			text: new Map(),
+			zoom,
+			timeline,
+			render,
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -483,6 +526,8 @@ export class PenDFView extends FileView {
 			for (const fn of this.pageListeners) fn(e.pageNumber);
 		}, { signal: ac.signal });
 		eventBus.on("scalechanging", (e: { scale: number }) => {
+			// a zoom commit corrects the scroll here, before pdf.js picks pages to render
+			zoom.onScaleChanging();
 			this.zoomLabel.setText(`${Math.round(e.scale * 100)}%`);
 			this.scheduleStateSave();
 		}, { signal: ac.signal });
@@ -492,6 +537,12 @@ export class PenDFView extends FileView {
 			else this.showMatches(e.matchesCount);
 		}, { signal: ac.signal });
 
+		if (render.budgetMB !== null) {
+			const budget = render.budgetMB * 1048576;
+			eventBus.on("pagerendered", (e: { cssTransform?: boolean }) => {
+				if (!e.cssTransform) this.enforceCanvasBudget(budget);
+			}, { signal: ac.signal });
+		}
 		this.installInput(session);
 
 		viewer.setDocument(opened.doc);
@@ -949,7 +1000,7 @@ export class PenDFView extends FileView {
 	}
 
 	private installInput(session: Session): void {
-		const { ac, viewer } = session;
+		const { ac } = session;
 		const signal = ac.signal;
 		// external links → system browser; internal links are pdf.js's
 		this.container.addEventListener(
@@ -966,40 +1017,97 @@ export class PenDFView extends FileView {
 			},
 			{ capture: true, signal },
 		);
-		// desktop: ctrl/⌘ + wheel zoom
-		this.container.addEventListener(
-			"wheel",
-			(e) => {
-				if (!(e.ctrlKey || e.metaKey)) return;
-				e.preventDefault();
-				const steps = e.deltaY < 0 ? 1 : -1;
-				viewer.updateScale({ steps, origin: [e.clientX, e.clientY], drawingDelay: 300 });
-			},
-			{ passive: false, signal },
-		);
-		// touch: pinch zoom (pdf.js TouchManager from our bundled copy)
-		let accumulated = 1;
+		// desktop: ctrl/⌘ + wheel zoom — a trackpad pinch composites like touch, a mouse notch is one step
+		this.container.addEventListener("wheel", (e) => void session.zoom.wheel(e), { passive: false, signal });
+		// touch: pinch zoom. pdf.js's TouchManager (bundled copy) recognises the gesture; penDF only
+		// composites a transform while the fingers move and commits once when they lift (D-38).
+		const zoom = session.zoom;
+		let center: [number, number] | null = null;
+		const track = (e: TouchEvent) => {
+			if (e.touches.length < 2) return;
+			const a = e.touches[0];
+			const b = e.touches[1];
+			center = [(a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2];
+		};
+		this.container.addEventListener("touchstart", track, { capture: true, passive: true, signal });
+		this.container.addEventListener("touchmove", track, { capture: true, passive: true, signal });
+		let factor = 1;
 		new TouchManager({
 			container: this.container,
 			// a palm resting while the Pencil writes is a second touch: no zooming mid-stroke
 			isPinchingDisabled: () => session.ink.isDrawing,
 			onPinchStart: () => {
-				accumulated = 1;
+				factor = 1;
 			},
 			onPinching: (origin: [number, number], prevDistance: number, distance: number) => {
 				if (prevDistance <= 0) return;
-				accumulated *= distance / prevDistance;
-				const cur = viewer.currentScale;
-				const next = Math.round(cur * accumulated * 100) / 100;
-				if (next === cur) return;
-				viewer.updateScale({ scaleFactor: next / cur, origin, drawingDelay: 400 });
-				accumulated = 1;
+				if (session.ink.isDrawing) {
+					zoom.cancel();
+					return;
+				}
+				if (!zoom.active) zoom.begin("pinch", origin[0], origin[1]);
+				factor *= distance / prevDistance;
+				const c = center ?? origin;
+				zoom.update(factor, c[0], c[1]);
+			},
+			onPanning: (dx: number, dy: number) => {
+				// two fingers moving without pinching: the preview follows them (committed as a scroll)
+				if (!center || session.ink.isDrawing) return;
+				if (!zoom.active) zoom.begin("pinch", center[0] - dx, center[1] - dy);
+				zoom.update(factor, center[0], center[1]);
 			},
 			onPinchEnd: () => {
-				accumulated = 1;
+				if (zoom.active) zoom.end();
+				factor = 1;
+				center = null;
 			},
 			signal,
 		});
+	}
+
+	/** Free the canvases of pages outside `visible` (zoom commit, before pdf.js renders at the new scale). */
+	private releaseCanvases(visible: Set<number>): number {
+		const s = this.session;
+		if (!s) return 0;
+		let n = 0;
+		for (const div of Array.from(this.viewerEl.querySelectorAll<HTMLElement>(".page[data-page-number]"))) {
+			const id = Number(div.dataset.pageNumber);
+			if (visible.has(id) || !div.querySelector("canvas")) continue;
+			const pv = s.viewer.getPageView(id - 1) as unknown as PageViewLike | undefined;
+			if (pv && releasePage(pv)) n++;
+		}
+		return n;
+	}
+
+	/** Keep rendered pages' canvases under the preset's budget: free the pages farthest from the view. */
+	private enforceCanvasBudget(budgetBytes: number): void {
+		const s = this.session;
+		if (!s || s.zoom.active) return;
+		const pages: { id: number; bytes: number }[] = [];
+		const seen = new Set<number>();
+		for (const cv of Array.from(this.viewerEl.querySelectorAll("canvas"))) {
+			const div = cv.closest<HTMLElement>(".page[data-page-number]");
+			if (!div) continue;
+			const id = Number(div.dataset.pageNumber);
+			if (seen.has(id)) continue;
+			seen.add(id);
+			pages.push({ id, bytes: canvasBytes(div) });
+		}
+		const over = pagesOverBudget(pages, s.zoom.visiblePages(this.container.getBoundingClientRect()), budgetBytes);
+		let freed = 0;
+		for (const id of over) {
+			const pv = s.viewer.getPageView(id - 1) as unknown as PageViewLike | undefined;
+			if (pv && releasePage(pv)) freed++;
+		}
+		if (freed) log.debug(`canvas budget: freed ${freed} page(s)`);
+	}
+
+	/** The last zoom gesture's timeline (debug overlay, export command, harness). */
+	lastZoomTimeline(): (GestureRecord & { preset: string; maxCanvasPixels: number | null; dpr: number; mobile: boolean }) | null {
+		const s = this.session;
+		const r = s?.timeline.lastRecord();
+		if (!s || !r) return null;
+		return { ...r, preset: s.render.preset, maxCanvasPixels: (s.viewer as unknown as { maxCanvasPixels?: number }).maxCanvasPixels ?? null, dpr: window.devicePixelRatio, mobile: Platform.isMobile };
 	}
 
 	// ------------------------------------------------------------ navigation
@@ -1210,6 +1318,7 @@ export class PenDFView extends FileView {
 		s.highlights.destroy();
 		s.notes.destroy();
 		s.ink.destroy();
+		s.zoom.cancel();
 		this.inkBar?.addClass("is-hidden");
 		this.inkButton?.removeClass("is-active");
 		s.layers.destroy();
@@ -1258,6 +1367,10 @@ export class PenDFView extends FileView {
 		out.store = s.store?.status ?? "–";
 		out.page = `${s.viewer.currentPageNumber}/${s.viewer.pagesCount}`;
 		out.scale = Math.round(s.viewer.currentScale * 100) + "%";
+		out.canvasMB = s.timeline.canvasMemory().mb.toFixed(1);
+		out.zoomPreset = s.render.preset;
+		const z = s.timeline.lastRecord();
+		if (z) out.lastZoom = zoomSummary(z);
 		return out;
 	}
 }

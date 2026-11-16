@@ -1,5 +1,6 @@
 import { type App, PluginSettingTab, Setting, type SettingDefinition, type SettingDefinitionItem } from "obsidian";
 import type PenDFPlugin from "./main";
+import { ZOOM_PRESETS, isZoomPreset, type ZoomPreset } from "./zoom/presets";
 
 export interface HighlightColor {
 	name: string;
@@ -15,6 +16,8 @@ export interface PenDFSettings {
 	invertPages: boolean;
 	debugHud: boolean;
 	penProbe: boolean;
+	/** canvas size / memory preset for zoom rendering (0.7.2, diagnostics) */
+	zoomRendering: ZoomPreset;
 	/** remember page/zoom per file across views */
 	rememberPosition: boolean;
 	positions: Record<string, { page: number; scale: string; t: number }>;
@@ -57,6 +60,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	invertPages: false,
 	debugHud: false,
 	penProbe: false,
+	zoomRendering: "default",
 	rememberPosition: true,
 	positions: {},
 	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
@@ -79,6 +83,10 @@ const TEXT = {
 	diagnostics: "Diagnostics",
 	debugHud: ["Debug overlay", "Shows pages being rendered, render time, canvas count and annotation count."],
 	penProbe: ["Pen probe", "Enables the 'Open pen probe' command: measures Apple Pencil / touch input in this webview."],
+	zoomRendering: [
+		"Zoom rendering",
+		"How large page canvases may get, and how much canvas memory penDF keeps. Try another preset if zooming flashes or the app restarts on your device. Open PDFs reopen when you change it.",
+	],
 } as const;
 
 /**
@@ -128,7 +136,15 @@ export class PenDFSettingTab extends PluginSettingTab {
 					},
 				],
 			},
-			{ type: "group", heading: TEXT.diagnostics, items: [toggle("debugHud"), toggle("penProbe")] },
+			{
+				type: "group",
+				heading: TEXT.diagnostics,
+				items: [
+					toggle("debugHud"),
+					toggle("penProbe"),
+					{ name: TEXT.zoomRendering[0], desc: TEXT.zoomRendering[1], control: { type: "dropdown", key: "zoomRendering", options: { ...ZOOM_PRESETS } } },
+				],
+			},
 		];
 	}
 
@@ -139,6 +155,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 		if (key === "defaultColor") return String(s.defaultColor);
 		if (key === "inkInput") return s.ink.input;
 		if (key === "inkPencilAlways") return s.ink.pencilAlways;
+		if (key === "zoomRendering") return s.zoomRendering;
 		return s[key as BoolKey];
 	}
 
@@ -163,6 +180,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 			s.ink = { ...s.ink, pencilAlways: Boolean(value) };
 		} else if (key === "inkInput") {
 			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
+		} else if (key === "zoomRendering") {
+			s.zoomRendering = isZoomPreset(value) ? value : "default";
 		} else {
 			const k = key as BoolKey;
 			s[k] = Boolean(value);
@@ -223,5 +242,12 @@ export class PenDFSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName(TEXT.diagnostics).setHeading();
 		toggle("debugHud");
 		toggle("penProbe");
+		new Setting(containerEl)
+			.setName(TEXT.zoomRendering[0])
+			.setDesc(TEXT.zoomRendering[1])
+			.addDropdown((d) => {
+				for (const [k, label] of Object.entries(ZOOM_PRESETS)) d.addOption(k, label);
+				d.setValue(s.zoomRendering).onChange((v) => set("zoomRendering", v));
+			});
 	}
 }

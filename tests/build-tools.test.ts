@@ -32,7 +32,7 @@ const GOOD_PKG = JSON.stringify({ dependencies: { "pdfjs-dist": "6.5.438" } });
 // incompressible padding so the literal is long enough to look like an embedded asset
 const workerLiteral = (src: string) => JSON.stringify(gzipSync(Buffer.from(src + "/*" + randomBytes(300).toString("hex") + "*/")).toString("base64"));
 // a representative clean bundle: embedded worker + the namespace transforms applied (B-06)
-const NS_MAIN = 'class T{docId=`pendf_d${T.#d++}`;static #d=0;u(h){this.container.style.setProperty("--viewer-container-height",`${h}px`)}}';
+const NS_MAIN = 'class T{docId=`pendf_d${T.#d++}`;static #d=0;u(h){this.container.style.setProperty("--viewer-container-height",`${h}px`)}c(){this.pendfKeptCanvas=(this.pendfKeptCanvas??0)+1}}';
 const NS_WORKER = 'function f(p){if(p&&!String(p).startsWith("embedded:"))return 1}';
 const GOOD_MAIN = `var W=${workerLiteral("class WorkerMessageHandler{}export{WorkerMessageHandler};" + NS_WORKER)};${NS_MAIN}`;
 
@@ -44,6 +44,11 @@ describe("check-standalone", () => {
 		expect(rules).toContain("namespace-docid");
 		expect(rules).toContain("namespace-docid-original");
 		expect(rules).toContain("namespace-html-var");
+	});
+	it("fails a bundle where a cancelled re-render drops the old canvas (0.7.2)", () => {
+		const stock = GOOD_MAIN.replace("this.pendfKeptCanvas=", "this.x=");
+		const dir = project({ "src/a.ts": "export const x = 1;\n", "package.json": GOOD_PKG, "main.js": stock });
+		expect(runChecks({ root: dir }).map((v: { rule: string }) => v.rule)).toContain("keep-old-canvas");
 	});
 	it("passes a clean project", () => {
 		const dir = project({ "src/a.ts": "export const x = 1;\n", "package.json": GOOD_PKG, "main.js": GOOD_MAIN });

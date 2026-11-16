@@ -12,6 +12,7 @@ import { formatLog, logger } from "./util/log";
 import { describePlatform } from "./util/platform";
 import { LinkRecorder } from "./links/recorder";
 import { aliasFrom } from "./links/format";
+import { isZoomPreset } from "./zoom/presets";
 
 const log = logger("plugin");
 
@@ -124,6 +125,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "zoom-out", name: "Zoom out", checkCallback: (c) => this.withView(c, (v) => v.zoom(-1)) });
 		this.addCommand({ id: "fit-width", name: "Fit width", checkCallback: (c) => this.withView(c, (v) => v.setScale("page-width")) });
 		this.addCommand({ id: "export-log", name: "Export log to vault", callback: () => void this.exportLog() });
+		this.addCommand({ id: "export-zoom-timeline", name: "Export last zoom timeline to vault", checkCallback: (c) => this.withView(c, (v) => void this.exportZoomTimeline(v)) });
 		this.addCommand({ id: "show-annotations", name: "Show annotations panel", callback: () => void this.showAnnotationsPanel("annotations") });
 		this.addCommand({ id: "show-outline", name: "Show outline", callback: () => void this.showAnnotationsPanel("outline") });
 		this.addCommand({ id: "show-pages", name: "Show page thumbnails", callback: () => void this.showAnnotationsPanel("pages") });
@@ -332,6 +334,7 @@ export default class PenDFPlugin extends Plugin {
 		if (!Array.isArray(this.settings.colors) || this.settings.colors.length !== 4) this.settings.colors = structuredClone(DEFAULT_SETTINGS.colors);
 		if (typeof this.settings.positions !== "object" || !this.settings.positions) this.settings.positions = {};
 		this.settings.ink = { ...structuredClone(DEFAULT_SETTINGS.ink), ...(typeof data.ink === "object" && data.ink ? data.ink : {}) };
+		if (!isZoomPreset(this.settings.zoomRendering)) this.settings.zoomRendering = DEFAULT_SETTINGS.zoomRendering;
 	}
 
 	async saveSettings(): Promise<void> {
@@ -339,6 +342,18 @@ export default class PenDFPlugin extends Plugin {
 		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
 			if (leaf.view instanceof PenDFView) leaf.view.applySettings();
 		}
+	}
+
+	private async exportZoomTimeline(v: PenDFView): Promise<void> {
+		const t = v.lastZoomTimeline();
+		if (!t) {
+			new Notice("penDF: no zoom gesture recorded yet in this view — pinch, then run the command again.");
+			return;
+		}
+		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const path = normalizePath(`pendf-zoom-${stamp}.json`);
+		await this.app.vault.create(path, JSON.stringify(t, null, "\t"));
+		new Notice(`penDF zoom timeline saved to ${path}`);
 	}
 
 	private async exportLog(): Promise<void> {

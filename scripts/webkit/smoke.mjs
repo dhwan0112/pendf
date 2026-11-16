@@ -9,6 +9,9 @@
 // matches; no page errors, console errors or unhandled rejections; built-ins
 // are unchanged after rendering; the highlight math (selection → quads) hits
 // the fixtures' ground truth, and Chromium and WebKit agree.
+// Zoom (0.7.2): at device pixel ratio 2, a zoom commit keeps a canvas on the
+// page until the re-render is complete, also when a second zoom cancels it —
+// with penDF's pdf.js rule and, for comparison, without it ("before").
 // --b06 also runs the shared-namespace scenarios (INVESTIGATION §12): a
 // stand-in for Obsidian's pdf.js (pdfjs-dist 5.3.31) opens a PDF first, then
 // penDF — with the namespace fix and without it.
@@ -38,6 +41,7 @@ const outFile = path.resolve(arg("--out", path.join(root, "scripts", "webkit", "
 const outDir = path.join(root, "scripts", "webkit", "out");
 mkdirSync(outDir, { recursive: true });
 
+const KEEP_CANVAS_RULE = "keep the old page canvas when a re-render is cancelled";
 const NAMESPACE_RULES = ["penDF-unique document id prefix (shared font / filter names)", "--viewer-container-height on the viewer container, not <html>"];
 
 // ------------------------------------------------------------------ build
@@ -56,6 +60,7 @@ async function bundle(file, skipRules) {
 	});
 }
 await bundle("engine.js", []);
+await bundle("engine-zoom-before.js", [KEEP_CANVAS_RULE]);
 if (withB06) await bundle("engine-before.js", NAMESPACE_RULES);
 if (!existsSync(path.join(root, "styles.css"))) buildCss();
 const fixturesDir = path.join(root, "fixtures", "out");
@@ -80,11 +85,11 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // ------------------------------------------------------------------- run
 const engines = { webkit, chromium };
-const result = { at: new Date().toISOString(), node: process.version, fixtures, browsers: {}, b06: [] };
+const result = { at: new Date().toISOString(), node: process.version, fixtures, browsers: {}, zoom: [], b06: [] };
 let failures = [];
 
-async function openPage(browser) {
-	const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+async function openPage(browser, deviceScaleFactor = 1) {
+	const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor });
 	const problems = [];
 	page.on("pageerror", (e) => problems.push("pageerror: " + String(e.stack || e).slice(0, 300)));
 	page.on("console", (m) => {
@@ -116,6 +121,21 @@ for (const name of browsers) {
 		for (const k of ["added", "replaced", "removed"]) if (builtins[k].length) fail(`built-ins ${k}: ${builtins[k].join(", ")}`);
 		for (const g of smoke.groundTruth) if (g.quads !== 1 || Math.abs(g.dxStart) >= 2.5 || Math.abs(g.dxEnd) >= 3) fail(`ground truth ${g.file} p${g.page}: quads ${g.quads} dxStart ${g.dxStart} dxEnd ${g.dxEnd}`);
 		await page.close();
+
+		for (const variant of ["before", "after"]) {
+			const { page: p, problems: pp } = await openPage(browser, 2);
+			await p.addScriptTag({ url: `/scripts/webkit/out/${variant === "before" ? "engine-zoom-before.js" : "engine.js"}` });
+			const r = await p.evaluate((cfg) => window.__tests.zoom(cfg), { file: "two-column.pdf", variant });
+			r.browser = name;
+			r.errors = [...pp, ...(await p.evaluate(() => window.__tests.errors()))];
+			result.zoom.push(r);
+			if (variant === "after") {
+				if (r.single.framesWithoutCanvas || r.single.blackFrames) fail(`zoom: ${r.single.framesWithoutCanvas} frame(s) without canvas, ${r.single.blackFrames} black, after one commit`);
+				if (r.cancelled.framesWithoutCanvas || r.cancelled.blackFrames) fail(`zoom: ${r.cancelled.framesWithoutCanvas} frame(s) without canvas, ${r.cancelled.blackFrames} black, after a cancelled re-render`);
+				if (r.errors.length) fail(`zoom: ${r.errors[0]}`);
+			}
+			await p.close();
+		}
 
 		if (withB06) {
 			// [coreFirst, core PDF, penDF PDF]; the last pair has two *different embedded* fonts at g_d0_f1
@@ -171,6 +191,7 @@ for (const [n, r] of Object.entries(result.browsers)) {
 	console.log(`${n} ${r.version}: ${Object.keys(r.fixtures).length} fixtures, ${pages} pages rendered, worker ${r.workerMode}, text spans ${r.viewer.textLayerSpans}, search ${r.viewer.searchMatches}, errors ${r.errors.length}, built-ins +${r.builtins.added.length}/~${r.builtins.replaced.length}/-${r.builtins.removed.length}, ground-truth dxEnd ${r.groundTruth.map((g) => g.dxEnd).join(" ")}`);
 }
 if (result.webkitVsChromiumMaxQuadDiffPt !== undefined) console.log(`WebKit vs Chromium quads: max difference ${result.webkitVsChromiumMaxQuadDiffPt} pt`);
+for (const r of result.zoom) console.log(`zoom ${r.browser} ${r.variant.padEnd(6)} dpr ${r.dpr}: one commit — ${r.single.framesWithoutCanvas}/${r.single.frames} frames without canvas, ${r.single.blackFrames} black, ${r.single.canvasesSeen} canvases; cancelled re-render (in flight: ${r.renderingWhenCancelled}) — ${r.cancelled.framesWithoutCanvas}/${r.cancelled.frames} frames without canvas, ${r.cancelled.blackFrames} black, old canvas kept ${r.cancelled.keptOldCanvas}×`);
 for (const r of result.b06) console.log(`B-06 ${r.browser} ${r.variant.padEnd(6)} core=${(r.coreFile ?? "-").padEnd(19)} pen=${path.basename(r.penFile).padEnd(20)} page1 ${r.page1?.hash}/${r.page1?.ink} font collisions ${r.fontCollisions.length}, duplicate ids ${r.duplicateIds.length}, <html> var ${JSON.stringify(r.rootVarAfterCore ?? "")}→${JSON.stringify(r.rootVarAfterPenDF)}, dxEnd ${r.groundTruth.map((g) => g.dxEnd).join(" ")}`);
 console.log(`result → ${path.relative(root, outFile)}`);
 if (failures.length) {

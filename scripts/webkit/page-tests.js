@@ -257,6 +257,110 @@
 		return res;
 	}
 
+
+	/**
+	 * Zoom commit (0.7.2): a page keeps showing a canvas — the old one, CSS-scaled — until
+	 * the re-render at the new scale is complete, also when that re-render is cancelled by
+	 * a second zoom right after the first. Samples the page every frame.
+	 */
+	async function zoom(cfg) {
+		const E = window.__pendf;
+		const v = await penViewer(cfg.file);
+		const pv = await showPage(v, 1);
+		const viewerEl = v.container.querySelector(".pdfViewer");
+		const zc = new E.ZoomController({
+			container: v.container,
+			viewerEl,
+			pagesCount: () => v.viewer.pagesCount,
+			pageDiv: (n) => v.viewer.getPageView(n - 1)?.div ?? null,
+			getScale: () => v.viewer.currentScale,
+			setScale: (s) => {
+				v.viewer.currentScale = s;
+			},
+			freezeLayers: () => {},
+		});
+		v.eventBus.on("scalechanging", () => zc.onScaleChanging());
+		const state = () => {
+			const cv = pv.div.querySelector(".canvasWrapper > canvas");
+			if (!cv || !cv.isConnected || !cv.width) return "none";
+			try {
+				const ctx = cv.getContext("2d");
+				let dark = 0;
+				for (const [fx, fy] of [[0.5, 0.5], [0.05, 0.05], [0.95, 0.05], [0.05, 0.95], [0.95, 0.95]]) {
+					const d = ctx.getImageData(Math.floor(cv.width * fx), Math.floor(cv.height * fy), 1, 1).data;
+					if (d[3] !== 0 && d[0] + d[1] + d[2] < 30) dark++;
+				}
+				if (dark === 5) return "black";
+			} catch {}
+			return "ok";
+		};
+		const sampler = () => {
+			const st = { frames: 0, none: 0, black: 0, canvases: new Set() };
+			let run = true;
+			const tick = () => {
+				if (!run) return;
+				st.frames++;
+				const s = state();
+				if (s === "none") st.none++;
+				else if (s === "black") st.black++;
+				const cv = pv.div.querySelector(".canvasWrapper > canvas");
+				if (cv) st.canvases.add(cv);
+				requestAnimationFrame(tick);
+			};
+			requestAnimationFrame(tick);
+			return () => {
+				run = false;
+				return { frames: st.frames, framesWithoutCanvas: st.none, blackFrames: st.black, canvasesSeen: st.canvases.size };
+			};
+		};
+		const idle = async () => {
+			await waitFor(() => pv.renderingState === 3, 20000);
+			await sleep(200);
+		};
+		const commit = (factor) => {
+			const r = pv.div.getBoundingClientRect();
+			const x = r.left + r.width / 2;
+			const y = Math.max(r.top + 50, Math.min(r.bottom - 50, v.container.getBoundingClientRect().top + 200));
+			zc.begin("pinch", x, y);
+			zc.update(factor, x, y);
+			zc.end();
+		};
+		const res = { file: cfg.file, variant: cfg.variant, dpr: window.devicePixelRatio };
+		// 1. one commit: the old canvas stays until the new one is complete
+		{
+			const stop = sampler();
+			commit(1.8);
+			await idle();
+			res.single = { ...stop(), scale: +v.viewer.currentScale.toFixed(3) };
+		}
+		// 2. a second commit while the first re-render is still running (cancels it)
+		{
+			v.viewer.currentScaleValue = "page-width";
+			await idle();
+			const stop = sampler();
+			// the second commit lands while page 1's re-render is in flight: right after pdf.js
+			// started drawing it (pagerender), before any drawing step has run
+			const second = new Promise((resolve) => {
+				const onRender = (e) => {
+					if (e.pageNumber !== 1) return;
+					v.eventBus.off("pagerender", onRender);
+					queueMicrotask(() => {
+						res.renderingWhenCancelled = pv.renderingState === 1 || pv.renderingState === 2;
+						commit(1.3);
+						resolve();
+					});
+				};
+				v.eventBus.on("pagerender", onRender);
+			});
+			commit(1.6);
+			await Promise.race([second, sleep(5000)]);
+			await idle();
+			res.cancelled = { ...stop(), keptOldCanvas: pv.pendfKeptCanvas ?? 0, scale: +v.viewer.currentScale.toFixed(3) };
+		}
+		await v.opened.close();
+		return res;
+	}
+
 	/** B-06: optionally open a PDF in the core stand-in first, then penDF; report name collisions and ground truth. */
 	async function b06(cfg) {
 		const res = { coreFirst: cfg.coreFirst, variant: cfg.variant };
@@ -300,5 +404,5 @@
 		return res;
 	}
 
-	window.__tests = { snapshot, diff, smoke, b06, errors: () => errors.slice() };
+	window.__tests = { snapshot, diff, smoke, b06, zoom, errors: () => errors.slice() };
 })();

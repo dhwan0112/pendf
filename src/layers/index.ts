@@ -53,6 +53,11 @@ export class LayerManager {
 	private ac = new AbortController();
 	private destroyed = false;
 	private wanted = new Set<number>();
+	/** during a zoom gesture: no DOM reads, no attach/detach (0.7.2) */
+	private frozen = false;
+	/** attach / detach counts, for the zoom timeline */
+	readonly counters = { attach: 0, detach: 0, restored: 0 };
+	private mo: MutationObserver;
 
 	constructor(
 		private readonly viewer: PDFViewer,
@@ -69,6 +74,35 @@ export class LayerManager {
 		on("pagesinit", () => this.schedule());
 		on("updateviewarea", () => this.schedule());
 		container.addEventListener("scroll", () => this.schedule(), { passive: true, signal: this.ac.signal });
+		// pdf.js removes unknown children when it resets a page (scale change, postponed or
+		// cancelled render). Put a wanted layer back before the frame is painted.
+		this.mo = new MutationObserver((records) => {
+			if (this.destroyed) return;
+			for (const m of records) {
+				for (const node of Array.from(m.removedNodes)) {
+					if (!node.instanceOf(HTMLElement) || !node.classList.contains("pendf-layer-host") || node.isConnected) continue;
+					const n = Number(node.dataset.page);
+					if (this.layers.get(n)?.host !== node) continue;
+					this.place(n);
+					if (node.isConnected) this.counters.restored++;
+				}
+			}
+		});
+		this.mo.observe(container, { childList: true, subtree: true });
+	}
+
+	/** Freeze layer bookkeeping during a zoom gesture; unfreezing syncs at once (layout is clean then). */
+	setFrozen(frozen: boolean): void {
+		if (this.frozen === frozen) return;
+		this.frozen = frozen;
+		if (frozen) {
+			if (this.raf !== null) {
+				window.cancelAnimationFrame(this.raf);
+				this.raf = null;
+			}
+			return;
+		}
+		this.sync();
 	}
 
 	addRenderer(r: LayerRenderer): void {
@@ -125,6 +159,9 @@ export class LayerManager {
 	}
 
 	schedule(): void {
+		if (this.frozen) {
+			return;
+		}
 		if (this.raf !== null || this.destroyed) return;
 		this.raf = window.requestAnimationFrame(() => {
 			this.raf = null;
@@ -134,7 +171,7 @@ export class LayerManager {
 
 	/** Attach wanted pages, detach the rest. */
 	sync(): void {
-		if (this.destroyed) return;
+		if (this.destroyed || this.frozen) return;
 		const want = this.wantedPages();
 		this.wanted = want;
 		for (const n of [...this.layers.keys()]) if (!want.has(n)) this.detach(n);
@@ -154,6 +191,9 @@ export class LayerManager {
 	/** Make sure page n has a layer in the right DOM position (if wanted). */
 	ensure(n: number): void {
 		if (this.destroyed) return;
+		if (this.frozen && !this.layers.has(n)) {
+			return;
+		}
 		let layer = this.layers.get(n);
 		if (!layer) {
 			if (!this.wanted.has(n)) {
@@ -183,6 +223,7 @@ export class LayerManager {
 			host.appendChild(overlaySvg);
 			layer = { pageNumber: n, host, svg, geom, group, ink, inkSvg, overlay, overlaySvg };
 			this.layers.set(n, layer);
+			this.counters.attach++;
 			this.applyGeometry(layer);
 			this.render(layer);
 		} else {
@@ -223,8 +264,9 @@ export class LayerManager {
 	private detach(n: number): void {
 		const layer = this.layers.get(n);
 		if (!layer) return;
-		layer.host.remove();
 		this.layers.delete(n);
+		layer.host.remove();
+		this.counters.detach++;
 	}
 
 	private render(layer: PageLayer): void {
@@ -253,6 +295,7 @@ export class LayerManager {
 	destroy(): void {
 		this.destroyed = true;
 		this.ac.abort();
+		this.mo.disconnect();
 		if (this.raf !== null) window.cancelAnimationFrame(this.raf);
 		for (const n of [...this.layers.keys()]) this.detach(n);
 		this.renderers = [];

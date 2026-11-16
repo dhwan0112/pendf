@@ -1369,6 +1369,312 @@
 					res.korean.hits === res.korean.pages;
 				return res;
 			});
+			await check("zoom-gesture", async () => {
+				// Pinch and trackpad (ctrl+wheel) zoom, measured from the outside so the same check runs on
+				// 0.7.1 (baseline) and later builds. Per scenario:
+				//   during the gesture: pdf.js scale changes, layer-host removals, full renders, rAF frame gaps;
+				//   every frame from gesture start until idle: visible pages that had a canvas but now show
+				//     none / a black (unpainted alpha:false) canvas, and layer hosts that went missing;
+				//   after the commit: full renders per page; canvas memory peak (w×h×4); finger-centre drift.
+				// window.__pendfZoomProfile = { dpr } emulates a device pixel ratio for this check only.
+				const res = { scenarios: {} };
+				const prof = window.__pendfZoomProfile ?? {};
+				const dprDesc = Object.getOwnPropertyDescriptor(window, "devicePixelRatio");
+				if (prof.dpr) Object.defineProperty(window, "devicePixelRatio", { configurable: true, get: () => prof.dpr });
+				res.profile = { dpr: window.devicePixelRatio, maxCanvasPixels: null };
+				try {
+					const { v } = await openPenDF("long-300.pdf");
+					const s = v.debugSession;
+					const c = s.viewer.container;
+					res.profile.maxCanvasPixels = s.viewer.maxCanvasPixels;
+					const reset = async (page = 5) => {
+						s.viewer.currentScaleValue = "page-width";
+						await goPage(v, page);
+						await waitIdle(v);
+						await sleep(300);
+					};
+					const visiblePageViews = () => {
+						const cr = c.getBoundingClientRect();
+						const out = [];
+						for (let i = 0; i < s.viewer.pagesCount; i++) {
+							const pv = s.viewer.getPageView(i);
+							const r = pv.div.getBoundingClientRect();
+							if (r.bottom > cr.top && r.top < cr.bottom && r.right > cr.left && r.left < cr.right) out.push(pv);
+							else if (out.length && r.top > cr.bottom) break;
+						}
+						return out;
+					};
+					const canvasState = (pv) => {
+						const cv = pv.div.querySelector(".canvasWrapper > canvas");
+						if (!cv || !cv.width || !cv.isConnected) return "none";
+						try {
+							const d = cv.getContext("2d").getImageData(Math.floor(cv.width / 2), Math.floor(cv.height / 2), 1, 1).data;
+							if (d[3] !== 0 && d[0] + d[1] + d[2] < 30) {
+								// the centre of a page can be legitimately dark; check 4 more points
+								let dark = 0;
+								for (const [fx, fy] of [[0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]]) {
+									const e = cv.getContext("2d").getImageData(Math.floor(cv.width * fx), Math.floor(cv.height * fy), 1, 1).data;
+									if (e[0] + e[1] + e[2] < 30) dark++;
+								}
+								if (dark === 4) return "black";
+							}
+						} catch {}
+						return "ok";
+					};
+					const probe = () => {
+						const st = { scaleEvents: 0, rendered: [], memPeak: 0, canvasPeak: 0, layerRemovals: 0, marks: {}, frames: [], blankFrames: 0, blackFrames: 0, layerMissingFrames: 0, blankPages: new Set(), hadCanvas: new Set(), hadLayer: new Set() };
+						for (const pv of visiblePageViews()) {
+							if (canvasState(pv) !== "none") st.hadCanvas.add(pv.id);
+							if (pv.div.querySelector(".pendf-layer-host")) st.hadLayer.add(pv.id);
+						}
+						const sampleMem = () => {
+							let b = 0;
+							let n = 0;
+							for (const cv of v.containerEl.querySelectorAll("canvas")) {
+								b += cv.width * cv.height * 4;
+								n++;
+							}
+							st.memPeak = Math.max(st.memPeak, b);
+							st.canvasPeak = Math.max(st.canvasPeak, n);
+						};
+						let running = true;
+						let last = performance.now();
+						const frame = (now) => {
+							if (!running) return;
+							st.frames.push({ t: now, gap: now - last });
+							last = now;
+							sampleMem();
+							let blank = false;
+							let black = false;
+							let missing = false;
+							for (const pv of visiblePageViews()) {
+								if (st.hadCanvas.has(pv.id)) {
+									const cs = canvasState(pv);
+									if (cs === "none") {
+										blank = true;
+										st.blankPages.add(pv.id);
+									} else if (cs === "black") black = true;
+								}
+								if (st.hadLayer.has(pv.id) && !pv.div.querySelector(".pendf-layer-host")) missing = true;
+							}
+							if (blank) st.blankFrames++;
+							if (black) st.blackFrames++;
+							if (missing) st.layerMissingFrames++;
+							requestAnimationFrame(frame);
+						};
+						requestAnimationFrame(frame);
+						const onScale = () => st.scaleEvents++;
+						const onRendered = (e) => st.rendered.push({ p: e.pageNumber, css: !!e.cssTransform, detail: !!e.isDetailView, t: performance.now() });
+						s.eventBus.on("scalechanging", onScale);
+						s.eventBus.on("pagerendered", onRendered);
+						const mo = new MutationObserver((ms) => {
+							for (const m of ms) for (const n of m.removedNodes) if (n.classList?.contains("pendf-layer-host")) st.layerRemovals++;
+						});
+						mo.observe(c, { childList: true, subtree: true });
+						return {
+							st,
+							mark(name) {
+								st.marks[name] = { t: performance.now(), scaleEvents: st.scaleEvents, layerRemovals: st.layerRemovals, rendered: st.rendered.length };
+							},
+							stop() {
+								running = false;
+								s.eventBus.off("scalechanging", onScale);
+								s.eventBus.off("pagerendered", onRendered);
+								mo.disconnect();
+								return st;
+							},
+						};
+					};
+					// content point under a client position: page + fraction inside the page box
+					const anchorAt = (x, y) => {
+						const pageDiv = document.elementsFromPoint(x, y).map((e) => e.closest?.(".page[data-page-number]")).find(Boolean);
+						if (!pageDiv) return null;
+						const r = pageDiv.getBoundingClientRect();
+						return { page: Number(pageDiv.dataset.pageNumber), fx: (x - r.left) / r.width, fy: (y - r.top) / r.height };
+					};
+					let lastXY = null;
+					const anchorError = (a, x, y) => {
+						if (!a) return null;
+						const r = s.viewer.getPageView(a.page - 1).div.getBoundingClientRect();
+						lastXY = [+(r.left + a.fx * r.width - x).toFixed(2), +(r.top + a.fy * r.height - y).toFixed(2)];
+						return +Math.hypot(r.left + a.fx * r.width - x, r.top + a.fy * r.height - y).toFixed(2);
+					};
+					// a point of the container's content area (without its scrollbar)
+					const at = (fx, fy) => {
+						const r = c.getBoundingClientRect();
+						return [Math.round(r.left + c.clientLeft + c.clientWidth * fx), Math.round(r.top + c.clientTop + c.clientHeight * fy)];
+					};
+					const settle = async () => {
+						await sleep(450);
+						await waitIdle(v);
+						await sleep(350);
+					};
+					const pct = (arr, q) => {
+						if (!arr.length) return 0;
+						const a = [...arr].sort((x, y) => x - y);
+						return a[Math.min(a.length - 1, Math.floor(q * a.length))];
+					};
+					const summarize = (pr, startScale, extra = {}) => {
+						const st = pr.stop();
+						const { start, end } = st.marks;
+						const during = st.rendered.slice(start.rendered, end.rendered);
+						const after = st.rendered.slice(end.rendered).filter((r) => !r.css);
+						const perPage = {};
+						for (const r of after) if (!r.detail) perPage[r.p] = (perPage[r.p] ?? 0) + 1;
+						const gaps = st.frames.filter((f) => f.t >= start.t && f.t <= end.t).slice(1).map((f) => f.gap);
+						const gapsAfter = st.frames.filter((f) => f.t > end.t && f.t <= end.t + 1500).map((f) => f.gap);
+						return {
+							scaleBefore: +startScale.toFixed(3),
+							scaleAfter: +s.viewer.currentScale.toFixed(3),
+							scaleChangesDuringGesture: end.scaleEvents - start.scaleEvents,
+							layerRemovalsDuringGesture: end.layerRemovals - start.layerRemovals,
+							cssOnlyRendersDuringGesture: during.filter((r) => r.css).length,
+							fullRendersDuringGesture: during.filter((r) => !r.css && !r.detail).length,
+							maxRendersPerPageAfter: Math.max(0, ...Object.values(perPage)),
+							pagesRenderedAfter: Object.keys(perPage).length,
+							detailRendersAfter: after.filter((r) => r.detail).length,
+							framesDuring: gaps.length,
+							frameGapAvgMs: +(gaps.reduce((a, b) => a + b, 0) / Math.max(1, gaps.length)).toFixed(1),
+							frameGapP95Ms: +pct(gaps, 0.95).toFixed(1),
+							frameGapMaxMs: +Math.max(0, ...gaps).toFixed(1),
+							frameGapMaxAfterMs: +Math.max(0, ...gapsAfter).toFixed(1),
+							blankFrames: st.blankFrames,
+							blankPages: [...st.blankPages],
+							blackFrames: st.blackFrames,
+							layerMissingFrames: st.layerMissingFrames,
+							memPeakMB: +(st.memPeak / 1048576).toFixed(1),
+							canvasPeak: st.canvasPeak,
+							...extra,
+						};
+					};
+					const touch = (id, x, y, target) => new Touch({ identifier: id, target, clientX: x, clientY: y, screenX: x, screenY: y, pageX: x, pageY: y, radiusX: 2, radiusY: 2, force: 0.5 });
+					// two fingers horizontally around (cx, cy); distance goes d0 → d0·factor in `steps` moves
+					const pinchStart = async (cx, cy) => {
+						const target = document.elementFromPoint(cx, cy);
+						const g = { cx, cy, target, d: 120 };
+						g.fire = (type, d) => {
+							const a = touch(21, cx - d / 2, cy, target);
+							const b = touch(22, cx + d / 2, cy, target);
+							const touches = type === "touchend" ? [] : [a, b];
+							target.dispatchEvent(new TouchEvent(type, { touches, targetTouches: touches, changedTouches: [a, b], bubbles: true, cancelable: true, composed: true }));
+						};
+						g.fire("touchstart", g.d);
+						await sleep(16);
+						g.move = async (factor, steps = 18) => {
+							const d0 = g.d;
+							for (let i = 1; i <= steps; i++) {
+								g.d = d0 * Math.pow(factor, i / steps);
+								g.fire("touchmove", g.d);
+								await sleep(16);
+							}
+						};
+						g.lift = () => g.fire("touchend", g.d);
+						return g;
+					};
+					const pinchScenario = async (name, { fx = 0.5, fy = 0.45, factor = 1.8, holdMs = 0, factor2 = null, before = null } = {}) => {
+						if (before) await before();
+						const [cx, cy] = at(fx, fy);
+						const a = anchorAt(cx, cy);
+						const scale0 = s.viewer.currentScale;
+						const pr = probe();
+						pr.mark("start");
+						const g = await pinchStart(cx, cy);
+						await g.move(factor);
+						if (holdMs) {
+							await sleep(holdMs);
+							await g.move(factor2 ?? 1.3);
+						}
+						pr.mark("end");
+						g.lift();
+						await settle();
+						res.scenarios[name] = summarize(pr, scale0, { anchorErrorPx: anchorError(a, cx, cy), anchorErrXY: lastXY, commit: s.zoom?.lastCommit ?? null });
+					};
+					const wheelScenario = async (name, { n, dy, deltaMode = 0, fx = 0.5, fy = 0.45 }) => {
+						const [cx, cy] = at(fx, fy);
+						const target = document.elementFromPoint(cx, cy);
+						const a = anchorAt(cx, cy);
+						const scale0 = s.viewer.currentScale;
+						const pr = probe();
+						pr.mark("start");
+						for (let i = 0; i < n; i++) {
+							target.dispatchEvent(new WheelEvent("wheel", { deltaY: dy, deltaMode, ctrlKey: true, clientX: cx, clientY: cy, bubbles: true, cancelable: true }));
+							await sleep(16);
+						}
+						pr.mark("end");
+						await settle();
+						res.scenarios[name] = summarize(pr, scale0, { anchorErrorPx: anchorError(a, cx, cy), anchorErrXY: lastXY, commit: s.zoom?.lastCommit ?? null });
+					};
+
+					await reset();
+					// sanity: a "pinch" whose finger distance never changes must not move anything
+					await pinchScenario("anchor-sanity", { factor: 1 });
+					await reset();
+					await pinchScenario("pinch-in", { factor: 1.8 });
+					await reset();
+					await pinchScenario("pinch-hold-continue", { factor: 1.5, holdMs: 600, factor2: 1.3 });
+					// again right away, before the previous re-render settled
+					{
+						const [cx, cy] = at(0.5, 0.45);
+						const scale0 = s.viewer.currentScale;
+						const g1 = await pinchStart(cx, cy);
+						await g1.move(1.3, 10);
+						g1.lift();
+						await sleep(60);
+						const a = anchorAt(cx, cy);
+						const pr = probe();
+						pr.mark("start");
+						const g = await pinchStart(cx, cy);
+						await g.move(1.4);
+						pr.mark("end");
+						g.lift();
+						await settle();
+						res.scenarios["pinch-again-before-idle"] = summarize(pr, scale0, { anchorErrorPx: anchorError(a, cx, cy), anchorErrXY: lastXY, commit: s.zoom?.lastCommit ?? null });
+					}
+					await reset();
+					await pinchScenario("pinch-off-centre", { fx: 0.25, fy: 0.25, factor: 1.6 });
+					await reset();
+					await pinchScenario("pinch-out-below-fit", { factor: 0.4 });
+					await reset();
+					await wheelScenario("trackpad-pinch", { n: 24, dy: -3 });
+					await reset();
+					await wheelScenario("mouse-notch", { n: 1, dy: -100 });
+					// maximum zoom from fit-width: pinch until the scale stops growing
+					await reset();
+					{
+						const [cx, cy] = at(0.5, 0.45);
+						const scale0 = s.viewer.currentScale;
+						const pr = probe();
+						pr.mark("start");
+						let prev = -1;
+						let rounds = 0;
+						while (rounds < 6 && Math.abs(s.viewer.currentScale - prev) > 1e-3) {
+							prev = s.viewer.currentScale;
+							const g = await pinchStart(cx, cy);
+							await g.move(3, 18);
+							g.lift();
+							await sleep(120);
+							rounds++;
+						}
+						pr.mark("end");
+						await settle();
+						await sleep(1500);
+						res.scenarios["max-zoom"] = summarize(pr, scale0, { rounds, capReached: Math.abs(s.viewer.currentScale - prev) <= 1e-3 });
+					}
+					await reset();
+					res.zoomTimeline = v.lastZoomTimeline?.() ?? null;
+					const sc = res.scenarios;
+					const gestureOk = (r) => r.scaleChangesDuringGesture === 0 && r.layerRemovalsDuringGesture === 0 && r.fullRendersDuringGesture === 0 && r.maxRendersPerPageAfter <= 1 && r.blankFrames === 0 && r.blackFrames === 0 && r.layerMissingFrames === 0 && r.anchorErrorPx !== null && r.anchorErrorPx <= 2 && (r.commit?.anchorErrorPx ?? 0) <= 2;
+					res.failed = Object.entries(sc).filter(([k, r]) => (k === "max-zoom" ? r.blankFrames + r.blackFrames + r.layerMissingFrames > 0 || !r.capReached : k === "mouse-notch" ? r.blankFrames + r.blackFrames > 0 || r.anchorErrorPx > 2 : !gestureOk(r))).map(([k]) => k);
+					res.ok = res.failed.length === 0;
+				} finally {
+					if (prof.dpr) {
+						if (dprDesc) Object.defineProperty(window, "devicePixelRatio", dprDesc);
+						else delete window.devicePixelRatio;
+					}
+				}
+				return res;
+			});
+
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{

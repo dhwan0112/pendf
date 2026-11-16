@@ -69,6 +69,20 @@ export const RULES = {
       replace: "this.container.style.setProperty(\"--viewer-container-height\", `${height}px`);",
       count: 1,
     },
+    {
+      // A page re-rendered at a new scale keeps its old canvas on screen
+      // (CSS-scaled) until the new one is complete. But when that render is
+      // cancelled — the page is updated again before it finished, e.g. a second
+      // pinch right after the first — pdf.js drops the old canvas too, and the
+      // page shows nothing until the next render completes (0.7.2, D-38).
+      // Keep the old canvas instead; the next render replaces it as usual.
+      // Runs synchronously inside RenderTask.cancel(), before any new draw().
+      name: "keep the old page canvas when a re-render is cancelled",
+      find: /\(\) => \{\n(\s*)if \(prevCanvas\) \{\n\s*prevCanvas\.remove\(\);\n\s*prevCanvas\.width = prevCanvas\.height = 0;\n\s*\}\n\s*this\._resetCanvas\(\);\n(\s*)\}, renderTask => \{/g,
+      replace:
+        "() => {\n$1if (prevCanvas?.isConnected && !canvas.isConnected) {\n$1  this.pendfKeptCanvas = (this.pendfKeptCanvas ?? 0) + 1;\n$1  canvas.width = canvas.height = 0;\n$1  this.canvas = prevCanvas;\n$1  return;\n$1}\n$1if (prevCanvas) {\n$1  prevCanvas.remove();\n$1  prevCanvas.width = prevCanvas.height = 0;\n$1}\n$1this._resetCanvas();\n$2}, renderTask => {",
+      count: 1,
+    },
   ],
   "pdf.worker.mjs": [
     {

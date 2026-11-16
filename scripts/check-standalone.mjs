@@ -137,6 +137,7 @@ export function runChecks(opts) {
 			const allVar = count(bundle, /\.setProperty\(\s*"--viewer-container-height"/g);
 			const ownVar = count(bundle, /container\.style\.setProperty\(\s*"--viewer-container-height"/g);
 			ns("namespace-html-var", "--viewer-container-height may only be set on penDF's container, never on <html>", allVar >= 1 && allVar === ownVar, `${ownVar}/${allVar}`);
+			ns("keep-old-canvas", "a cancelled page re-render must keep the old canvas (0.7.2, D-38)", count(bundle, /\.pendfKeptCanvas\s*=/g) === 1);
 			for (const e of embedded) ns("worker-font-url", "embedded worker must skip url() font sources for embedded:// (D-33)", count(e.text, /startsWith\("embedded:"\)/g) === 1);
 		}
 	}
