@@ -10,13 +10,13 @@ import { type App, Component, MarkdownRenderer, setIcon } from "obsidian";
 import { distance } from "../geometry";
 import type { LayerManager, LayerRenderer, PageLayer } from "../layers";
 import { pageContentRect, svgEl } from "../layers";
-import type { HighlightAnnotation, NoteAnnotation } from "../store/schema";
+import type { AreaAnnotation, HighlightAnnotation, NoteAnnotation } from "../store/schema";
 import { uuid } from "../store/schema";
 import type { SidecarStore } from "../store/sidecar";
 import type { UndoStack } from "../store/undo";
 import { logger } from "../util/log";
 import { NoteEditorModal } from "./editor";
-import { noteAnchor, noteForHighlight } from "./model";
+import { noteAnchor, noteForHighlight, noteTargetId, targetFor } from "./model";
 
 const log = logger("notes");
 
@@ -194,8 +194,8 @@ export class NoteController implements LayerRenderer {
 		return null;
 	}
 
-	/** Edit the highlight's note, or start one. */
-	noteOnHighlight(h: HighlightAnnotation, body?: string): string | null {
+	/** Edit the note on a highlight or an area excerpt, or start one. */
+	noteOnHighlight(h: HighlightAnnotation | AreaAnnotation, body?: string): string | null {
 		const store = this.host.store();
 		if (!store) return null;
 		const existing = noteForHighlight(store.all(), h.id);
@@ -204,11 +204,11 @@ export class NoteController implements LayerRenderer {
 			this.edit(existing);
 			return existing.id;
 		}
-		const target = { kind: "highlight" as const, highlightId: h.id };
+		const target = targetFor(h);
 		if (body !== undefined) return this.insert({ page: h.page, target }, body);
 		new NoteEditorModal(this.host.app, {
 			title: `Note — page ${h.page}`,
-			quote: h.text,
+			quote: (h.type === "area" ? h.label || h.text : h.text) || undefined,
 			initial: "",
 			onSave: (b) => void this.insert({ page: h.page, target }, b),
 		}).open();
@@ -218,10 +218,11 @@ export class NoteController implements LayerRenderer {
 	edit(note: NoteAnnotation): void {
 		this.closePopover();
 		const store = this.host.store();
-		const h = note.target.kind === "highlight" ? store?.get(note.target.highlightId) : undefined;
+		const tid = noteTargetId(note.target);
+		const h = tid ? store?.get(tid) : undefined;
 		new NoteEditorModal(this.host.app, {
 			title: `Note — page ${note.page}`,
-			quote: h && h.type === "highlight" && !h.deleted ? h.text : undefined,
+			quote: h && !h.deleted && (h.type === "highlight" || h.type === "area") ? (h.type === "area" ? h.label || h.text : h.text) || undefined : undefined,
 			initial: note.body,
 			onSave: (b) => {
 				if (b.trim() === "") this.remove(note);

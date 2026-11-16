@@ -464,7 +464,7 @@ function renderAnnotations(ctx: TabContext): void {
 	const { body, view } = ctx;
 	const pages = panelPages(view.annotations());
 	if (pages.length === 0) {
-		body.createDiv({ cls: "pendf-panel-empty", text: "No highlights or notes yet. Select text to highlight it, or use “Add note” in the toolbar." });
+		body.createDiv({ cls: "pendf-panel-empty", text: "No highlights, notes or excerpts yet. Select text to highlight it, or use “Add note” or “Area excerpt” in the toolbar." });
 		return;
 	}
 	const src = view.file?.path ?? "";
@@ -494,6 +494,18 @@ function renderItem(ctx: TabContext, parent: HTMLElement, item: PanelItem, src: 
 	if (a.type === "highlight") {
 		row.setCssProps({ "--pendf-item-color": a.color });
 		row.createDiv({ cls: "pendf-panel-quote", text: a.text || "(no text)" });
+		noteBelow();
+	} else if (a.type === "area") {
+		row.setCssProps({ "--pendf-item-color": a.color });
+		const frame = row.createDiv({ cls: "pendf-panel-area-thumb" });
+		const canvas = frame.createEl("canvas");
+		const job = view.renderAreaThumbnail(a, canvas, 220);
+		ctx.onCleanup(() => {
+			job.cancel();
+			view.releaseThumbnail(canvas);
+		});
+		const caption = a.label || a.text;
+		if (caption) row.createDiv({ cls: "pendf-panel-quote", text: caption });
 		noteBelow();
 	} else if (a.type === "note") {
 		const icon = row.createSpan({ cls: "pendf-panel-icon" });

@@ -2,6 +2,7 @@
 // All four annotation kinds are defined now so Phases 3–6 need no migration.
 
 import type { Quad } from "../geometry";
+import { mergeAnnotations } from "./merge";
 
 export const SCHEMA_VERSION = 1;
 export const SIDECAR_SUFFIX = ".pendf.json";
@@ -31,7 +32,13 @@ export interface HighlightAnnotation extends AnnotationBase {
 	groupId?: string;
 }
 
-export type NoteTarget = { kind: "highlight"; highlightId: string } | { kind: "point"; x: number; y: number };
+/**
+ * What a note is attached to:
+ *   annotation  any annotation by id — area excerpts (0.8.0), and any future kind
+ *   highlight   a highlight (the form written for highlights, so 0.7.x shows those notes too)
+ *   point       a free point on the page (PDF user space; may lie in the margin)
+ */
+export type NoteTarget = { kind: "annotation"; id: string } | { kind: "highlight"; highlightId: string } | { kind: "point"; x: number; y: number };
 
 export interface NoteAnnotation extends AnnotationBase {
 	type: "note";
@@ -59,9 +66,22 @@ export interface InkAnnotation extends AnnotationBase {
 	points: number[];
 }
 
-export type Annotation = HighlightAnnotation | NoteAnnotation | BookmarkAnnotation | InkAnnotation;
+/** A rectangular excerpt of a page (Phase 7b, 0.8.0). The image is rendered from the PDF when needed, never stored. */
+export interface AreaAnnotation extends AnnotationBase {
+	type: "area";
+	/** PDF user-space quad, same order as a highlight quad (UL, UR, LL, LR as displayed) */
+	quad: Quad;
+	/** CSS color, "#rrggbb" */
+	color: string;
+	/** text-layer text inside the area (whitespace-normalized), "" when there is none */
+	text: string;
+	/** optional caption */
+	label?: string;
+}
+
+export type Annotation = HighlightAnnotation | NoteAnnotation | BookmarkAnnotation | InkAnnotation | AreaAnnotation;
 export type AnnotationType = Annotation["type"];
-export const ANNOTATION_TYPES: readonly AnnotationType[] = ["highlight", "note", "bookmark", "ink"];
+export const ANNOTATION_TYPES: readonly AnnotationType[] = ["highlight", "note", "bookmark", "ink", "area"];
 
 export interface Sidecar {
 	schemaVersion: number;
@@ -109,6 +129,7 @@ export function validateAnnotation(v: unknown): string | null {
 			const t = v.target;
 			if (!isObj(t)) return "target";
 			if (t.kind === "highlight") return isStr(t.highlightId) ? null : "target.highlightId";
+			if (t.kind === "annotation") return isStr(t.id) && t.id.length > 0 ? null : "target.id";
 			if (t.kind === "point") return isNum(t.x) && isNum(t.y) ? null : "target.point";
 			return "target.kind";
 		}
@@ -116,6 +137,12 @@ export function validateAnnotation(v: unknown): string | null {
 			if (!isNum(v.y)) return "y";
 			if (!isStr(v.title)) return "title";
 			if (!isNum(v.order)) return "order";
+			return null;
+		case "area":
+			if (!Array.isArray(v.quad) || v.quad.length !== 8 || !v.quad.every(isNum)) return "quad";
+			if (!isStr(v.color)) return "color";
+			if (!isStr(v.text)) return "text";
+			if (v.label !== undefined && !isStr(v.label)) return "label";
 			return null;
 		case "ink":
 			if (v.tool !== "pen" && v.tool !== "highlighter") return "tool";
@@ -141,7 +168,14 @@ export function parseSidecar(raw: unknown): ParseResult {
 	if (!isStr(raw.pdfFingerprint)) throw new Error("sidecar has no pdfFingerprint");
 	const problems: string[] = [];
 	const annotations: Annotation[] = [];
-	const unknown: unknown[] = Array.isArray(raw.unknown) ? raw.unknown.slice() : [];
+	const unknown: unknown[] = [];
+	// Entries an older version could not validate (e.g. 0.7.x keeping an `area` it did not know)
+	// come back here verbatim: take the ones this version understands back as annotations.
+	const promoted: Annotation[] = [];
+	for (const u of Array.isArray(raw.unknown) ? raw.unknown : []) {
+		if (validateAnnotation(u) === null) promoted.push(u as Annotation);
+		else unknown.push(u);
+	}
 	const list = Array.isArray(raw.annotations) ? raw.annotations : [];
 	if (!Array.isArray(raw.annotations)) problems.push("annotations is not an array");
 	for (const a of list) {
@@ -151,7 +185,9 @@ export function parseSidecar(raw: unknown): ParseResult {
 			unknown.push(a);
 		} else annotations.push(a as Annotation);
 	}
-	const sidecar: Sidecar = { schemaVersion: SCHEMA_VERSION, pdfFingerprint: raw.pdfFingerprint, annotations };
+	// same id in both places: the usual merge rules pick one (deleted wins, then the newer)
+	const merged = promoted.length ? mergeAnnotations(annotations, promoted) : annotations;
+	const sidecar: Sidecar = { schemaVersion: SCHEMA_VERSION, pdfFingerprint: raw.pdfFingerprint, annotations: merged };
 	if (unknown.length) sidecar.unknown = unknown;
 	return { sidecar, problems };
 }
@@ -169,7 +205,7 @@ export function serializeSidecar(s: Sidecar): string {
 	const json = JSON.stringify(
 		out,
 		(key, value: unknown) => {
-			if ((key === "points" || key === "quads") && Array.isArray(value)) {
+			if ((key === "points" || key === "quads" || key === "quad") && Array.isArray(value)) {
 				inline.push(JSON.stringify(value));
 				return `\u0000pendf:${inline.length - 1}`;
 			}

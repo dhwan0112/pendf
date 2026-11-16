@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** Used by tests, the WebKit smoke and the desktop harness. */
-export const REQUIRED = ["a4.pdf", "letter.pdf", "rotations.pdf", "cropbox.pdf", "two-column.pdf", "korean-cmap.pdf", "links.pdf", "long-300.pdf"];
+export const REQUIRED = ["a4.pdf", "letter.pdf", "rotations.pdf", "cropbox.pdf", "areas.pdf", "two-column.pdf", "korean-cmap.pdf", "links.pdf", "long-300.pdf"];
 /** Needs a Hangul font on the machine; may be skipped (not failed) without one. */
 export const NEEDS_HANGUL_FONT = ["korean-embedded.pdf"];
 

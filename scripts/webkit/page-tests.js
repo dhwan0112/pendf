@@ -361,6 +361,37 @@
 		return res;
 	}
 
+	/** Area excerpts (0.8.0): penDF's renderArea draws each reference rectangle of areas.pdf (pixels). */
+	async function areas(cfg) {
+		const E = window.__pendf;
+		const opened = await E.openDocument(await fetchPdf("areas.pdf"));
+		const out = [];
+		for (const e of cfg.expected["areas.pdf"]) {
+			const page = await opened.doc.getPage(e.page);
+			const pad = 8;
+			const [x0, y0, x1, y1] = [e.box[0] - pad, e.box[1] - pad, e.box[2] + pad, e.box[3] + pad];
+			const r = await E.renderArea(page, [x0, y1, x1, y1, x0, y0, x1, y0], { scale: 2, maxPixels: 4_000_000, doc: document }).done;
+			if (!r) {
+				out.push({ page: e.page, rendered: false });
+				continue;
+			}
+			const vp = page.getViewport({ scale: r.plan.scale, rotation: page.rotate });
+			const ctx = r.canvas.getContext("2d");
+			const px = (x, y) => {
+				const [vx, vy] = vp.convertToViewportPoint(x, y);
+				const d = ctx.getImageData(Math.round(vx - r.plan.rect.x), Math.round(vy - r.plan.rect.y), 1, 1).data;
+				return [d[0], d[1], d[2]];
+			};
+			const near = (c, t, tol = 18) => c.every((v, i) => Math.abs(v - t[i]) <= tol);
+			const [bx0, by0, bx1, by1] = e.box;
+			const inside = [[bx0 + 5, by1 - 5], [bx1 - 5, by1 - 5], [bx1 - 5, by0 + 5]].map(([x, y]) => px(x, y));
+			const around = [[x0 + 2, y0 + 2], [x1 - 2, y1 - 2]].map(([x, y]) => px(x, y));
+			out.push({ page: e.page, rendered: true, size: [r.canvas.width, r.canvas.height], insideOk: inside.every((c) => near(c, e.color)), aroundOk: around.every((c) => near(c, [255, 255, 255])) });
+		}
+		await opened.close();
+		return out;
+	}
+
 	/** B-06: optionally open a PDF in the core stand-in first, then penDF; report name collisions and ground truth. */
 	async function b06(cfg) {
 		const res = { coreFirst: cfg.coreFirst, variant: cfg.variant };
@@ -404,5 +435,5 @@
 		return res;
 	}
 
-	window.__tests = { snapshot, diff, smoke, b06, zoom, errors: () => errors.slice() };
+	window.__tests = { snapshot, diff, smoke, b06, zoom, areas, errors: () => errors.slice() };
 })();

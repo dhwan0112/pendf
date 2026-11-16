@@ -23,7 +23,7 @@ import { NoteController } from "../notes/controller";
 import { InkController } from "../ink/controller";
 import { PEN_COLORS, PEN_WIDTHS, type InkTool } from "../settings";
 import { noteAnchor } from "../notes/model";
-import type { Annotation } from "../store/schema";
+import type { Annotation, AreaAnnotation } from "../store/schema";
 import { aliasFrom, buildSubpath, parseSubpath, type PdfTarget } from "../links/format";
 import { defaultBookmarkTitle, orderAtEnd, reorder, sectionFor, sortedBookmarks, type OutlineEntry } from "../bookmarks/model";
 import type { BookmarkAnnotation } from "../store/schema";
@@ -43,6 +43,9 @@ import { DEFAULT_PANEL_STATE, InViewPanel, parsePanelState, type InViewPanelStat
 import type { PanelTab } from "../panel/tabs";
 import { scrollToTopAnchor, topAnchor, type TopAnchor } from "../panel/layout";
 import { MarginController, type MarginPageView } from "../margin/controller";
+import { AreaController } from "../area/controller";
+import { renderArea } from "../area/render";
+import { quadBox, type TextItem } from "../area/model";
 import { autoMargin, normalizeMargin, type MarginConfig } from "../margin/model";
 
 export const VIEW_TYPE = "pendf-view";
@@ -77,13 +80,15 @@ interface Session {
 	zoom: ZoomController;
 	/** margin space beside the pages (0.8.0) */
 	margin: MarginController;
+	/** area excerpts (0.8.0) */
+	area: AreaController;
 	timeline: ZoomTimeline;
 	render: RenderConfig;
 }
 
 /** A page's text for searching: items with their PDF-space boxes, and the joined, normalized text. */
 interface PageText {
-	items: { x: number; y: number; w: number; h: number; start: number; len: number }[];
+	items: TextItem[];
 	/** normalized text of all items, joined with single spaces */
 	joined: string;
 }
@@ -163,6 +168,7 @@ export class PenDFView extends FileView {
 	private noteButton: HTMLButtonElement | null = null;
 	private inkButton: HTMLButtonElement | null = null;
 	private marginButton: HTMLButtonElement | null = null;
+	private areaButton: HTMLButtonElement | null = null;
 	private marginTimer: number | null = null;
 	private inkBar!: HTMLElement;
 	/** set while ink edits run, so the side panel is not re-rendered for every stroke */
@@ -294,6 +300,7 @@ export class PenDFView extends FileView {
 			},
 		});
 		this.inkButton = t.add(tools, { id: "ink", icon: "pen-line", label: "Handwriting tools (pen, highlighter, eraser)", priority: 1, run: () => this.toggleInk() });
+		this.areaButton = t.add(tools, { id: "area", icon: "square-dashed", label: "Area excerpt (drag a rectangle)", priority: 2, run: () => this.toggleArea() });
 		this.marginButton = t.add(tools, { id: "margin", icon: "panel-right-open", label: "Show margin", priority: 2, run: () => this.toggleMargin() });
 		t.add(tools, { id: "bookmark", icon: "bookmark-plus", label: "Bookmark this spot", priority: 3, run: () => void this.addBookmark() });
 		// history
@@ -514,7 +521,10 @@ export class PenDFView extends FileView {
 			{
 				root: this.viewerRoot,
 				pagesCount: () => viewer.pagesCount,
-				pageView: (n) => (viewer.getPageView(n - 1) as unknown as MarginPageView | undefined) ?? null,
+				pageView: (n) => {
+					const pv: unknown = viewer.getPageView(n - 1);
+					return (pv as MarginPageView | undefined) ?? null;
+				},
 				viewRotation: () => viewer.pagesRotation,
 				annotations: () => session.store?.all() ?? [],
 			},
@@ -541,6 +551,7 @@ export class PenDFView extends FileView {
 			timeline,
 			render,
 			margin,
+			area: null as unknown as AreaController,
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -565,7 +576,10 @@ export class PenDFView extends FileView {
 			undo: () => session.undo,
 			sourcePath: () => session.file.path,
 			notice: (m) => new Notice(m),
-			onPlacingChange: (on) => this.noteButton?.toggleClass("is-active", on),
+			onPlacingChange: (on) => {
+				if (on) session.area?.setActive(false);
+				this.noteButton?.toggleClass("is-active", on);
+			},
 			closeOthers: () => {
 				session.highlights.hidePalette();
 				session.highlights.closeMenu();
@@ -581,17 +595,42 @@ export class PenDFView extends FileView {
 			settings: () => this.plugin.settings.ink,
 			notice: (m) => new Notice(m),
 			onActiveChange: (on) => {
+				if (on) session.area?.setActive(false);
 				this.inkButton?.toggleClass("is-active", on);
 				this.inkBar.toggleClass("is-hidden", !on);
 				if (on) this.renderInkBar();
 			},
-			busy: () => session.notes?.placing ?? false,
+			busy: () => (session.notes?.placing ?? false) || (session.area?.active ?? false),
 			quietly: (fn) => {
 				this.quiet = true;
 				try {
 					fn();
 				} finally {
 					this.quiet = false;
+				}
+			},
+		});
+		session.area = new AreaController({
+			root: this.viewerRoot,
+			container: this.container,
+			layers,
+			store: () => session.store,
+			undo: () => session.undo,
+			colors: () => this.plugin.settings.colors,
+			defaultColor: () => this.plugin.settings.defaultColor,
+			notice: (m) => new Notice(m),
+			pageText: (page) => this.pageText(session, page),
+			note: (a) => session.notes.noteOnHighlight(a),
+			copyLink: (a) => this.copyLink({ page: a.page, id: a.id }, aliasFrom(a.label || a.text) || `p. ${a.page}`),
+			copyImage: (a) => this.copyAreaImage(a),
+			saveImage: (a) => this.saveAreaImage(a),
+			onActiveChange: (on) => {
+				this.areaButton?.toggleClass("is-active", on);
+				if (on) {
+					session.ink.setActive(false);
+					session.notes.setPlacing(false);
+					session.highlights.hidePalette();
+					session.highlights.closeMenu();
 				}
 			},
 		});
@@ -963,7 +1002,8 @@ export class PenDFView extends FileView {
 					if (!str.trim()) continue;
 					if (joined && !joined.endsWith(" ")) joined += " ";
 					const t = it.transform as number[];
-					items.push({ x: t[4], y: t[5], w: it.width, h: it.height || Math.hypot(t[2], t[3]), start: joined.length, len: str.length });
+					const n = Math.hypot(t[0], t[1]) || 1;
+					items.push({ x: t[4], y: t[5], w: it.width, h: it.height || Math.hypot(t[2], t[3]), ux: t[0] / n, uy: t[1] / n, start: joined.length, len: str.length, raw: it.str.normalize("NFKC").replace(/\s+/g, " ").trim() });
 					joined += str;
 				}
 				return { items, joined };
@@ -1077,6 +1117,9 @@ export class PenDFView extends FileView {
 			at = noteAnchor(a, (id) => store.get(id));
 		} else if (a.type === "bookmark") {
 			at = [0, a.y];
+		} else if (a.type === "area") {
+			this.revealRect(a.page, quadBox(a.quad));
+			return;
 		}
 		const dest = at ? [null, { name: "XYZ" }, at[0] - 24, at[1] + 48, null] : undefined;
 		s.viewer.scrollPageIntoView({ pageNumber: a.page, destArray: dest, allowNegativeOffset: true, ignoreDestinationZoom: true });
@@ -1161,7 +1204,7 @@ export class PenDFView extends FileView {
 		new TouchManager({
 			container: this.container,
 			// a palm resting while the Pencil writes is a second touch: no zooming mid-stroke
-			isPinchingDisabled: () => session.ink.isDrawing,
+			isPinchingDisabled: () => session.ink.isDrawing || session.area.isDrawing,
 			onPinchStart: () => {
 				factor = 1;
 			},
@@ -1280,6 +1323,100 @@ export class PenDFView extends FileView {
 	/** Margin state of the open PDF (tests, panel). */
 	get marginConfig(): MarginConfig | null {
 		return this.session ? { ...this.session.margin.cfg } : null;
+	}
+
+	/** The "Area excerpt" tool on / off. */
+	toggleArea(on?: boolean): void {
+		const a = this.session?.area;
+		if (a) a.setActive(on ?? !a.active);
+	}
+
+	/** Most pixels an area image may use now: the canvas budget left over, iOS's canvas limit, the preset's page limit. */
+	private areaPixelCap(): number {
+		const s = this.session;
+		const iosLimit = 16_777_216;
+		let cap = Math.min(iosLimit, s?.render.maxCanvasPixels ?? 2 ** 24);
+		if (s?.render.budgetMB) {
+			const used = s.timeline.canvasMemory().mb * 1048576 + this.thumbnailBytes();
+			cap = Math.min(cap, Math.max(1_000_000, (s.render.budgetMB * 1048576 - used) / 4));
+		}
+		return Math.floor(cap);
+	}
+
+	/** Render an area from the PDF (scale × 100 % zoom; default from settings). */
+	async renderAreaImage(a: AreaAnnotation, scale = this.plugin.settings.areaImageScale): Promise<HTMLCanvasElement | null> {
+		const s = this.session;
+		if (!s) return null;
+		const page = await s.opened.doc.getPage(a.page);
+		const r = await renderArea(page, a.quad, { scale, maxPixels: this.areaPixelCap(), doc: this.containerEl.doc }).done;
+		return r?.canvas ?? null;
+	}
+
+	private async areaPng(a: AreaAnnotation): Promise<Blob | null> {
+		const canvas = await this.renderAreaImage(a);
+		if (!canvas) return null;
+		const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+		canvas.width = canvas.height = 0;
+		return blob;
+	}
+
+	/** Copy an area's image to the clipboard. false: the platform does not allow it (iPad: use Save image). */
+	async copyAreaImage(a: AreaAnnotation): Promise<boolean> {
+		try {
+			const blob = await this.areaPng(a);
+			if (!blob || typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) return false;
+			await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+			new Notice("penDF: image copied");
+			return true;
+		} catch (e) {
+			log.warn("copy image failed", e);
+			return false;
+		}
+	}
+
+	/** Save an area's image as an attachment (Obsidian's attachment location for this PDF). Returns the path. */
+	async saveAreaImage(a: AreaAnnotation): Promise<string | null> {
+		const s = this.session;
+		if (!s) return null;
+		const blob = await this.areaPng(a);
+		if (!blob) {
+			new Notice("penDF: could not render the image");
+			return null;
+		}
+		const name = `${s.file.basename} p${a.page} excerpt.png`;
+		const path = await this.app.fileManager.getAvailablePathForAttachment(name, s.file.path);
+		await this.app.vault.createBinary(path, await blob.arrayBuffer());
+		new Notice(`penDF: image saved to ${path}`);
+		log.info(`area image saved: ${path}`);
+		return path;
+	}
+
+	/** Small image of an area for the panel (`cssWidth` px wide), counted as a thumbnail. */
+	renderAreaThumbnail(a: AreaAnnotation, canvas: HTMLCanvasElement, cssWidth: number): { done: Promise<boolean>; cancel: () => void } {
+		const s = this.session;
+		let job: { cancel(): void } | null = null;
+		let cancelled = false;
+		const done = (async () => {
+			if (!s?.ready) return false;
+			const page = await s.opened.doc.getPage(a.page);
+			if (cancelled) return false;
+			const [x0, , x1] = quadBox(a.quad);
+			const widthPt = Math.max(1, x1 - x0);
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			const scale = (cssWidth * dpr) / ((widthPt * 96) / 72);
+			const r = renderArea(page, a.quad, { scale: Math.min(4, scale), maxPixels: 400_000, canvas, doc: this.containerEl.doc });
+			job = r;
+			this.thumbs.add(canvas);
+			const out = await r.done;
+			return !!out && !cancelled;
+		})();
+		return {
+			done,
+			cancel: () => {
+				cancelled = true;
+				job?.cancel();
+			},
+		};
 	}
 
 	/** Show or hide the margin beside the pages ("Toggle margin"). */
@@ -1607,6 +1744,7 @@ export class PenDFView extends FileView {
 		s.highlights.destroy();
 		s.notes.destroy();
 		s.ink.destroy();
+		s.area.destroy();
 		s.zoom.cancel();
 		this.inkBar?.addClass("is-hidden");
 		this.inkButton?.removeClass("is-active");

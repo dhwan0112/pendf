@@ -8,6 +8,7 @@
 //   letter.pdf           2 US Letter pages
 //   rotations.pdf        4 pages with /Rotate 0, 90, 180, 270
 //   cropbox.pdf          CropBox ≠ MediaBox (offset origin)
+//   areas.pdf            filled rectangles at known coordinates: /Rotate 0, 90, 180, 270 + a CropBox page (area excerpts)
 //   two-column.pdf       2-column body text
 //   korean-cmap.pdf      Korean text in a NON-embedded CID font (UniKS-UCS2-H) —
 //                        renders only if the CMaps are available
@@ -180,6 +181,30 @@ async function cropbox() {
 	for (let i = 0; i < 10; i++) y = paragraph(page, helv, sentence(gen, 14) + " " + sentence(gen, 9), 110, y, 380) - 8;
 	page.drawText("OUTSIDE (should be cropped)", { x: 10, y: 20, size: 14, font: helv });
 	await save(doc, "cropbox.pdf");
+}
+
+// Area excerpts (0.8.0): one filled rectangle per page at a known PDF box, with a caption inside.
+async function areas() {
+	const doc = await newDoc("Area excerpt fixture");
+	const helv = await doc.embedFont(StandardFonts.Helvetica);
+	const fill = [26, 115, 204];
+	const put = (page, box, caption) => {
+		const [x0, y0, x1, y1] = box;
+		page.drawRectangle({ x: x0, y: y0, width: x1 - x0, height: y1 - y0, color: rgb(fill[0] / 255, fill[1] / 255, fill[2] / 255) });
+		page.drawText(caption, { x: x0 + 12, y: y0 + (y1 - y0) / 2 - 5, size: 12, font: helv, color: rgb(1, 1, 1) });
+		(expected["areas.pdf"] ??= []).push({ page: doc.getPageCount(), box, color: fill, text: caption });
+	};
+	for (const r of [0, 90, 180, 270]) {
+		const page = doc.addPage(PageSizes.A4);
+		page.setRotation(degrees(r));
+		page.drawText(`Area page, /Rotate ${r}`, { x: 56, y: 780, size: 16, font: helv });
+		put(page, [150, 450, 330, 600], `Figure ${doc.getPageCount()}`);
+	}
+	const page = doc.addPage([612, 792]);
+	page.setCropBox(100, 150, 400, 550);
+	page.drawText("Area page with a CropBox [100 150 500 700]", { x: 110, y: 680, size: 12, font: helv });
+	put(page, [200, 300, 380, 420], "Figure 5");
+	await save(doc, "areas.pdf");
 }
 
 async function twoColumn() {
@@ -429,6 +454,7 @@ const FIXTURES = [
 	["letter.pdf", letter],
 	["rotations.pdf", rotations],
 	["cropbox.pdf", cropbox],
+	["areas.pdf", areas],
 	["two-column.pdf", twoColumn],
 	["korean-cmap.pdf", koreanCMap],
 	["korean-embedded.pdf", koreanEmbedded],

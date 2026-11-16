@@ -18,6 +18,7 @@ import { mergeLineRects } from "../../src/highlight/rects";
 import { PageGeometry, type ViewBox } from "../../src/geometry";
 import { pageContentRect } from "../../src/layers";
 import { ZoomController } from "../../src/zoom/controller";
+import { renderArea } from "../../src/area/render";
 
 (window as unknown as { __pendf: unknown }).__pendf = {
 	AnnotationMode,
@@ -34,6 +35,7 @@ import { ZoomController } from "../../src/zoom/controller";
 	PageGeometry,
 	pageContentRect,
 	ZoomController,
+	renderArea,
 	geometryOf(viewport: { viewBox: number[]; userUnit?: number; rotation: number }) {
 		return new PageGeometry(viewport.viewBox as ViewBox, viewport.userUnit ?? 1, viewport.rotation);
 	},

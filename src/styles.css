@@ -943,3 +943,50 @@
 	width: 28px;
 	height: 4px;
 }
+
+/* ---- 0.8.0: area excerpts (D-44) ---- */
+.pendf-root .pendf-area-fill {
+	fill-opacity: 0.18;
+}
+.pendf-root .pendf-area-outline {
+	fill: none;
+	stroke-width: 1.5px;
+	vector-effect: non-scaling-stroke;
+	stroke-dasharray: 5 3;
+}
+.pendf-root .pendf-area.is-selected .pendf-area-fill {
+	fill-opacity: 0.32;
+}
+.pendf-root.is-area-tool .pendf-container {
+	touch-action: none;
+	cursor: crosshair;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.pendf-root .pendf-area-live {
+	position: absolute;
+	left: var(--pendf-x);
+	top: var(--pendf-y);
+	width: var(--pendf-w);
+	height: var(--pendf-h);
+	border: 1.5px dashed var(--interactive-accent);
+	background: rgba(var(--interactive-accent-rgb, 120, 100, 220), 0.12);
+	pointer-events: none;
+	z-index: 30;
+}
+.pendf-panel .pendf-panel-area-thumb {
+	margin: var(--size-4-1) 0;
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	background: #fff;
+	line-height: 0;
+}
+.pendf-panel .pendf-panel-area-thumb canvas {
+	max-width: 100%;
+	height: auto;
+}
+.pendf-panel .pendf-panel-item.is-area {
+	border-left: 3px solid var(--pendf-item-color);
+	padding-left: var(--size-4-2);
+}

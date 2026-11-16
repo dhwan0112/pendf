@@ -108,6 +108,9 @@ for (const name of browsers) {
 		await page.evaluate(() => window.__tests.snapshot());
 		await page.addScriptTag({ url: "/scripts/webkit/out/engine.js" });
 		const smoke = await page.evaluate((cfg) => window.__tests.smoke(cfg), { fixtures, expected });
+		const areaRows = await page.evaluate((cfg) => window.__tests.areas(cfg), { expected });
+		(result.areas ??= {})[name] = areaRows;
+		for (const a of areaRows) if (!a.rendered || !a.insideOk || !a.aroundOk) failures.push(`${name}: area excerpt p${a.page}: rendered ${a.rendered}, inside ${a.insideOk}, around ${a.aroundOk}`);
 		const builtins = await page.evaluate(() => window.__tests.diff(["__pendf"]));
 		const inPage = await page.evaluate(() => window.__tests.errors());
 		const errors = [...problems, ...inPage];
@@ -191,6 +194,10 @@ for (const [n, r] of Object.entries(result.browsers)) {
 	console.log(`${n} ${r.version}: ${Object.keys(r.fixtures).length} fixtures, ${pages} pages rendered, worker ${r.workerMode}, text spans ${r.viewer.textLayerSpans}, search ${r.viewer.searchMatches}, errors ${r.errors.length}, built-ins +${r.builtins.added.length}/~${r.builtins.replaced.length}/-${r.builtins.removed.length}, ground-truth dxEnd ${r.groundTruth.map((g) => g.dxEnd).join(" ")}`);
 }
 if (result.webkitVsChromiumMaxQuadDiffPt !== undefined) console.log(`WebKit vs Chromium quads: max difference ${result.webkitVsChromiumMaxQuadDiffPt} pt`);
+for (const n of browsers) {
+	const rows = result.areas?.[n] ?? [];
+	console.log(`areas ${n}: ${rows.filter((a) => a.rendered && a.insideOk && a.aroundOk).length}/${rows.length} excerpts contain their reference rectangle (${rows.map((a) => a.size?.join("×")).join(", ")})`);
+}
 for (const r of result.zoom) console.log(`zoom ${r.browser} ${r.variant.padEnd(6)} dpr ${r.dpr}: one commit — ${r.single.framesWithoutCanvas}/${r.single.frames} frames without canvas, ${r.single.blackFrames} black, ${r.single.canvasesSeen} canvases; cancelled re-render (in flight: ${r.renderingWhenCancelled}) — ${r.cancelled.framesWithoutCanvas}/${r.cancelled.frames} frames without canvas, ${r.cancelled.blackFrames} black, old canvas kept ${r.cancelled.keptOldCanvas}×`);
 for (const r of result.b06) console.log(`B-06 ${r.browser} ${r.variant.padEnd(6)} core=${(r.coreFile ?? "-").padEnd(19)} pen=${path.basename(r.penFile).padEnd(20)} page1 ${r.page1?.hash}/${r.page1?.ink} font collisions ${r.fontCollisions.length}, duplicate ids ${r.duplicateIds.length}, <html> var ${JSON.stringify(r.rootVarAfterCore ?? "")}→${JSON.stringify(r.rootVarAfterPenDF)}, dxEnd ${r.groundTruth.map((g) => g.dxEnd).join(" ")}`);
 console.log(`result → ${path.relative(root, outFile)}`);

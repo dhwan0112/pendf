@@ -25,6 +25,8 @@ export interface PenDFSettings {
 	positions: Record<string, FileViewMemory>;
 	/** where the toolbar's panel button and the panel commands open the panel (0.8.0) */
 	panelLocation: "view" | "sidebar";
+	/** area excerpt images: resolution as a multiple of 100 % zoom (0.8.0) */
+	areaImageScale: number;
 	/** default side and width of a newly opened margin (0.8.0) */
 	marginSide: MarginSide;
 	marginRatio: number;
@@ -84,6 +86,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	panelLocation: "view",
 	marginSide: "right",
 	marginRatio: 0.5,
+	areaImageScale: 2,
 	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
 };
 
@@ -156,6 +159,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 					{ name: TEXT.panelLocation[0], desc: TEXT.panelLocation[1], control: { type: "dropdown", key: "panelLocation", options: { view: "In the penDF view", sidebar: "Obsidian sidebar" } } },
 					{ name: TEXT.margin[0], desc: TEXT.margin[1], control: { type: "dropdown", key: "marginSide", options: { right: "Right of the page", left: "Left of the page" } } },
 					{ name: "Margin width", desc: "Share of the page width.", control: { type: "dropdown", key: "marginRatio", options: Object.fromEntries(MARGIN_RATIOS.map((r) => [String(r), `${Math.round(r * 100)} %`])) } },
+					{ name: "Excerpt image resolution", desc: "Images of area excerpts (copy, save) at this multiple of 100 % zoom.", control: { type: "dropdown", key: "areaImageScale", options: { "1": "1×", "2": "2×", "3": "3×", "4": "4×" } } },
 				],
 			},
 			{
@@ -193,6 +197,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 		if (key === "panelLocation") return s.panelLocation;
 		if (key === "marginSide") return s.marginSide;
 		if (key === "marginRatio") return String(s.marginRatio);
+		if (key === "areaImageScale") return String(s.areaImageScale);
 		return s[key as BoolKey];
 	}
 
@@ -217,6 +222,9 @@ export class PenDFSettingTab extends PluginSettingTab {
 			s.ink = { ...s.ink, pencilAlways: Boolean(value) };
 		} else if (key === "inkInput") {
 			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
+		} else if (key === "areaImageScale") {
+			const n = Number(value);
+			s.areaImageScale = [1, 2, 3, 4].includes(n) ? n : 2;
 		} else if (key === "marginSide") {
 			s.marginSide = value === "left" ? "left" : "right";
 		} else if (key === "marginRatio") {
@@ -291,6 +299,13 @@ export class PenDFSettingTab extends PluginSettingTab {
 			.addDropdown((d) => {
 				for (const r of MARGIN_RATIOS) d.addOption(String(r), `${Math.round(r * 100)} %`);
 				d.setValue(String(s.marginRatio)).onChange((v) => set("marginRatio", v));
+			});
+		new Setting(containerEl)
+			.setName("Excerpt image resolution")
+			.setDesc("Images of area excerpts (copy, save) at this multiple of 100 % zoom.")
+			.addDropdown((d) => {
+				for (const n of [1, 2, 3, 4]) d.addOption(String(n), `${n}×`);
+				d.setValue(String(s.areaImageScale)).onChange((v) => set("areaImageScale", v));
 			});
 		new Setting(containerEl).setName(TEXT.handwriting).setHeading();
 		new Setting(containerEl)

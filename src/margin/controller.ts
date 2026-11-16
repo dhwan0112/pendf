@@ -53,6 +53,8 @@ export class MarginController {
 			} else if (a.type === "note" && a.target.kind === "point") {
 				pts = [a.target.x, a.target.y];
 				pad = NOTE_PAD;
+			} else if (a.type === "area") {
+				pts = a.quad;
 			}
 			if (!pts) continue;
 			const pv = this.host.pageView(a.page);

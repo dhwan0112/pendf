@@ -2219,6 +2219,174 @@
 				return res;
 			});
 
+			// ---- 0.8.0 area excerpts (D-44) ----
+			const areaClientRect = (v, page, box) => {
+				const s = v.debugSession;
+				const geom = s.layers.geometry(page);
+				// the same box the controller measures (pageContentRect: text layer first)
+				const div = pageView(v, page).div;
+				const pr = (div.querySelector(":scope > .textLayer") ?? div.querySelector(":scope > .canvasWrapper")).getBoundingClientRect();
+				// pdf.js rounds each page box to its canvas pixel grid, so x and y scale separately (as the controller does)
+				const kx = pr.width / geom.width;
+				const ky = pr.height / geom.height;
+				const pts = [[box[0], box[1]], [box[2], box[3]], [box[0], box[3]], [box[2], box[1]]].map(([x, y]) => geom.toView(x, y)).map(([vx, vy]) => [pr.left + vx * kx, pr.top + vy * ky]);
+				const xs = pts.map((p) => p[0]);
+				const ys = pts.map((p) => p[1]);
+				return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
+			};
+			const dragPointer = async (x0, y0, x1, y1, pointerType, id) => {
+				const fire = (type, x, y) => {
+					const target = document.elementFromPoint(x, y);
+					target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerType, pointerId: id, isPrimary: true, clientX: x, clientY: y, buttons: type === "pointerup" ? 0 : 1, button: 0 }));
+				};
+				fire("pointerdown", x0, y0);
+				for (let i = 1; i <= 6; i++) {
+					await sleep(16);
+					fire("pointermove", x0 + ((x1 - x0) * i) / 6, y0 + ((y1 - y0) * i) / 6);
+				}
+				fire("pointerup", x1, y1);
+				await sleep(250);
+			};
+			const areasOn = (v, page) => v.debugSession.store.all().filter((a) => a.type === "area" && !a.deleted && a.page === page);
+			const quadBoxOf = (q) => [Math.min(q[0], q[2], q[4], q[6]), Math.min(q[1], q[3], q[5], q[7]), Math.max(q[0], q[2], q[4], q[6]), Math.max(q[1], q[3], q[5], q[7])];
+
+			await check("area-ground-truth", async () => {
+				// drag over each known rectangle (Pencil on odd pages, finger on even): the stored quad matches
+				const res = { rows: [] };
+				const { v } = await openPenDF("areas.pdf");
+				const s = v.debugSession;
+				const made = [];
+				try {
+					v.setScale("page-width");
+					v.toggleArea(true);
+					res.toolOn = s.area.active;
+					for (const e of cfg.expected["areas.pdf"]) {
+						await goPage(v, e.page);
+						await waitIdle(v);
+						const r = areaClientRect(v, e.page, e.box);
+						const before = areasOn(v, e.page).length;
+						const kind = e.page % 2 ? "pen" : "touch";
+						await dragPointer(r.left, r.top, r.right, r.bottom, kind, 70 + e.page);
+						await waitFor(() => areasOn(v, e.page).length > before, 3000).catch(() => {});
+						const a = areasOn(v, e.page).at(-1);
+						if (a) made.push(a.id);
+						const got = a ? quadBoxOf(a.quad) : null;
+						res.rows.push({ page: e.page, pointer: kind, maxErrPt: got ? +Math.max(...got.map((x, i) => Math.abs(x - e.box[i]))).toFixed(3) : null, got: got?.map((x) => +x.toFixed(2)), scale: +s.viewer.currentScale.toFixed(4), client: [r.left, r.top, r.right, r.bottom].map((x) => +x.toFixed(2)), text: a?.text ?? null, menu: !!s.area.menuEl });
+						s.area.closeMenu();
+					}
+					// with the tool off, a finger drag scrolls instead (no area)
+					v.toggleArea(false);
+					await goPage(v, 1);
+					const r = areaClientRect(v, 1, [150, 450, 330, 600]);
+					const n0 = areasOn(v, 1).length;
+					await dragPointer(r.left - 30, r.top, r.right + 20, r.bottom, "touch", 90);
+					res.toolOffCreates = areasOn(v, 1).length - n0;
+				} finally {
+					v.toggleArea(false);
+					for (const id of made) s.store.remove(id);
+				}
+				res.ok = res.toolOn && res.rows.length === 5 && res.rows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5 && r.text === `Figure ${r.page}` && r.menu) && res.toolOffCreates === 0;
+				return res;
+			});
+
+			await check("area-image", async () => {
+				// the rendered image contains the reference rectangle (pixels), saved via the attachment location
+				const res = { pages: [] };
+				const { v } = await openPenDF("areas.pdf");
+				const s = v.debugSession;
+				const made = [];
+				const saved = [];
+				try {
+					for (const e of cfg.expected["areas.pdf"]) {
+						const pad = 8;
+						const [x0, y0, x1, y1] = [e.box[0] - pad, e.box[1] - pad, e.box[2] + pad, e.box[3] + pad];
+						const id = await s.area.create(e.page, [x0, y1, x1, y1, x0, y0, x1, y0]);
+						made.push(id);
+						const a = s.store.get(id);
+						const canvas = await v.renderAreaImage(a, 2);
+						const page = await s.opened.doc.getPage(e.page);
+						const ppp = (2 * 96) / 72;
+						const vp = page.getViewport({ scale: ppp, rotation: page.rotate });
+						const c0 = vp.convertToViewportPoint(x0, y0);
+						const c1 = vp.convertToViewportPoint(x1, y1);
+						const rr = [c0[0], c0[1], c1[0], c1[1]];
+						const ox = Math.min(rr[0], rr[2]);
+						const oy = Math.min(rr[1], rr[3]);
+						const ctx = canvas.getContext("2d");
+						const px = (x, y) => {
+							const [vx, vy] = vp.convertToViewportPoint(x, y);
+							const d = ctx.getImageData(Math.round(vx - ox), Math.round(vy - oy), 1, 1).data;
+							return [d[0], d[1], d[2]];
+						};
+						const near = (c, t, tol = 18) => c.every((v, i) => Math.abs(v - t[i]) <= tol);
+						const [bx0, by0, bx1, by1] = e.box;
+						// inside the rectangle, away from the caption (top corners and the right side)
+						const inside = [[bx0 + 5, by1 - 5], [bx1 - 5, by1 - 5], [bx1 - 5, by0 + 5], [bx1 - 5, (by0 + by1) / 2]].map(([x, y]) => px(x, y));
+						// the white paper around it, inside the image
+						const around = [[x0 + 2, y0 + 2], [x1 - 2, y1 - 2], [x0 + 2, y1 - 2], [x1 - 2, y0 + 2]].map(([x, y]) => px(x, y));
+						res.pages.push({ page: e.page, size: [canvas.width, canvas.height], expectSize: [Math.ceil(Math.abs(rr[2] - rr[0])), Math.ceil(Math.abs(rr[3] - rr[1]))], insideOk: inside.every((c) => near(c, e.color)), aroundOk: around.every((c) => near(c, [255, 255, 255])), sample: inside[0], text: a.text });
+						canvas.width = canvas.height = 0;
+					}
+					// save as an attachment (Obsidian's attachment location), then remove the file again
+					const first = s.store.get(made[0]);
+					const path = await v.saveAreaImage(first);
+					if (path) saved.push(path);
+					const f = path ? app.vault.getAbstractFileByPath(path) : null;
+					res.saved = { path, exists: !!f, bytes: f ? (await app.vault.adapter.stat(path))?.size ?? 0 : 0 };
+					res.copied = await v.copyAreaImage(first).catch(() => false);
+					// the panel lists the area with a thumbnail
+					v.panel.setState({ open: true, tab: "annotations", width: 280, prefer: "auto" });
+					await waitFor(() => [...v.panel.el.querySelectorAll(".pendf-panel-item.is-area canvas")].some((c) => c.width > 0), 8000).catch(() => {});
+					res.panel = { items: v.panel.el.querySelectorAll(".pendf-panel-item.is-area").length, thumbs: [...v.panel.el.querySelectorAll(".pendf-panel-item.is-area canvas")].filter((c) => c.width > 0).length };
+				} finally {
+					v.panel?.setState({ open: false, tab: "outline", width: 280, prefer: "auto" });
+					for (const id of made) s.store.remove(id);
+					for (const p of saved) if (await app.vault.adapter.exists(p)) await app.vault.adapter.remove(p);
+				}
+				res.ok =
+					res.pages.length === 5 &&
+					res.pages.every((p) => p.insideOk && p.aroundOk && Math.abs(p.size[0] - p.expectSize[0]) <= 1 && Math.abs(p.size[1] - p.expectSize[1]) <= 1 && p.text === `Figure ${p.page}`) &&
+					res.saved.exists && res.saved.bytes > 1000 && res.panel.items >= 5 && res.panel.thumbs >= 1;
+				return res;
+			});
+
+			await check("area-link", async () => {
+				// a link to an area opens the PDF there and flashes the area
+				const res = {};
+				const pl = P();
+				const before = pl.settings.openPdfsInPenDF;
+				const { v } = await openPenDF("areas.pdf");
+				const s = v.debugSession;
+				const e = cfg.expected["areas.pdf"][2];
+				const id = await s.area.create(e.page, [e.box[0], e.box[3], e.box[2], e.box[3], e.box[0], e.box[1], e.box[2], e.box[1]], { label: "linked figure" });
+				const notePath = FIX + "area-link-note.md";
+				try {
+					const link = v.linkTo({ page: e.page, id }, "linked figure");
+					res.link = link;
+					await goPage(v, 1);
+					pl.settings.openPdfsInPenDF = true;
+					await app.vault.create(notePath, `see ${link}\n`);
+					createdPaths.add(notePath);
+					const linktext = link.slice(2, link.indexOf("|"));
+					await app.workspace.openLinkText(linktext, notePath, false);
+					const flashed = await waitFor(() => {
+						for (const l of app.workspace.getLeavesOfType(VIEW)) {
+							const ss = l.view.debugSession;
+							const poly = ss?.layers.getLayer(e.page)?.overlay.querySelector(".pendf-flash");
+							if (poly) return { page: ss.viewer.currentPageNumber, visible: ss.layers.visiblePages() };
+						}
+						return null;
+					}, 8000).catch(() => null);
+					res.nav = flashed;
+				} finally {
+					pl.settings.openPdfsInPenDF = before;
+					s.store.remove(id);
+					if (await app.vault.adapter.exists(notePath)) await app.vault.adapter.remove(notePath);
+				}
+				res.ok = /#page=3&pendf=[0-9a-f-]+\|linked figure\]\]$/.test(res.link) && !!res.nav && res.nav.visible.includes(e.page);
+				return res;
+			});
+
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{

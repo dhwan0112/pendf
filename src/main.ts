@@ -134,6 +134,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
 		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
 		this.addCommand({ id: "toggle-margin", name: "Toggle margin", checkCallback: (c) => this.withView(c, (v) => v.toggleMargin()) });
+		this.addCommand({ id: "area-excerpt", name: "Area excerpt", checkCallback: (c) => this.withView(c, (v) => v.toggleArea()) });
 		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });
 		this.addCommand({ id: "copy-page-link", name: "Copy link to current page", checkCallback: (c) => this.withView(c, (v) => v.copyPageLink()) });
 		this.addCommand({
@@ -366,6 +367,7 @@ export default class PenDFPlugin extends Plugin {
 		if (!isZoomPreset(this.settings.zoomRendering)) this.settings.zoomRendering = DEFAULT_SETTINGS.zoomRendering;
 		if (this.settings.panelLocation !== "sidebar") this.settings.panelLocation = "view";
 		if (this.settings.marginSide !== "left") this.settings.marginSide = "right";
+		if (![1, 2, 3, 4].includes(this.settings.areaImageScale)) this.settings.areaImageScale = 2;
 		if (!(MARGIN_RATIOS as readonly number[]).includes(this.settings.marginRatio)) this.settings.marginRatio = 0.5;
 	}
 

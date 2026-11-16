@@ -92,10 +92,15 @@ must not clip or reject them.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `body` | string | Markdown |
-| `target` | object | `{ "kind": "highlight", "highlightId": "<id>" }` or `{ "kind": "point", "x": <pt>, "y": <pt> }` |
+| `target` | object | `{ "kind": "annotation", "id": "<id>" }`, `{ "kind": "highlight", "highlightId": "<id>" }` or `{ "kind": "point", "x": <pt>, "y": <pt> }` |
 
-A highlight note is drawn at the top-right corner of the highlight's first quad (its `UR` point);
-`page` is the highlight's page. A point note is drawn at `(x, y)` in PDF user space. Deleting a
+`annotation` (0.8.0) attaches the note to any annotation by id — penDF writes it for area excerpts.
+`highlight` is the older form for the same thing; penDF still writes it for notes on highlights, so
+0.7.x shows those notes, and reads both forms everywhere. 0.7.x keeps an `annotation` note it cannot
+read in `unknown` and writes it back unchanged.
+
+A note on a highlight is drawn at the top-right corner of the highlight's first quad (its `UR` point),
+a note on an area at the area's `UR` corner; `page` is that annotation's page. A point note is drawn at `(x, y)` in PDF user space. Deleting a
 highlight in penDF also tombstones its notes. A note whose highlight no longer exists (for
 example after a merge) is kept and listed in the annotations panel, but has no marker on the page.
 
@@ -124,7 +129,21 @@ Points are in PDF user space, rounded to 0.01 pt and simplified (Ramer–Douglas
 the pen, 0.3 pt for the highlighter). A single point is a dot. The pen draws with a uniform width
 (no pressure). The highlighter is drawn at 35 % opacity, blended with the page like text highlights.
 
-penDF writes coordinate arrays (`points`, `quads`) on one line each; the file is still plain JSON.
+penDF writes coordinate arrays (`points`, `quads`, `quad`) on one line each; the file is still plain JSON.
+
+### `area` (Phase 7b, 0.8.0)
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `quad` | number[8] | the excerpt, PDF user space, same order as a highlight quad (UL, UR, LL, LR as displayed) |
+| `color` | string | CSS color |
+| `text` | string | text of the page's text layer inside the area (items whose centre lies inside), `""` if none |
+| `label` | string, optional | caption |
+
+Only coordinates are stored. The image is rendered from the PDF when it is copied, saved or shown in
+the panel. penDF 0.7.x does not know this type: it keeps such entries in `unknown` and writes them
+back unchanged; 0.8.0 reads them back out of `unknown` (the usual merge rules decide if the same id
+is also in `annotations`). The schema version stays 1 (D-44).
 
 ## Links (Phase 4)
 
