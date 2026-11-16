@@ -735,3 +735,9 @@
 .pendf-root .pdfViewer.pendf-zooming {
 	will-change: transform;
 }
+
+/* 0.7.3: in dark reading mode a page without a canvas (not rendered yet, or freed) shows
+   inverted paper too — its own background is outside the canvas wrapper's invert filter */
+.pendf-root.pendf-invert {
+	--page-bg-color: #000;
+}

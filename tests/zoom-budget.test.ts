@@ -13,6 +13,13 @@ describe("canvas budget", () => {
 		// visible 4–5; total 120 MB, budget 70 MB → free 9 (dist 4), 1 (dist 3), 2 (dist 2)
 		expect(pagesOverBudget(pages, new Set([4, 5]), 70 * MB)).toEqual([9, 1, 2]);
 	});
+	it("never frees the neighbour pdf.js renders ahead (would loop), even far over budget", () => {
+		// visible 30, neighbours 29 and 31: 2 MB budget, 3 × 1.6 MB on screen and around it
+		const pages = [29, 30, 31].map((id) => ({ id, bytes: 1.6 * MB }));
+		expect(pagesOverBudget(pages, new Set([30]), 2 * MB)).toEqual([]);
+		// a page two away is still freed
+		expect(pagesOverBudget([...pages, { id: 32, bytes: 1.6 * MB }], new Set([30]), 2 * MB)).toEqual([32]);
+	});
 	it("stops when only visible pages are left", () => {
 		const pages = [3, 4].map((id) => ({ id, bytes: 50 * MB }));
 		expect(pagesOverBudget(pages, new Set([3, 4]), 10 * MB)).toEqual([]);

@@ -136,7 +136,7 @@
 			await app.plugins.disablePlugin(ID);
 			await app.plugins.loadManifests();
 			await app.plugins.enablePlugin(ID);
-			await waitFor(() => P());
+			await waitFor(() => P() && !!app.viewRegistry?.viewByType?.[VIEW]);
 		};
 		const closeOurs = () => {
 			app.workspace.iterateAllLeaves((l) => {
@@ -148,7 +148,15 @@
 		const waitText = (v, n) => waitFor(() => pageView(v, n)?.textLayer?.div?.querySelector("span"), 20000);
 		const openPenDF = async (name, state = {}) => {
 			const leaf = app.workspace.getLeaf("tab");
-			await leaf.setViewState({ type: VIEW, state: { file: FIX + name, ...state }, active: true });
+			// Right after the plugin is (re-)enabled, Obsidian may still be re-creating its views and
+			// can leave this leaf empty (D-37): open again if the leaf did not keep our view type.
+			for (let attempt = 0; attempt < 3; attempt++) {
+				await leaf.setViewState({ type: VIEW, state: { file: FIX + name, ...state }, active: true });
+				// a slow PDF may take longer than this to get a session: only an emptied leaf is retried
+				await waitFor(() => leaf.view.getViewType() !== VIEW || leaf.view.debugSession, 3000).catch(() => null);
+				if (leaf.view.getViewType() === VIEW) break;
+				await sleep(500);
+			}
 			const v = leaf.view;
 			await waitFor(() => v.debugSession && v.debugSession.ready && v.debugSession.store, 20000);
 			await waitRendered(v, v.debugSession.viewer.currentPageNumber);
@@ -358,6 +366,8 @@
 				await sleep(200);
 				closeOurs();
 				const { v: v2 } = await openPenDF("long-300.pdf");
+				// earlier checks may leave long-300.pdf remembered at another page (D-37)
+				await goPage(v2, 1);
 				const toc = await waitFor(() => {
 					const a = [...pageView(v2, 1).div.querySelectorAll(".annotationLayer a")];
 					return a.length >= 30 && a;
@@ -1705,6 +1715,121 @@
 				return res;
 			});
 
+			await check("zoom-extras", async () => {
+				// 0.7.3: what zoom-gesture does not cover — highlight ground truth after a zoom commit,
+				// the canvas budget never looping, switching the preset in settings, and the page
+				// background in dark reading mode.
+				const res = {};
+				const pl = P();
+				const settingsBefore = { zoomRendering: pl.settings.zoomRendering, invertPages: pl.settings.invertPages };
+				try {
+					// 1. ground truth after a pinch commit (rotations.pdf, every rotation)
+					{
+						const { v } = await openPenDF("rotations.pdf");
+						const s = v.debugSession;
+						s.viewer.currentScaleValue = "page-width";
+						await waitIdle(v);
+						const rows = [];
+						for (const e of cfg.expected["rotations.pdf"] ?? []) {
+							await goPage(v, e.page);
+							await waitIdle(v);
+							const c = s.viewer.container.getBoundingClientRect();
+							const x = c.left + c.width / 2;
+							const y = c.top + c.height / 2;
+							const scale0 = s.viewer.currentScale;
+							s.zoom.begin("pinch", x, y);
+							s.zoom.update(1.7, x, y);
+							await new Promise((r) => requestAnimationFrame(() => r()));
+							s.zoom.end();
+							await sleep(300);
+							await waitIdle(v);
+							const range = await waitFor(() => textRange(v, e.page, e.text));
+							selectRange(range);
+							const ids = v.highlights.createFromSelection("#ff0000");
+							const a = hlById(v, ids[0]);
+							const bb = quadBBox(a.quads);
+							rows.push({ page: e.page, zoomed: +(s.viewer.currentScale / scale0).toFixed(3), scale: +s.viewer.currentScale.toFixed(3), quads: a.quads.length, dxStart: +(bb.minX - e.x).toFixed(2), dxEnd: +(bb.maxX - (e.x + e.width)).toFixed(2) });
+							s.store.remove(a.id);
+							s.viewer.currentScaleValue = "page-width";
+							await waitIdle(v);
+						}
+						res.groundTruthAfterZoom = rows;
+					}
+					// 2. a budget far below what is on screen must not make pdf.js render in a loop
+					{
+						const { v } = await openPenDF("long-300.pdf");
+						const cls = v.constructor;
+						cls.renderOverride = { budgetMB: 2 };
+						try {
+							await v.onLoadFile(v.file);
+							await waitFor(() => v.debugSession?.ready, 20000);
+							const s = v.debugSession;
+							s.viewer.currentScaleValue = "page-width";
+							await goPage(v, 20);
+							await waitIdle(v);
+							let n = 0;
+							const on = (e) => {
+								if (!e.cssTransform) n++;
+							};
+							s.eventBus.on("pagerendered", on);
+							for (let p = 21; p <= 26; p++) {
+								s.viewer.currentPageNumber = p;
+								await sleep(150);
+							}
+							await sleep(1500);
+							const afterScroll = n;
+							await sleep(3000);
+							s.eventBus.off("pagerendered", on);
+							res.budget = { budgetMB: s.render.budgetMB, rendersWhileScrolling: afterScroll, rendersIn3sIdle: n - afterScroll, canvases: v.containerEl.querySelectorAll("canvas").length };
+						} finally {
+							cls.renderOverride = null;
+							await v.onLoadFile(v.file);
+							await waitFor(() => v.debugSession?.ready, 20000);
+						}
+					}
+					// 3. switching the preset in settings reopens the PDF with it
+					{
+						const { v } = await openPenDF("a4.pdf");
+						pl.settings.zoomRendering = "low-memory";
+						await pl.saveSettings();
+						await waitFor(() => v.debugSession?.ready && v.debugSession.render.preset === "low-memory", 20000);
+						res.presetSwitch = { preset: v.debugSession.render.preset, maxCanvasPixels: v.debugSession.viewer.maxCanvasPixels, budgetMB: v.debugSession.render.budgetMB };
+						pl.settings.zoomRendering = "default";
+						await pl.saveSettings();
+						await waitFor(() => v.debugSession?.ready && v.debugSession.render.preset === "default", 20000);
+						res.presetSwitch.back = { preset: v.debugSession.render.preset, maxCanvasPixels: v.debugSession.viewer.maxCanvasPixels };
+					}
+					// 4. dark reading mode: a page without canvas shows inverted (dark) paper, not white
+					{
+						const { v } = await openPenDF("long-300.pdf");
+						pl.settings.invertPages = true;
+						await pl.saveSettings();
+						const s = v.debugSession;
+						await goPage(v, 5);
+						await waitIdle(v);
+						const far = s.viewer.getPageView(250).div;
+						const near = s.viewer.getPageView(4).div;
+						res.invert = {
+							farHasCanvas: !!far.querySelector("canvas"),
+							farPageBg: getComputedStyle(far).backgroundColor,
+							nearWrapperBg: getComputedStyle(near.querySelector(".canvasWrapper")).backgroundColor,
+							nearWrapperFilter: getComputedStyle(near.querySelector(".canvasWrapper")).filter,
+						};
+					}
+				} finally {
+					pl.settings.zoomRendering = settingsBefore.zoomRendering;
+					pl.settings.invertPages = settingsBefore.invertPages;
+					await pl.saveSettings();
+				}
+				const gt = res.groundTruthAfterZoom ?? [];
+				res.ok =
+					gt.length > 0 && gt.every((r) => r.quads === 1 && Math.abs(r.dxStart) < 2.5 && Math.abs(r.dxEnd) < 3 && Math.abs(r.zoomed - 1.7) < 0.02) &&
+					res.budget?.rendersIn3sIdle === 0 &&
+					res.presetSwitch?.preset === "low-memory" && res.presetSwitch.maxCanvasPixels === 2 ** 23 && res.presetSwitch.back.preset === "default" && res.presetSwitch.back.maxCanvasPixels === 2 ** 25 &&
+					res.invert && !res.invert.farHasCanvas && res.invert.farPageBg === "rgb(0, 0, 0)" && res.invert.nearWrapperBg === "rgb(255, 255, 255)" && /invert/.test(res.invert.nearWrapperFilter);
+				return res;
+			});
+
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{
@@ -1797,8 +1922,17 @@
 				};
 				try {
 					await app.plugins.enablePlugin(ID);
-					await waitFor(() => P());
-					const { v } = await openPenDF("a4.pdf");
+					await waitFor(() => P() && !!app.viewRegistry?.viewByType?.[VIEW]);
+					let v;
+					try {
+						({ v } = await openPenDF("a4.pdf"));
+					} catch (e) {
+						// keep the evidence: the plugin's log is gone once the check reloads it
+						const lv = app.workspace.getLeavesOfType(VIEW).map((l) => ({ file: l.view.file?.path ?? null, hasSession: !!l.view.debugSession, ready: !!l.view.debugSession?.ready, store: !!l.view.debugSession?.store, text: (l.view.containerEl.querySelector(".pendf-root")?.innerText ?? "").slice(0, 120), banner: l.view.containerEl.querySelector(".pendf-banner")?.innerText ?? null }));
+						const all = [];
+						app.workspace.iterateAllLeaves((l) => all.push(l.view.getViewType() + ":" + (l.getViewState().state?.file ?? "")));
+						return { ok: false, error: String(e).slice(0, 200), leaves: lv, all, registered: !!app.viewRegistry?.viewByType?.[VIEW], enabled: app.plugins.enabledPlugins.has(ID), log: (P()?.getLogText?.() ?? "").split(String.fromCharCode(10)).slice(-30) };
+					}
 					await waitText(v, v.debugSession.viewer.currentPageNumber);
 					const log = P().getLogText();
 					return {
@@ -1813,7 +1947,7 @@
 					await app.plugins.disablePlugin(ID);
 					window.Worker = TrackedWorker;
 					await app.plugins.enablePlugin(ID);
-					await waitFor(() => P());
+					await waitFor(() => P() && !!app.viewRegistry?.viewByType?.[VIEW]);
 				}
 			});
 

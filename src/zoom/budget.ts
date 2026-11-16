@@ -35,8 +35,13 @@ export function releasePage(pv: PageViewLike): boolean {
 }
 
 /**
- * Pages to free so the total fits `budgetBytes`: never a visible page, farthest
- * from the visible range first. `pages` holds every page that has canvases.
+ * Pages to free so the total fits `budgetBytes`, farthest from the visible range
+ * first. Never a visible page, and never the page right before or after the
+ * visible range: pdf.js renders that one ahead of time once the visible pages
+ * are done, so freeing it would make pdf.js render it again at once — an
+ * endless loop whenever the budget is smaller than what is on screen (0.7.3).
+ * The budget can therefore be exceeded by what is visible plus one page.
+ * `pages` holds every page that has canvases.
  */
 export function pagesOverBudget(pages: { id: number; bytes: number }[], visible: Set<number>, budgetBytes: number): number[] {
 	let total = pages.reduce((a, p) => a + p.bytes, 0);
@@ -46,7 +51,7 @@ export function pagesOverBudget(pages: { id: number; bytes: number }[], visible:
 	const hi = vis.length ? Math.max(...vis) : 1;
 	const dist = (id: number) => (id < lo ? lo - id : id > hi ? id - hi : 0);
 	const out: number[] = [];
-	for (const p of [...pages].filter((p) => !visible.has(p.id)).sort((a, b) => dist(b.id) - dist(a.id))) {
+	for (const p of [...pages].filter((p) => !visible.has(p.id) && dist(p.id) > 1).sort((a, b) => dist(b.id) - dist(a.id))) {
 		if (total <= budgetBytes) break;
 		out.push(p.id);
 		total -= p.bytes;
