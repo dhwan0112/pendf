@@ -990,3 +990,21 @@
 	border-left: 3px solid var(--pendf-item-color);
 	padding-left: var(--size-4-2);
 }
+
+/* ---- 0.8.0: vault annotation search ---- */
+.pendf-index-result .pendf-index-text {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-4-2);
+}
+.pendf-index-result .pendf-index-swatch {
+	flex: 0 0 auto;
+	width: 10px;
+	height: 10px;
+	border-radius: 2px;
+	background: var(--pendf-swatch);
+}
+.pendf-index-result .pendf-index-meta {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}

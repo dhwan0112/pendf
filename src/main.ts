@@ -14,6 +14,10 @@ import { LinkRecorder } from "./links/recorder";
 import { aliasFrom } from "./links/format";
 import { isZoomPreset } from "./zoom/presets";
 import { MARGIN_RATIOS } from "./margin/model";
+import { VaultAnnotationIndex } from "./index/service";
+import { AnnotationSearchModal } from "./index/SearchModal";
+import { buildSubpath } from "./links/format";
+import type { SearchResult } from "./index/model";
 
 const log = logger("plugin");
 
@@ -22,6 +26,8 @@ export default class PenDFPlugin extends Plugin {
 	engine: EngineReport = { ok: true, missing: [], ponyfilled: {} };
 	private stores = new Set<SidecarStore>();
 	private saveSettingsTimer: number | null = null;
+	/** vault-wide annotation index (0.8.0) */
+	annotationIndex: VaultAnnotationIndex | null = null;
 	/** Leaves the user deliberately opened in Obsidian's PDF viewer, with that file's path. */
 	private keepCore = new WeakMap<WorkspaceLeaf, string>();
 	private takingOver = new WeakSet<WorkspaceLeaf>();
@@ -162,6 +168,22 @@ export default class PenDFPlugin extends Plugin {
 			},
 		});
 
+		// Vault-wide annotation index (Phase 8 groundwork): lazy build, then kept current by vault events.
+		this.annotationIndex = new VaultAnnotationIndex(this.app, this.manifest.dir ?? `${this.app.vault.configDir}/plugins/${this.manifest.id}`);
+		const index = this.annotationIndex;
+		this.registerEvent(this.app.vault.on("create", (f) => index.onCreateOrModify(f)));
+		this.registerEvent(this.app.vault.on("modify", (f) => index.onCreateOrModify(f)));
+		this.registerEvent(this.app.vault.on("delete", (f) => index.onDelete(f)));
+		this.registerEvent(this.app.vault.on("rename", (f, old) => index.onRename(f, old)));
+		this.app.workspace.onLayoutReady(() => {
+			window.setTimeout(() => void index.ensure(), 4000);
+		});
+		this.addCommand({
+			id: "search-vault-annotations",
+			name: "Search annotations in vault",
+			callback: () => new AnnotationSearchModal(this.app, (q) => index.search(q), () => this.settings.colors, (r) => void this.openAnnotation(r)).open(),
+		});
+
 		// Keep sidecars next to their PDFs.
 		const fs = adapterFs(this.app.vault.adapter);
 		this.registerEvent(
@@ -188,6 +210,7 @@ export default class PenDFPlugin extends Plugin {
 
 	onunload(): void {
 		// Obsidian does not await onunload; the work is async, so run it detached.
+		void this.annotationIndex?.dispose();
 		void this.shutdown();
 	}
 
@@ -218,6 +241,19 @@ export default class PenDFPlugin extends Plugin {
 		if (!v) return false;
 		if (!checking) fn(v);
 		return true;
+	}
+
+	/** Open penDF at an indexed annotation (its PDF's current path). */
+	async openAnnotation(r: Pick<SearchResult, "paths" | "path" | "page" | "id">): Promise<void> {
+		const path = r.path || r.paths[0];
+		const f = path ? this.app.vault.getAbstractFileByPath(path) : null;
+		if (!(f instanceof TFile)) {
+			new Notice(`penDF: the PDF of this annotation is not in the vault (${path ?? "no path"})`);
+			return;
+		}
+		const leaf = this.app.workspace.getLeaf("tab");
+		await leaf.setViewState({ type: VIEW_TYPE, state: { file: f.path }, active: true });
+		leaf.setEphemeralState({ subpath: buildSubpath({ page: r.page, id: r.id }) });
 	}
 
 	async openPdf(file: TFile, newTab = true): Promise<void> {

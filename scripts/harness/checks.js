@@ -2387,6 +2387,131 @@
 				return res;
 			});
 
+			// ---- 0.8.0 vault annotation index (D-45) ----
+			await check("index-rename", async () => {
+				// { fp, id } resolves to the PDF's current path, also after a rename; copies; search command opens it
+				const res = {};
+				const index = P().annotationIndex;
+				await index.ensure();
+				const { v } = await openPenDF("a4.pdf");
+				const s = v.debugSession;
+				const fp = s.opened.fingerprint;
+				const id = await s.area.create(1, [100, 700, 300, 700, 100, 600, 300, 600], { label: "index probe area" });
+				s.area.closeMenu();
+				const copyPdf = FIX + "a4-indexcopy.pdf";
+				let renamedTo = null;
+				try {
+					await s.store.flush();
+					const resolved = await waitFor(async () => {
+						const r = await index.resolve({ fp, id });
+						return r && r.paths.includes(FIX + "a4.pdf") ? r : null;
+					}, 8000).catch(() => null);
+					res.afterSave = resolved ? { paths: resolved.paths, type: resolved.type, text: resolved.text } : null;
+					// rename the PDF (penDF moves its sidecar): the reference follows
+					closeOurs();
+					await sleep(300);
+					const f = app.vault.getAbstractFileByPath(FIX + "a4.pdf");
+					renamedTo = FIX + "a4-idx-renamed.pdf";
+					await app.fileManager.renameFile(f, renamedTo);
+					const moved = await waitFor(async () => {
+						const r = await index.resolve({ fp, id });
+						return r && r.paths.includes(renamedTo) && !r.paths.includes(FIX + "a4.pdf") ? r : null;
+					}, 8000).catch(() => null);
+					res.afterRename = moved ? moved.paths : null;
+					await app.fileManager.renameFile(app.vault.getAbstractFileByPath(renamedTo), FIX + "a4.pdf");
+					renamedTo = null;
+					await waitFor(async () => (await index.resolve({ fp, id }))?.paths.includes(FIX + "a4.pdf"), 8000).catch(() => {});
+					// a copy of the PDF with its sidecar: one fingerprint, two paths
+					await app.vault.adapter.copy(FIX + "a4.pdf", copyPdf);
+					await app.vault.adapter.copy(FIX + "a4.pdf.pendf.json", copyPdf + ".pendf.json");
+					createdPaths.add(copyPdf);
+					createdPaths.add(copyPdf + ".pendf.json");
+					const copies = await waitFor(async () => {
+						const r = await index.resolve({ fp, id });
+						return r && r.paths.length >= 2 ? r.paths : null;
+					}, 8000).catch(() => null);
+					res.copies = copies;
+					// the search command: query → result → penDF opens at the annotation
+					app.commands.executeCommandById("pendf:search-vault-annotations");
+					const input = await waitFor(() => document.querySelector(".prompt .prompt-input"), 3000);
+					input.value = "index probe type:area";
+					input.dispatchEvent(new Event("input", { bubbles: true }));
+					const first = await waitFor(() => document.querySelector(".prompt .pendf-index-result"), 5000).catch(() => null);
+					res.modal = { results: document.querySelectorAll(".prompt .pendf-index-result").length, firstText: first?.textContent?.slice(0, 80) ?? null };
+					first?.click();
+					const opened = await waitFor(() => {
+						for (const l of app.workspace.getLeavesOfType(VIEW)) {
+							const ss = l.view.debugSession;
+							if (ss?.layers.getLayer(1)?.overlay.querySelector(".pendf-flash")) return l.view.file?.path;
+						}
+						return null;
+					}, 8000).catch(() => null);
+					res.modal.openedAt = opened;
+					document.querySelector(".prompt")?.closest(".modal-container")?.querySelector(".modal-close-button")?.click();
+				} finally {
+					if (renamedTo && app.vault.getAbstractFileByPath(renamedTo)) await app.fileManager.renameFile(app.vault.getAbstractFileByPath(renamedTo), FIX + "a4.pdf");
+					// remove the probe area (the tab may be closed by now)
+					const { v: v2 } = await openPenDF("a4.pdf");
+					v2.debugSession.store.remove(id);
+					await v2.debugSession.store.flush();
+					for (const p of [copyPdf, copyPdf + ".pendf.json"]) if (await app.vault.adapter.exists(p)) await app.vault.adapter.remove(p);
+				}
+				res.ok =
+					!!res.afterSave && res.afterSave.type === "area" && res.afterSave.text.startsWith("index probe area") &&
+					Array.isArray(res.afterRename) && res.afterRename.includes(FIX + "a4-idx-renamed.pdf") &&
+					Array.isArray(res.copies) && res.copies.includes(copyPdf) &&
+					res.modal.results >= 1 && res.modal.openedAt === FIX + "a4.pdf";
+				return res;
+			});
+
+			await check("index-perf", async () => {
+				// 500 synthetic sidecars, 50,000 annotations, in the real vault: build, longest main-thread slice,
+				// memory, incremental update; then removed again
+				const res = {};
+				const index = P().annotationIndex;
+				const dir = FIX + "index-perf";
+				const ad = app.vault.adapter;
+				const mem = () => performance.memory?.usedJSHeapSize ?? 0;
+				try {
+					await index.ensure();
+					if (!(await ad.exists(dir))) await app.vault.createFolder(dir);
+					const t0 = performance.now();
+					for (let f = 0; f < 500; f++) {
+						const anns = [];
+						for (let i = 0; i < 100; i++) anns.push({ id: `perf-${f}-${i}`, type: "highlight", page: (i % 40) + 1, createdAt: 1, updatedAt: f * 100 + i, deleted: false, quads: [[72, 700, 300, 700, 72, 688, 300, 688]], color: i % 2 ? "#ffd400" : "#2ea8e5", text: `perf sentence ${f} ${i} on topic ${i % 17}` });
+						await app.vault.create(`${dir}/doc${f}.pdf.pendf.json`, JSON.stringify({ schemaVersion: 1, pdfFingerprint: `perf-fp-${f}`, annotations: anns }));
+					}
+					res.writeMs = Math.round(performance.now() - t0);
+					await waitFor(() => index.pendingCount === 0, 30000).catch(() => {});
+					await sleep(500);
+					const heap0 = mem();
+					const stats = await index.rebuild(false);
+					res.build = stats;
+					res.heapDeltaMB = heap0 ? +((mem() - heap0) / 1048576).toFixed(1) : null;
+					res.total = index.stats;
+					// incremental: one sidecar changes → reflected
+					const u0 = performance.now();
+					const anns = [{ id: "perf-3-7", type: "highlight", page: 1, createdAt: 1, updatedAt: 9e12, deleted: false, quads: [[72, 700, 300, 700, 72, 688, 300, 688]], color: "#ffd400", text: "updated incrementally" }];
+					await ad.write(`${dir}/doc3.pdf.pendf.json`, JSON.stringify({ schemaVersion: 1, pdfFingerprint: "perf-fp-3", annotations: anns }));
+					const seen = await waitFor(async () => (await index.resolve({ fp: "perf-fp-3", id: "perf-3-7" }))?.text === "updated incrementally", 10000).catch(() => false);
+					res.incremental = { reflected: !!seen, ms: Math.round(performance.now() - u0), includesDebounceMs: 300 };
+					const q0 = performance.now();
+					res.searchHits = (await index.search({ text: "topic 5", colors: ["#ffd400"] })).length;
+					res.searchMs = +(performance.now() - q0).toFixed(1);
+					// warm start from the cache: nothing re-read
+					await index.save();
+					const warm = await index.rebuild(true);
+					res.warm = warm;
+				} finally {
+					if (await ad.exists(dir)) await ad.rmdir(dir, true);
+					await sleep(300);
+					await index.rebuild(false);
+					res.after = index.stats;
+				}
+				res.ok = res.total?.annotations >= 50000 && res.build?.maxSliceMs < 100 && res.incremental.reflected && res.warm?.read === 0 && !res.after.annotations.toString().startsWith("5");
+				return res;
+			});
+
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{
