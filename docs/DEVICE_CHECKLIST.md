@@ -135,8 +135,8 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | --- | --- | --- | --- |
 | 7-1 | `long-300.pdf`를 열고 5쪽쯤에서 천천히, 빠르게, 중간에 멈췄다가 계속하는 핀치(50%↔300%)를 각각 몇 번 한다. **다른 기기로 240fps 슬로모션 촬영**(없으면 iPad 화면 기록) | 손가락이 움직이는 동안 검은·빈 프레임이 없다. 손을 뗀 뒤 흐림→선명 교체가 한 번. 손가락 사이에 있던 글자가 손가락 사이에 남는다 | `lastZoom`의 `scale changes during`이 0이 아니면 제스처가 합성 경로를 타지 않음(로그). 검은 프레임이면 7-3 |
 | 7-2 | 7-1의 각 핀치 직후 명령 **penDF: Export last zoom timeline to vault** → 볼트 루트의 `pendf-zoom-*.json`을 가져온다 | `frames` 간격이 대부분 16.7 ms(60 Hz) 또는 8.3 ms(ProMotion), `scaleChangesDuringGesture` 0, `layerDetachDuringGesture` 0, `blank` 0, `anchorErrorPx` ≤ 2 | `memPeakMB`, `canvasesCreated`, `renders`(쪽별 다시 그림)가 원인 판정 자료 |
-| 7-3 | 설정 → penDF → Diagnostics → **Zoom rendering**을 *Default* → *Memory saver* → *No detail canvas* → *pdf.js defaults*로 바꿔 가며 7-1·7-2를 반복한다(바꾸면 열린 PDF가 다시 열린다) | 프리셋마다 검은 프레임 유무, `memPeakMB`, 선명해지기까지 걸린 시간을 적는다 | 이 비교로 기본 프리셋을 확정한다(현재 *Default*는 잠정, D-39) |
-| 7-4 | **앱 종료 확인:** *Default*로 `long-300.pdf`를 최대(1000%)까지 확대하고 1분 동안 빠르게 스크롤·축소·확대를 반복한다 | Obsidian이 꺼지거나 다시 시작하지 않는다. HUD `canvasMB`가 대략 160 이하에서 오르내린다 | 꺼지면 *Memory saver*로 다시 해 보고, 다시 켠 뒤 **Export log**와 7-2 파일을 가져온다 |
+| 7-3 | 설정 → penDF → Diagnostics → **Zoom rendering**을 *Default* → *Memory saver* → *No detail canvas* → *pdf.js defaults*로 바꿔 가며 7-1·7-2를 반복한다(바꾸면 열린 PDF가 다시 열린다) | 프리셋마다 검은 프레임 유무, `memPeakMB`, 선명해지기까지 걸린 시간, 쪽 폭 맞춤에서 글자가 흐린지(가로 화면 포함)를 적는다 | 이 비교로 기본 프리셋을 확정한다(현재 *Default*는 잠정, D-39). 0.7.1의 상한 2^23과 같은 프리셋은 없어 "iOS 메모리 한도(A)가 원인이었나"를 프리셋 비교만으로 가릴 수는 없다. 대신 7-2의 `memPeakMB`와 검은 프레임의 관계를 본다 |
+| 7-4 | **앱 종료 확인:** *Default*로 `long-300.pdf`를 최대(1000%)까지 확대하고 1분 동안 빠르게 스크롤·축소·확대를 반복한다. 멈춘 뒤 HUD의 `rendering`·`rendered`를 10초 지켜본다 | Obsidian이 꺼지거나 다시 시작하지 않는다. HUD `canvasMB`가 대략 160 이하(화면 + 한 쪽만큼은 넘을 수 있음)에서 오르내린다. 멈춘 뒤에는 렌더가 멈춘다 | 꺼지면 *Memory saver*로 다시 해 보고, 다시 켠 뒤 **Export log**와 7-2 파일을 가져온다 |
 | 7-5 | 두 손가락을 벌리지 않고 같이 움직인다(두 손가락 팬) | 화면이 손가락을 따라가고, 떼면 그 자리로 스크롤된다 | `onPanning` |
 | 7-6 | 필기 중 손바닥을 댄다, Pencil로 쓰는 중에 다른 손가락을 댄다 | 확대·축소되지 않는다 | `isPinchingDisabled`, 제스처 취소 |
 | 7-7 | **Invert page colors**를 켜고 7-1을 반복한다 | 흰 번쩍임도 없다(아직 안 그려진 페이지는 반전된 종이색) | `.canvasWrapper`의 종이 배경 |

@@ -4,6 +4,17 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
+## 0.7.3 — unreleased (on main, not tagged: full harness run incomplete, see docs/REPORT.md)
+
+- **Fix (0.7.2):** with a canvas budget smaller than what is on screen, the page pdf.js renders ahead
+  of the visible ones was freed and rendered again in an endless loop (likely on an iPad with
+  *Memory saver*). The budget no longer frees the pages right before and after the visible range (D-39).
+- **Fix:** in dark reading mode, pages without a canvas yet showed white paper; they now show inverted
+  (dark) paper like rendered pages.
+- Harness: new check `zoom-extras` — highlight ground truth after a zoom commit (all four rotations),
+  no render loop with a 2 MB budget, switching the preset in settings, page background in dark mode.
+  Unit tests for layers during a gesture (frozen, restored after a pdf.js reset).
+
 ## 0.7.2 — 2026-11-16
 
 - **Pinch zoom without re-rendering:** while two fingers (or a trackpad pinch) move, the pages are only

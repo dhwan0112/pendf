@@ -1,0 +1,511 @@
+{
+ "at": "2026-11-16T15:14:24.214Z",
+ "vault": "pendf-testvault",
+ "version": "0.7.3 (untagged)",
+ "complete": false,
+ "note": "run stopped by Claude Code during batch 4 because the machine ran low on memory; batch 4 pass/fail read from Obsidian afterwards; batches 5-6 not run in this pass (zoom-gesture, zoom-extras, fallback-main-thread were run on their own before, see REPORT)",
+ "checks": {
+  "fixtures-render": {
+   "ok": true,
+   "out": {
+    "a4.pdf": {
+     "pages": 3,
+     "chars": 2505,
+     "sample": "A4 fixture — page 1Whose spectra electro"
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "chars": 1965,
+     "sample": "US Letter — page 1Quick at peaks seven f"
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "chars": 1368,
+     "sample": "/Rotate 0This line is near the top-left "
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "chars": 1621,
+     "sample": "Inside the CropBox [100 150 500 700]Wiza"
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "chars": 3378,
+     "sample": "Two-column layout — page 1[1.1.1] A with"
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "chars": 136,
+     "sample": "1-1. 한국어 CMap 테스트 문서입니다.1-2. 이 글꼴은 PDF에 "
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "chars": 913,
+     "sample": "한국어 임베디드 글꼴 — 1쪽물리화학은 분자의 구조와 에너지, 그리고 반"
+    },
+    "links.pdf": {
+     "pages": 3,
+     "chars": 75,
+     "sample": "Links fixture — page 1Go to page 2Go to "
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "chars": 592,
+     "sample": "300-page fixture — contentsChapter 1 … p"
+    }
+   }
+  },
+  "search": {
+   "ok": true,
+   "first": "1 / 24",
+   "second": "2 / 24",
+   "highlighted": 17,
+   "none": "No matches"
+  },
+  "links": {
+   "ok": true,
+   "jumped": 2,
+   "external": [
+    "https://example.com/"
+   ],
+   "tocJump": 92
+  },
+  "open-by-default": {
+   "ok": true,
+   "plainOpen": "pendf-view",
+   "plainOpenCounts": {
+    "takeovers": 2,
+    "loads": 1
+   },
+   "linkPage": 1,
+   "keptCore": "pdf",
+   "offType": "pdf"
+  },
+  "state-restore": {
+   "ok": true,
+   "savedState": {
+    "page": 3,
+    "scale": "1.5"
+   },
+   "restored": {
+    "page": 3,
+    "scale": 1.5
+   },
+   "remembered": {
+    "page": 3,
+    "scale": 1.5
+   }
+  },
+  "coexistence-core-first": {
+   "ok": true,
+   "coreVersion": "5.3.34",
+   "ourVersion": "6.5.438",
+   "sameLib": true,
+   "sameVersion": true,
+   "pdfjsWorkerUnchanged": true,
+   "pdfjsViewerBefore": "object",
+   "coreCanvasesBefore": 2,
+   "coreCanvasesAfter": 2,
+   "pendfCanvases": 3
+  },
+  "coexistence-pendf-first": {
+   "ok": true,
+   "diag": {
+    "cur": 1,
+    "scale": 0.9,
+    "states": [
+     3,
+     3
+    ],
+    "canvases": 3,
+    "size": [
+     328,
+     671
+    ],
+    "visible": true
+   },
+   "coreVersion": "5.3.34",
+   "libUntouchedByUs": true,
+   "coreCanvases": 2,
+   "pendfStillRenders": true
+  },
+  "css-inward": {
+   "ok": true,
+   "pageBorder": "9px solid",
+   "boxSizing": {
+    "page": "content-box",
+    "textLayer": "content-box",
+    "span": "content-box",
+    "canvasWrapper": "content-box",
+    "annotationLayer": "content-box"
+   },
+   "sizes": {
+    "text": [
+     628,
+     888
+    ],
+    "canvas": [
+     628,
+     888
+    ],
+    "page": [
+     646,
+     906
+    ]
+   },
+   "aligned": true,
+   "spanTransform": "matrix(1.06661, 0, 0, 1, 0, 0)",
+   "foreign": {
+    "textLayer": [
+     ".textLayer  {position: absolute; text-align: initial; inset: 0px; overflow: clip; opacity: 1; line-heig}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "span": [
+     ".textLayer span, .textLayer br  {color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: }  @app://obsidian.md/app.css",
+     ".textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent)  {z-index: 1;}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "body, [dir=\"ltr\"]  {--direction: 1; --inset-start: left; --inset-end: right; --safe-area-inline-start: var(--s}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "annotationLayer": [
+     ".annotationLayer  {--csstools-color-scheme--dark: ; color-scheme: light only; --annotation-unfocused-field-ba}  @app://obsidian.md/app.css",
+     ".annotationLayer  {--input-focus-border-color: CanvasText; --input-unfocused-border-color: ActiveText; --inpu}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "page": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .page  {--user-unit: 1; --total-scale-factor: calc(var(--scale-factor) * var(--user-unit)); --scal}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "canvasWrapper": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .canvasWrapper  {overflow: hidden; width: 100%; height: 100%;}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ]
+   }
+  },
+  "highlight-ground-truth": {
+   "ok": true,
+   "out": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.13,
+     "topAboveBaseline": 1.13,
+     "bottomBelowBaseline": 0.32,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.86,
+      0.86,
+      0.95,
+      0.95
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.01,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 1.02,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.41,
+     "ok": true,
+     "ious": [
+      1,
+      0.97,
+      0.97,
+      0.94,
+      0.94
+     ]
+    }
+   ]
+  },
+  "shared-namespace": {
+   "ok": true,
+   "coreFonts": [
+    "g_d25_sf2",
+    "g_d25_sf4",
+    "g_d25_sf6"
+   ],
+   "penFonts": [
+    "g_pendf_d5_sf2",
+    "g_pendf_d5_sf4"
+   ],
+   "collisions": [],
+   "duplicateIds": [],
+   "penPrefixed": true,
+   "htmlVarAfterCore": "",
+   "htmlVarAfterPenDF": ""
+  },
+  "ground-truth-after-core": {
+   "ok": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-after-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-same-pdf-embed": {
+   "ok": false,
+   "error": "TypeError: Cannot read properties of undefined (reading 'quads')\n    at groundTruthRows (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:201:28)\n    at async eval (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:652:15)\n    at async check (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:296:16)\n    at async run (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:649:4)"
+  },
+  "highlight-multiline-columns": {
+   "ok": true,
+   "lines": 4,
+   "inLeftColumn": true,
+   "crossColumnQuads": 4,
+   "noBridge": true,
+   "text": "[1.1.1] A with through positions whose fox brown precision t"
+  },
+  "highlight-korean": {
+   "ok": true,
+   "res": {
+    "korean-embedded.pdf": {
+     "text": "상호작용을 통해 분자의 성질을 밝혀낸다. 이 문단은 여",
+     "quads": 1,
+     "iou": 1
+    },
+    "korean-cmap.pdf": {
+     "text": "문서입니다.",
+     "quads": 1,
+     "iou": 1
+    }
+   }
+  },
+  "highlight-cross-page": {
+   "ok": true,
+   "pages": [
+    1,
+    2
+   ],
+   "groups": [
+    "82db9815-520e-49be-825f-0da995f3187c"
+   ]
+  },
+  "smoke-ui": {
+   "ok": true,
+   "engine": {
+    "ok": true,
+    "missing": [],
+    "ponyfilled": {
+     "Map#getOrInsertComputed": false,
+     "Math.sumPrecise": true,
+     "Uint8Array#toBase64 / fromBase64 / toHex": true,
+     "Promise.try": true,
+     "RegExp.escape": true,
+     "URL.parse": true
+    }
+   },
+   "errorBanner": false,
+   "hud": "worker: web-worker | rendering: 1 | rendered: 2 | canvases: 2",
+   "hudGone": true,
+   "commands": {
+    "find": true,
+    "zoom-in": true,
+    "zoom-out": true,
+    "fit-width": true,
+    "undo": true,
+    "redo": true,
+    "highlight-selection": true,
+    "export-log": true,
+    "open-current-pdf": true,
+    "open-pdf": true,
+    "open-pen-probe": true
+   },
+   "searchOpened": true,
+   "highlightByCommand": true,
+   "logExported": true,
+   "logHasEngine": true,
+   "openCurrentWorked": true,
+   "modalShown": true,
+   "probeCommandHidden": true,
+   "probe": {
+    "penEvents": 9,
+    "fractional": 1,
+    "coalesced": true
+   },
+   "probeExported": true,
+   "fileMenu": true,
+   "fileMenuOpens": true,
+   "noMenuForMarkdown": true,
+   "settingsItems": 17
+  },
+  "rename-while-open": {
+   "ok": true,
+   "both": true,
+   "oldExists": false,
+   "viewFile": "pendf-fixtures/cropbox.pdf"
+  },
+  "highlight-palette": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  },
+  "highlight-menu-undo": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  },
+  "notes": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  },
+  "pdf-links": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  },
+  "bookmarks": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  },
+  "ink": {
+   "ok": true,
+   "detail": "pass/fail only (runner stopped before saving)"
+  }
+ },
+ "summary": "23/24 of 33"
+}
