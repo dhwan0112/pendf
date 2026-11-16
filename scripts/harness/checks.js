@@ -48,7 +48,7 @@
 		class TrackedWorker extends orig.Worker {
 			constructor(url, opts) {
 				super(url, opts);
-				const rec = { url: String(url), name: opts?.name ?? null, terminated: false };
+				const rec = { url: String(url), name: opts?.name ?? null, terminated: false, at: Math.round(performance.now()), step: window.__pendfH?.step ?? null, stack: (new Error().stack ?? "").split(String.fromCharCode(10)).slice(2, 7).map((l) => l.trim().slice(0, 120)) };
 				workers.push(rec);
 				const t = this.terminate.bind(this);
 				this.terminate = () => {
@@ -150,12 +150,16 @@
 			const leaf = app.workspace.getLeaf("tab");
 			// Right after the plugin is (re-)enabled, Obsidian may still be re-creating its views and
 			// can leave this leaf empty (D-37): open again if the leaf did not keep our view type.
-			for (let attempt = 0; attempt < 3; attempt++) {
+			for (let attempt = 0; attempt < 4; attempt++) {
 				await leaf.setViewState({ type: VIEW, state: { file: FIX + name, ...state }, active: true });
-				// a slow PDF may take longer than this to get a session: only an emptied leaf is retried
-				await waitFor(() => leaf.view.getViewType() !== VIEW || leaf.view.debugSession, 3000).catch(() => null);
-				if (leaf.view.getViewType() === VIEW) break;
-				await sleep(500);
+				// wait until the session is ready — or the leaf was emptied (then open again)
+				const got = await waitFor(() => (leaf.view.getViewType() !== VIEW ? "gone" : leaf.view.debugSession?.ready && leaf.view.debugSession.store ? "ready" : false), 20000).catch(() => null);
+				if (got === "ready") {
+					// Obsidian may still replace the view just after (re-enabled plugin): make sure it stays
+					await sleep(300);
+					if (leaf.view.getViewType() === VIEW && leaf.view.debugSession?.ready) break;
+				}
+				await sleep(700);
 			}
 			const v = leaf.view;
 			await waitFor(() => v.debugSession && v.debugSession.ready && v.debugSession.store, 20000);
@@ -548,7 +552,8 @@
 			await check("highlight-ground-truth", async () => {
 				const out = [];
 				let ok = true;
-				for (const [fname, list] of Object.entries(cfg.expected)) {
+				// text-line ground truth only (areas.pdf lists rectangles for the area checks)
+				for (const [fname, list] of Object.entries(cfg.expected).filter(([, l]) => l.every((e) => typeof e.text === "string" && typeof e.baseline === "number"))) {
 					const { v } = await openPenDF(fname);
 					for (const e of list) {
 						await goPage(v, e.page);
@@ -2595,6 +2600,26 @@
 			});
 
 			await check("fallback-main-thread", async () => {
+				const errs = [];
+				const origErr = console.error;
+				console.error = (...a) => {
+					errs.push(a.map((x) => String(x?.stack ?? x)).join(" ").slice(0, 500));
+					origErr(...a);
+				};
+				const onRej = (e) => errs.push("unhandled: " + String(e.reason?.stack ?? e.reason).slice(0, 500));
+				window.addEventListener("unhandledrejection", onRej);
+				try {
+					const r = await fallbackMainThread();
+					if (!r.ok) r.errs = errs.slice(0, 12);
+					return r;
+				} catch (e) {
+					return { ok: false, error: String(e), errs };
+				} finally {
+					console.error = origErr;
+					window.removeEventListener("unhandledrejection", onRej);
+				}
+			});
+			async function fallbackMainThread() {
 				const workerGlobalBefore = window.pdfjsWorker;
 				await app.plugins.disablePlugin(ID);
 				window.Worker = class {
@@ -2613,7 +2638,7 @@
 						const lv = app.workspace.getLeavesOfType(VIEW).map((l) => ({ file: l.view.file?.path ?? null, hasSession: !!l.view.debugSession, ready: !!l.view.debugSession?.ready, store: !!l.view.debugSession?.store, text: (l.view.containerEl.querySelector(".pendf-root")?.innerText ?? "").slice(0, 120), banner: l.view.containerEl.querySelector(".pendf-banner")?.innerText ?? null }));
 						const all = [];
 						app.workspace.iterateAllLeaves((l) => all.push(l.view.getViewType() + ":" + (l.getViewState().state?.file ?? "")));
-						return { ok: false, error: String(e).slice(0, 200), leaves: lv, all, registered: !!app.viewRegistry?.viewByType?.[VIEW], enabled: app.plugins.enabledPlugins.has(ID), log: (P()?.getLogText?.() ?? "").split(String.fromCharCode(10)).slice(-30) };
+						return { ok: false, error: String(e).slice(0, 200), leaves: lv, all, registered: !!app.viewRegistry?.viewByType?.[VIEW], enabled: app.plugins.enabledPlugins.has(ID), errs: [...(window.__pendfFbErrs ?? [])], log: (P()?.getLogText?.() ?? "").split(String.fromCharCode(10)).slice(-30) };
 					}
 					await waitText(v, v.debugSession.viewer.currentPageNumber);
 					const log = P().getLogText();
@@ -2631,7 +2656,7 @@
 					await app.plugins.enablePlugin(ID);
 					await waitFor(() => P() && !!app.viewRegistry?.viewByType?.[VIEW]);
 				}
-			});
+			}
 
 			await check("unload-cleanup", async () => {
 				const { v } = await openPenDF("a4.pdf");
@@ -2667,7 +2692,7 @@
 					blobWorkersInRun: workers.filter((w) => w.url.startsWith("blob:")).length,
 					unterminatedInRun: workers.filter((w) => w.url.startsWith("blob:") && !w.terminated).length,
 					workerLog: logBefore,
-					workerKinds: workers.map((w) => [w.url.slice(0, 12), !!w.terminated]),
+					workerKinds: workers.map((w) => [w.url.slice(0, 12), !!w.terminated, w.name, w.at, w.step, w.stack]),
 					nativeWorker: String(window.Worker).includes("native code"),
 					blobRevoked: revoked,
 					pendingHighlightSaved: saved,

@@ -244,6 +244,7 @@ D-23, D-25, D-30을 합쳐 지금 코드가 실제로 하는 일을 한 곳에 �
   3. `links`가 `long-300.pdf`를 열 때 앞 검사가 남긴 기억된 위치 때문에 1쪽이 그려지지 않아 목차 링크를 못 찾은 적이 있다(가끔). 1쪽으로 직접 이동한다.
   4. `unload-cleanup`은 "이 실행에서 만들어진 blob 워커"를 penDF 것으로 셌다. `pdfjs-footprint`(하네스 자신의 pdf.js 프로브)가 먼저 돌면 그 워커가 섞여 "종료 안 됨"이 되고, 창이 복원한 penDF 탭이 이미 워커를 띄웠으면 이 검사 안에서는 새 워커가 없다. 워커 이름(`pendf-worker`)으로 penDF 워커를 가려, 이 실행에서 penDF가 띄운 모든 워커가 꺼짐 뒤 종료됐는지 본다(더 엄격). penDF 자체는 매번 정상이었다(워커 1개 종료, Blob URL 해제).
   5. 전체 실행은 `scripts/harness-batches.mjs`로 2~3개씩 12묶음, 묶음마다 테스트 볼트 창만 닫았다 다시 열고(다른 볼트 창은 건드리지 않음) Obsidian 프로세스 메모리와 시스템 여유 메모리를 기록한다. 중단되면 통과한 묶음은 건너뛰고 나머지만 잇는다. 상태는 `node_modules/.cache/pendf/harness-batches.json`.
+  6. (0.8.0) `unload-cleanup`이 다시 실패했다: 하네스 준비 단계에서 Obsidian이 복원한 탭이 띄운 워커가 시작 확인(handshake)을 끝내지 못한 채 남았고, 플러그인을 끌 때 penDF가 그 워커를 몰랐다(`webWorker`는 확인 뒤에야 정해진다). **제품 버그로 고쳤다:** 모듈이 띄운 모든 워커를 기록해 `destroyWorker`가 전부 끝내고, 확인에 실패한 워커는 메인 스레드로 넘어가기 전에 끝낸다. 이 상태를 만드는 순서(`pdfjs-footprint` 직후에 `fallback-main-thread`)에서는 이제 대체 경로 검사가 그 경합을 다시 만나므로, 묶음을 `long-300-memory, pdfjs-footprint` / `fingerprint-mismatch, fallback-main-thread, unload-cleanup`으로 바꿨다(두 번 연속 통과, 전체 44/44).
 
 ## D-38 핀치·트랙패드 줌: 제스처 중에는 합성만, 손을 떼면 한 번 커밋 (2026-11-16, 0.7.2)
 - **문제:** iPad에서 핀치 줌 중 화면이 검게 번쩍이고 끊긴다(사용자 보고). 0.7.1은 `TouchManager`의 `onPinching`마다 `viewer.updateScale({ scaleFactor, origin, drawingDelay: 400 })`을 불렀다. 0.7.1 기준선(`docs/evidence/zoom-baseline-0.7.1-*.json`, 하네스 `zoom-gesture`)에서 핀치 한 번에 pdf.js 배율 변경 10~29회, 레이어 제거 최대 13회, 손가락 아래 내용 이동 25~221 px, 프레임 간격 최대 36~49 ms였다.

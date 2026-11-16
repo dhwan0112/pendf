@@ -37,7 +37,8 @@ const cacheDir = path.join(root, "node_modules", ".cache", "pendf");
 const stateFile = path.join(cacheDir, "harness-batches.json");
 const OBSIDIAN = "C:/Program Files/Obsidian/obsidian";
 
-// fallback-main-thread is not first in its batch (D-37); every check appears exactly once
+// fallback-main-thread is not first in its batch, and pdfjs-footprint does not run before it in the same
+// batch (D-37); every check appears exactly once
 const BATCHES = [
 	["fixtures-render", "search", "links"],
 	["open-by-default", "state-restore", "coexistence-core-first"],
@@ -49,8 +50,13 @@ const BATCHES = [
 	["pdf-links", "bookmarks", "ink"],
 	["pages-search", "zoom-gesture"],
 	["zoom-extras", "persist-restart-rename"],
-	["fingerprint-mismatch", "long-300-memory"],
-	["pdfjs-footprint", "fallback-main-thread", "unload-cleanup"],
+	["in-view-panel", "toolbar-labels"],
+	["margin-ink", "margin-ground-truth"],
+	["margin-note", "margin-with-panel"],
+	["area-ground-truth", "area-image", "area-link"],
+	["index-rename", "index-perf"],
+	["long-300-memory", "pdfjs-footprint"],
+	["fingerprint-mismatch", "fallback-main-thread", "unload-cleanup"],
 ];
 
 const sleepSync = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);

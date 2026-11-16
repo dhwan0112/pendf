@@ -4,6 +4,34 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
+## 0.8.0 — 2026-11-17
+
+- **Panel inside the view:** Outline, Pages, Search, Bookmarks and Annotations now open inside the
+  penDF view — docked beside the pages when the view is wide enough (≥ panel + 560 px), over them
+  otherwise (tap outside to close). Resizable; open tab, width and pin are remembered per view. The
+  reading position is kept when it opens, closes or resizes (fit width refits). Setting *Panel
+  location* keeps the old sidebar. Outline marks the current section and remembers folding; Pages
+  follows the current page and counts against the canvas memory budget (D-42).
+- **Toolbar:** every button named (tooltip; press and hold on iPad), grouped, and less used buttons
+  move into a *More* menu when narrow (D-43).
+- **Margin space (Phase 7a):** room beside each page for handwriting and point notes, as part of the
+  page box (pdf.js layers unchanged; highlight ground truth ≤ 0.89 pt with a 75 % margin). Content is
+  stored as off-page PDF points, side follows the page's own /Rotate; opens by itself for PDFs with
+  margin content; hidden-content marks; notes can be moved (D-41, SCHEMA "Off-page coordinates").
+- **Area excerpts (Phase 7b):** new annotation `area`; Pencil/finger/mouse drag; colour, note, link,
+  copy / save image (rendered from the PDF on demand, within the canvas budget); thumbnails in the
+  panel. Notes can target any annotation (`{ kind: "annotation", id }`). 0.7.x keeps what it does not
+  know and 0.8.0 takes it back — tested against the 0.7.3 parser; schema stays v1 (D-44).
+- **Vault annotation index (Phase 8 groundwork):** fingerprint → current paths, id → summary,
+  `{ fp, id }` resolver that survives renames; lazy sliced build with a cache in the plugin folder,
+  incremental updates; command *Search annotations in vault* (D-45). 500 sidecars / 50,000
+  annotations: build 94 ms, longest main-thread slice 12.6 ms.
+- **Fix:** a Web Worker whose start-up handshake failed, or that was still starting when penDF was
+  unloaded, was never terminated; every worker penDF starts is now tracked and terminated.
+- Harness 44 checks (new: in-view-panel, toolbar-labels, margin-ink, margin-ground-truth,
+  margin-note, margin-with-panel, area-ground-truth, area-image, area-link, index-rename,
+  index-perf); fixture `areas.pdf`; WebKit smoke renders area excerpts.
+
 ## 0.7.3 — 2026-11-16
 
 - **Fix (0.7.2):** with a canvas budget smaller than what is on screen, the page pdf.js renders ahead

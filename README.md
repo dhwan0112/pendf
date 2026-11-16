@@ -12,7 +12,7 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
 ## Status
 
-All six phases: viewer, highlights, notes, links, bookmarks and handwriting. See [docs/REPORT.md](docs/REPORT.md).
+All six phases (viewer, highlights, notes, links, bookmarks, handwriting) plus, in 0.8.0, a margin beside the pages, area excerpts, a panel inside the view and a vault-wide annotation index. See [docs/REPORT.md](docs/REPORT.md).
 
 | Phase | Feature | State |
 | --- | --- | --- |
@@ -47,7 +47,9 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Links: the link button in a highlight's menu, a note's popover, the selection palette or the
   toolbar (current page) copies an Obsidian link; paste it into any note. Clicking it opens penDF
   at that spot. Commands: **Copy link to current page**, **Copy link to selection**.
-- Side panel (toolbar list button): **Outline** (the PDF's own table of contents), **Pages**
+- **Panel** (toolbar list button): opens inside the penDF view — beside the pages when there is
+  room, over them otherwise (tap outside to close); drag its edge to resize. **Settings → penDF →
+  Panel location** can send it to Obsidian's right sidebar instead. Tabs: **Outline**, **Pages**
   (thumbnails; tap to jump), **Search** (every match in the document with its context; tap to
   jump and flash it — commands **Show page thumbnails**, **Search the whole PDF**), **Bookmarks**
   (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
@@ -57,6 +59,18 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
   button (or **Toggle handwriting**) shows the ink bar to pick pen, highlighter or stroke eraser,
   colors and widths; turn the setting off to write only while the ink bar is open. If on your device the Pencil scrolls the page instead, set
   **Settings → penDF → Pencil and finger → Everything writes**. Undo/redo cover strokes too.
+- **Margin** (toolbar button or **Toggle margin**): empty space beside each page for handwriting
+  and notes, without covering the text. Width and side in the settings; each PDF remembers its own.
+  A PDF with margin content opens its margin by itself; with the margin closed, a small mark on the
+  page edge shows there is something in it. A note's **Move** button, then a tap, moves it (also into
+  the margin).
+- **Area excerpt** (toolbar button or command): drag a rectangle with the Pencil, a finger or the
+  mouse. Tap an area for colour, note, link, **Copy image** and **Save image** (Obsidian's attachment
+  location); the Annotations tab shows it with a thumbnail. Only the coordinates are stored.
+- **Search annotations in vault** (command): highlights, notes, excerpts, bookmarks and handwriting
+  of every PDF; filter with `type:highlight` / `color:yellow`; pick one to open it in penDF.
+- Toolbar buttons have names (hover, or press and hold on iPad); on a narrow view the less used
+  ones move into **More** (⋯).
 - ⌘/Ctrl+F searches.
 
 > Obsidian Sync users: enable *Settings → Sync → Sync all other types* so the
