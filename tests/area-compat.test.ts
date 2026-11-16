@@ -91,3 +91,37 @@ describe("generic note targets", () => {
 		expect(pages[0].items).toEqual([{ annotation: area, note: areaNote }]);
 	});
 });
+
+describe("0.7.3's sidecar store with a 0.8.0 sidecar (load → edit → save, external merge)", async () => {
+	const { SidecarStore: Store073 } = await import("./compat/v073/sidecar");
+	const { MemFs, manualTimers } = await import("./memfs");
+	const PDF = "papers/x.pdf";
+	const SC = PDF + ".pendf.json";
+	it("keeps areas and generic notes through 0.7.3 edits and saves", async () => {
+		const fs = new MemFs();
+		fs.externalWrite(SC, serializeSidecar(newer));
+		const timers = manualTimers();
+		const old = new Store073(fs, PDF, "fp", { setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout });
+		await old.load();
+		expect(old.writable).toBe(true);
+		// 0.7.3 user adds a highlight and the store saves
+		old.upsert({ ...base, id: "h9", type: "highlight", page: 3, quads: [[1, 2, 3, 2, 1, 1, 3, 1]], color: "#5fb236", text: "added in 0.7.3" });
+		await timers.runAll();
+		await old.flush();
+		// meanwhile 0.8.0 (another device) recolours the area and syncs; 0.7.3 merges the external change and saves
+		const raw = JSON.parse(fs.files.get(SC)!.data);
+		const back1 = parseSidecar(migrate(raw)).sidecar;
+		const edited = back1.annotations.map((a) => (a.id === "a1" ? { ...a, color: "#ff6680", updatedAt: 50 } : a));
+		fs.externalWrite(SC, serializeSidecar({ ...back1, annotations: edited }));
+		await old.checkExternal();
+		await timers.runAll();
+		await old.flush();
+		const final = parseSidecar(migrate(JSON.parse(fs.files.get(SC)!.data)));
+		expect(final.problems).toEqual([]);
+		const ids = byId(final.sidecar.annotations);
+		expect(Object.keys(ids).sort()).toEqual(["a1", "h1", "h9", "n1", "n2", "n3"]);
+		expect((ids.a1 as AreaAnnotation).color).toBe("#ff6680");
+		expect(ids.n1).toEqual(areaNote);
+		expect(ids.n3).toEqual(hlNoteNew);
+	});
+});

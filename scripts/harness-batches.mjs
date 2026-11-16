@@ -53,6 +53,7 @@ const BATCHES = [
 	["in-view-panel", "toolbar-labels"],
 	["margin-ink", "margin-ground-truth"],
 	["margin-note", "margin-with-panel"],
+	["highlight-blend", "margin-rotated"],
 	["area-ground-truth", "area-image", "area-link"],
 	["index-rename", "index-perf"],
 	["long-300-memory", "pdfjs-footprint"],

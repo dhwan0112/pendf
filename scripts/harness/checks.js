@@ -2083,8 +2083,8 @@
 					// closing the margin hides the stroke and marks the page edge
 					v.toggleMargin(false);
 					await sleep(400);
-					const host = pageView(v, 1).div.querySelector(".pendf-layer-host");
-					res.closed = { marked: pageView(v, 1).div.classList.contains("pendf-hidden-right"), clip: getComputedStyle(host).clipPath, borderRight: getComputedStyle(pageView(v, 1).div).borderRightWidth };
+					const layerSvg = pageView(v, 1).div.querySelector(".pendf-layer-host .pendf-layer-svg");
+					res.closed = { marked: pageView(v, 1).div.classList.contains("pendf-hidden-right"), clip: getComputedStyle(layerSvg).clipPath, hostClip: getComputedStyle(layerSvg.parentElement).clipPath, borderRight: getComputedStyle(pageView(v, 1).div).borderRightWidth };
 					// reopening the PDF opens the margin by itself, wide enough for the stroke
 					await v.onLoadFile(v.file);
 					await waitFor(() => v.debugSession?.ready && v.debugSession.store, 20000);
@@ -2107,7 +2107,7 @@
 					Math.abs(L.marginShare - 0.5) < 0.02 && L.textMatchesCanvas && L.fitsContainer &&
 					res.stroke.saved && res.stroke.offPage && res.stroke.drawnInMargin &&
 					res.zoom.commitErrorPx !== null && res.zoom.commitErrorPx <= 2 && res.zoom.strokeShift < 0.002 && Math.abs(res.zoom.marginShareAfter - 0.5) < 0.02 &&
-					res.closed.marked && /inset/.test(res.closed.clip) && res.closed.borderRight === "9px" &&
+					res.closed.marked && /inset/.test(res.closed.clip) && res.closed.hostClip === "none" && res.closed.borderRight === "9px" &&
 					res.autoOpen?.on === true && res.autoOpen.side === "right" && res.autoOpen.ratio >= 0.5 &&
 					res.erased;
 				return res;
@@ -2194,13 +2194,18 @@
 					await sleep(500);
 					v.setScale("page-width");
 					v.setMargin({ on: true, side: "right", ratio: 0.5 });
+					let scaleEvents = 0;
+					const onScale = () => scaleEvents++;
+					s.eventBus.on("scalechanging", onScale);
 					v.panel.setState({ open: true, tab: "outline", width: 280, prefer: "auto" });
 					await sleep(600);
 					await waitIdle(v);
+					const scaleEventsOpen = scaleEvents;
+					s.eventBus.off("scalechanging", onScale);
 					const page = pageView(v, s.viewer.currentPageNumber).div.getBoundingClientRect();
 					const panel = v.panel.el.getBoundingClientRect();
 					const cont = s.viewer.container.getBoundingClientRect();
-					res.layout = { mode: v.panel.currentMode, panelRight: Math.round(panel.right), pageLeft: Math.round(page.left), pageRight: Math.round(page.right), containerRight: Math.round(cont.right), fitScale: +s.viewer.currentScale.toFixed(3) };
+					res.layout = { mode: v.panel.currentMode, panelRight: Math.round(panel.right), pageLeft: Math.round(page.left), pageRight: Math.round(page.right), containerRight: Math.round(cont.right), fitScale: +s.viewer.currentScale.toFixed(3), scaleChangesOnOpen: scaleEventsOpen };
 					// canvas memory with margin + panel on, scrolling the 300-page PDF
 					let peak = 0;
 					let maxCanvases = 0;
@@ -2220,7 +2225,7 @@
 					if (!leftCollapsed) app.workspace.leftSplit.expand();
 				}
 				const L = res.layout;
-				res.ok = (L.mode !== "docked" || L.panelRight <= L.pageLeft) && L.pageRight <= L.containerRight + 1 && res.memory.pageCanvasesMax <= 12;
+				res.ok = (L.mode !== "docked" || L.panelRight <= L.pageLeft) && L.pageRight <= L.containerRight + 1 && res.memory.pageCanvasesMax <= 12 && L.scaleChangesOnOpen <= 1;
 				return res;
 			});
 
@@ -2255,6 +2260,114 @@
 			const areasOn = (v, page) => v.debugSession.store.all().filter((a) => a.type === "area" && !a.deleted && a.page === page);
 			const quadBoxOf = (q) => [Math.min(q[0], q[2], q[4], q[6]), Math.min(q[1], q[3], q[5], q[7]), Math.max(q[0], q[2], q[4], q[6]), Math.max(q[1], q[3], q[5], q[7])];
 
+			await check("highlight-blend", async () => {
+				// composited pixels (Electron capturePage): text under a highlight stays dark — the highlight
+				// layer blends (multiply) with the page canvas (0.8.1: a clip on the layer host broke this)
+				const res = {};
+				const { v } = await openPenDF("a4.pdf");
+				const s = v.debugSession;
+				let id = null;
+				try {
+					await goPage(v, 1);
+					await waitIdle(v);
+					const sp = spans(v, 1).filter((x) => x.textContent.trim().length > 20)[2];
+					select(sp, 0, sp);
+					id = v.highlights.createFromSelection("#ffd400")[0];
+					document.getSelection().removeAllRanges();
+					await sleep(600);
+					const rect = sp.getBoundingClientRect();
+					const wc = window.require("electron").remote.getCurrentWebContents();
+					const img = await wc.capturePage({ x: Math.round(rect.left), y: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) });
+					const im = new Image();
+					await new Promise((r) => {
+						im.onload = r;
+						im.src = img.toDataURL();
+					});
+					const c = document.createElement("canvas");
+					c.width = im.width;
+					c.height = im.height;
+					const ctx = c.getContext("2d");
+					ctx.drawImage(im, 0, 0);
+					const d = ctx.getImageData(0, 0, c.width, c.height).data;
+					let darkest = 999;
+					let tinted = 0;
+					for (let i = 0; i < d.length; i += 4) {
+						darkest = Math.min(darkest, d[i] + d[i + 1] + d[i + 2]);
+						if (d[i] > 200 && d[i + 1] > 170 && d[i + 2] < 140) tinted++;
+					}
+					const svg = pageView(v, 1).div.querySelector(".pendf-layer-host .pendf-layer-svg");
+					res.pixels = { size: [c.width, c.height], darkestGlyphSum: darkest, tintedShare: +(tinted / (d.length / 4)).toFixed(3) };
+					res.css = { blend: getComputedStyle(svg).mixBlendMode, hostClip: getComputedStyle(svg.parentElement).clipPath, hostIsolation: getComputedStyle(svg.parentElement).isolation };
+				} finally {
+					if (id) s.store.remove(id);
+				}
+				// glyphs dark (blended), the highlight colour visible around them
+				res.ok = res.pixels.darkestGlyphSum < 150 && res.pixels.tintedShare > 0.02 && res.css.blend === "multiply" && res.css.hostClip === "none";
+				return res;
+			});
+
+			await check("margin-rotated", async () => {
+				// left margin on a /Rotate 90 page with the view rotated 90°: the margin sits above the page
+				// on screen, fit width ignores it, a stroke drawn there is left-margin content of that page
+				const res = {};
+				const pl = P();
+				const inkBefore = { ...pl.settings.ink };
+				const { v } = await openPenDF("rotations.pdf");
+				const s = v.debugSession;
+				const made = [];
+				try {
+					s.viewer.pagesRotation = 90;
+					await sleep(300);
+					// fit width is measured on the current page: go to page 2 first
+					await goPage(v, 2);
+					v.setScale("page-width");
+					await sleep(300);
+					await waitIdle(v);
+					const fitNoMargin = s.viewer.currentScale;
+					v.setMargin({ on: true, side: "left", ratio: 0.5 });
+					await sleep(400);
+					await waitIdle(v);
+					const div = pageView(v, 2).div;
+					const cs = getComputedStyle(div);
+					const content = div.querySelector(":scope > .canvasWrapper").getBoundingClientRect();
+					res.layout = { rootClass: [...v.containerEl.querySelector(".pendf-root").classList].filter((c) => c.startsWith("pendf-margin")), borderTop: parseFloat(cs.borderTopWidth), borderLeft: parseFloat(cs.borderLeftWidth), fitNoMargin: +fitNoMargin.toFixed(4), fitWithMargin: +s.viewer.currentScale.toFixed(4), contentHeight: Math.round(content.height) };
+					// stroke above the page (the margin on screen)
+					pl.settings.ink = { ...pl.settings.ink, tool: "pen", pencilAlways: true };
+					// bring the margin above page 2 into view
+					const cont = s.viewer.container.getBoundingClientRect();
+					s.viewer.container.scrollTop += content.top - (parseFloat(cs.borderTopWidth) - 9) - cont.top - 20;
+					await sleep(300);
+					const content2 = div.querySelector(":scope > .canvasWrapper").getBoundingClientRect();
+					const mTop = content2.top - (parseFloat(cs.borderTopWidth) - 9);
+					const y = mTop + (content2.top - mTop) * 0.5;
+					const x = content2.left + content2.width * 0.3;
+					await penStroke(v, [[x, y], [x + 40, y + 5], [x + 80, y]], 63);
+					const ink = inksOn(v, 2).at(-1);
+					if (ink) made.push(ink.id);
+					await sleep(400);
+					s.margin.recompute();
+					const e = s.margin.pageExtent(2);
+					res.stroke = { saved: !!ink, extent: { left: +e.left.toFixed(3), right: +e.right.toFixed(3), top: +e.top.toFixed(3), bottom: +e.bottom.toFixed(3) } };
+					// fit width with the margin above the page equals the fit without it (same page, same state)
+					v.setMargin({ on: true, side: "left", ratio: 0.5 });
+					await sleep(400);
+					const withMargin = s.viewer.currentScale;
+					const pageWith = s.viewer.currentPageNumber;
+					v.setMargin({ on: false, side: "left", ratio: 0.5 });
+					await sleep(400);
+					res.fitCompare = { withTopMargin: +withMargin.toFixed(4), withoutMargin: +s.viewer.currentScale.toFixed(4), pages: [pageWith, s.viewer.currentPageNumber] };
+				} finally {
+					pl.settings.ink = inkBefore;
+					for (const id of made) s.store.remove(id);
+					v.setMargin({ on: false, side: "right", ratio: 0.5 });
+					s.viewer.pagesRotation = 0;
+					await sleep(300);
+				}
+				const L = res.layout;
+				res.ok = L.rootClass.includes("pendf-margin-top") && L.borderTop > 100 && L.borderLeft === 9 && Math.abs(res.fitCompare.withTopMargin - res.fitCompare.withoutMargin) < 0.001 && res.stroke.saved && res.stroke.extent.left > 0.05 && res.stroke.extent.right === 0;
+				return res;
+			});
+
 			await check("area-ground-truth", async () => {
 				// drag over each known rectangle (Pencil on odd pages, finger on even): the stored quad matches
 				const res = { rows: [] };
@@ -2279,6 +2392,62 @@
 						res.rows.push({ page: e.page, pointer: kind, maxErrPt: got ? +Math.max(...got.map((x, i) => Math.abs(x - e.box[i]))).toFixed(3) : null, got: got?.map((x) => +x.toFixed(2)), scale: +s.viewer.currentScale.toFixed(4), client: [r.left, r.top, r.right, r.bottom].map((x) => +x.toFixed(2)), text: a?.text ?? null, menu: !!s.area.menuEl });
 						s.area.closeMenu();
 					}
+					// independent of penDF's geometry: at 200 %, find the rectangle's edges in the page canvas
+					// (pixels of the fill colour) and drag over them; the stored quad must match the PDF box
+					res.pixelRows = [];
+					s.viewer.currentScale = 1.6;
+					for (const e of cfg.expected["areas.pdf"]) {
+						await goPage(v, e.page);
+						await waitIdle(v);
+						const div = pageView(v, e.page).div;
+						const canvas = div.querySelector(".canvasWrapper > canvas");
+						const ctx = canvas.getContext("2d");
+						const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+						const isFill = (i) => Math.abs(img[i] - e.color[0]) + Math.abs(img[i + 1] - e.color[1]) + Math.abs(img[i + 2] - e.color[2]) < 60;
+						// the rectangle = rows and columns that are mostly fill colour (stray antialiased pixels elsewhere do not count)
+						const rowCount = new Array(canvas.height).fill(0);
+						const colCount = new Array(canvas.width).fill(0);
+						for (let y = 0; y < canvas.height; y += 1) {
+							for (let x = 0; x < canvas.width; x += 1) {
+								if (isFill((y * canvas.width + x) * 4)) {
+									rowCount[y]++;
+									colCount[x]++;
+								}
+							}
+						}
+						const maxRow = Math.max(...rowCount);
+						const maxCol = Math.max(...colCount);
+						const rows = rowCount.map((c, i) => (c > maxRow * 0.5 ? i : -1)).filter((i) => i >= 0);
+						const cols = colCount.map((c, i) => (c > maxCol * 0.5 ? i : -1)).filter((i) => i >= 0);
+						const x0 = cols[0], x1 = cols[cols.length - 1], y0 = rows[0], y1 = rows[rows.length - 1];
+						// pixel edges: left/top edge of the first fill pixel, right/bottom edge of the last
+						const measure = () => {
+							const cr = canvas.getBoundingClientRect();
+							const kx = cr.width / canvas.width;
+							const ky = cr.height / canvas.height;
+							return { left: cr.left + x0 * kx, top: cr.top + y0 * ky, right: cr.left + (x1 + 1) * kx, bottom: cr.top + (y1 + 1) * ky };
+						};
+						// bring the rectangle into the view (both directions), then measure again
+						let r = measure();
+						const cont = s.viewer.container.getBoundingClientRect();
+						s.viewer.container.scrollTop += r.top - cont.top - 40;
+						s.viewer.container.scrollLeft += r.left - cont.left - 40;
+						await sleep(300);
+						r = measure();
+						const before = areasOn(v, e.page).length;
+						if (!Number.isFinite(r.left) || !document.elementFromPoint(r.left, r.top) || !document.elementFromPoint(r.right, r.bottom)) {
+							res.pixelRows.push({ page: e.page, canvasPx: [x0, y0, x1, y1], client: [r.left, r.top, r.right, r.bottom].map((x) => Math.round(x)), canvasSize: [canvas.width, canvas.height], window: [innerWidth, innerHeight], maxErrPt: null });
+							continue;
+						}
+						await dragPointer(r.left, r.top, r.right, r.bottom, "pen", 80 + e.page);
+						await waitFor(() => areasOn(v, e.page).length > before, 3000).catch(() => {});
+						const a = areasOn(v, e.page).at(-1);
+						if (a) made.push(a.id);
+						s.area.closeMenu();
+						const got = a ? quadBoxOf(a.quad) : null;
+						res.pixelRows.push({ page: e.page, canvasPx: [x0, y0, x1, y1], maxErrPt: got ? +Math.max(...got.map((x, i) => Math.abs(x - e.box[i]))).toFixed(3) : null });
+					}
+					v.setScale("page-width");
 					// with the tool off, a finger drag scrolls instead (no area)
 					v.toggleArea(false);
 					await goPage(v, 1);
@@ -2290,7 +2459,7 @@
 					v.toggleArea(false);
 					for (const id of made) s.store.remove(id);
 				}
-				res.ok = res.toolOn && res.rows.length === 5 && res.rows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5 && r.text === `Figure ${r.page}` && r.menu) && res.toolOffCreates === 0;
+				res.ok = res.toolOn && res.rows.length === 5 && res.rows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5 && r.text === `Figure ${r.page}` && r.menu) && res.pixelRows.length === 5 && res.pixelRows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5) && res.toolOffCreates === 0;
 				return res;
 			});
 

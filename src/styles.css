@@ -891,20 +891,22 @@
 	height: var(--pendf-mw);
 	border-bottom: 1px dashed var(--background-modifier-border);
 }
-/* what lies beyond the page shows only inside an open margin (a little slack for note markers) */
-.pendf-root .pendf-layer-host {
+/* what lies beyond the page shows only inside an open margin (a little slack for note markers).
+   The clip sits on each layer SVG, never on the host: a clip-path on the host would make it an
+   isolated group and stop the highlight layer's multiply blending with the page canvas (0.8.1). */
+.pendf-root .pendf-layer-svg {
 	clip-path: inset(-12px);
 }
-.pendf-root.pendf-margin-right .pendf-layer-host {
+.pendf-root.pendf-margin-right .pendf-layer-svg {
 	clip-path: inset(-12px calc(-1 * var(--pendf-mw) - 1px) -12px -12px);
 }
-.pendf-root.pendf-margin-left .pendf-layer-host {
+.pendf-root.pendf-margin-left .pendf-layer-svg {
 	clip-path: inset(-12px -12px -12px calc(-1 * var(--pendf-mw) - 1px));
 }
-.pendf-root.pendf-margin-bottom .pendf-layer-host {
+.pendf-root.pendf-margin-bottom .pendf-layer-svg {
 	clip-path: inset(-12px -12px calc(-1 * var(--pendf-mw) - 1px) -12px);
 }
-.pendf-root.pendf-margin-top .pendf-layer-host {
+.pendf-root.pendf-margin-top .pendf-layer-svg {
 	clip-path: inset(calc(-1 * var(--pendf-mw) - 1px) -12px -12px -12px);
 }
 /* hidden margin content: a small tab on that edge of the page */

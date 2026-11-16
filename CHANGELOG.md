@@ -4,6 +4,19 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
+## 0.8.1 — 2026-11-17
+
+- **Fix (0.8.0 regression):** text under a highlight looked washed out. The margin's clipping made the
+  annotation layer an isolated group, so highlights no longer blended (multiply) with the page. The
+  clip now sits on the layer SVGs; a new harness check compares screen pixels under a highlight.
+- **Fit width with a margin:** one scale change instead of two; a margin above or below the page
+  (view rotated a quarter turn) no longer narrows the fit; the fit uses the page that was current
+  before the layout shifted; width drags (window, Split View, panel edge) refit once they stop.
+- Toolbar: a long press that ends without a click no longer swallows the next tap.
+- Tests: 0.7.3's own sidecar store (load → edit → save → external merge) keeps 0.8.0 areas and notes;
+  harness `highlight-blend`, `margin-rotated`, and an independent pixel-based area measurement
+  (≤ 0.39 pt).
+
 ## 0.8.0 — 2026-11-17
 
 - **Panel inside the view:** Outline, Pages, Search, Bookmarks and Annotations now open inside the

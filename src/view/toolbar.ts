@@ -60,6 +60,8 @@ export class Toolbar {
 		setTooltip(el, b.label);
 		let suppressClick = false;
 		el.addEventListener("pointerdown", (e) => {
+			// a long press may end without a click (iPadOS): never let it swallow the next tap
+			suppressClick = false;
 			if (e.pointerType === "mouse") return;
 			this.clearTipTimer();
 			this.tipTimer = window.setTimeout(() => {

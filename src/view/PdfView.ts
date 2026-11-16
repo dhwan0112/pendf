@@ -46,7 +46,7 @@ import { MarginController, type MarginPageView } from "../margin/controller";
 import { AreaController } from "../area/controller";
 import { renderArea } from "../area/render";
 import { quadBox, type TextItem } from "../area/model";
-import { autoMargin, normalizeMargin, type MarginConfig } from "../margin/model";
+import { autoMargin, normalizeMargin, screenSide, type MarginConfig } from "../margin/model";
 
 export const VIEW_TYPE = "pendf-view";
 const log = logger("view");
@@ -150,6 +150,7 @@ export class PenDFView extends FileView {
 	private lastTop: TopAnchor | null = null;
 	private topRaf: number | null = null;
 	private containerRo: ResizeObserver | null = null;
+	private widthTimer: number | null = null;
 	private lastContainerWidth = 0;
 	/** live thumbnail canvases (panels), counted against the canvas budget */
 	private thumbs = new Set<HTMLCanvasElement>();
@@ -637,7 +638,7 @@ export class PenDFView extends FileView {
 		this.session = session;
 
 		eventBus.on("pagesloaded", () => this.relayoutKeepingTop(), { signal: ac.signal });
-		eventBus.on("rotationchanging", () => margin.apply(), { signal: ac.signal });
+		eventBus.on("rotationchanging", () => this.relayoutKeepingTop(), { signal: ac.signal });
 		eventBus.on("pagesinit", () => {
 			session.ready = true;
 			margin.apply();
@@ -1314,10 +1315,16 @@ export class PenDFView extends FileView {
 		else this.session.viewer.currentScaleValue = value;
 	}
 
-	/** Extra page-box width beyond the page, as a share of the page width (margin, 0.8.0). */
+	/**
+	 * Extra page-box width beyond the page, as a share of the page width (margin, 0.8.0).
+	 * 0 when the margin sits above or below the page on screen (view rotated a quarter turn).
+	 */
 	private extraWidthRatio(): number {
-		const m = this.session?.margin.cfg;
-		return m?.on ? m.ratio : 0;
+		const s = this.session;
+		const m = s?.margin.cfg;
+		if (!s || !m?.on) return 0;
+		const side = screenSide(m.side, s.viewer.pagesRotation);
+		return side === "left" || side === "right" ? m.ratio : 0;
 	}
 
 	/** Margin state of the open PDF (tests, panel). */
@@ -1457,9 +1464,11 @@ export class PenDFView extends FileView {
 			return;
 		}
 		const anchor = this.captureTop();
+		// the page pdf.js calls current, taken before the layout shifts under it
+		const fitPage = s.viewer.currentPageNumber;
 		s.margin.recompute();
 		s.margin.apply();
-		if (this.fitMode) this.fitWidth();
+		if (this.fitMode) this.fitWidth(fitPage);
 		if (anchor) this.restoreTop(anchor);
 		this.lastTop = this.captureTop();
 	}
@@ -1479,15 +1488,24 @@ export class PenDFView extends FileView {
 		} else s.margin.apply();
 	}
 
-	/** Fit the page width (and its margin, when shown) to the view width. */
-	fitWidth(): void {
+	/**
+	 * Fit the width of `page` (default: pdf.js's current page) and its margin, when shown, to the
+	 * view width — one scale change. pdf.js's own "page-width" formula (view width minus its
+	 * 40 px padding, over the page width), divided by 1 + the margin share. Re-layouts pass the
+	 * current page as it was before the layout shifted (pdf.js updates it only after a scroll).
+	 */
+	fitWidth(page?: number): void {
 		const s = this.session;
 		if (!s) return;
 		this.applyingFit = true;
 		try {
-			s.viewer.currentScaleValue = "page-width";
-			const extra = this.extraWidthRatio();
-			if (extra > 0) s.viewer.currentScale = s.viewer.currentScale / (1 + extra);
+			const n = page ?? s.viewer.currentPageNumber;
+			const pv = s.viewer.getPageView(Math.max(0, n - 1)) as unknown as { viewport?: { width: number } } | undefined;
+			const w = pv?.viewport?.width;
+			if (w && w > 0) {
+				const perUnit = w / s.viewer.currentScale;
+				s.viewer.currentScale = Math.max(0.1, (this.container.clientWidth - 40) / perUnit / (1 + this.extraWidthRatio()));
+			} else s.viewer.currentScaleValue = "page-width";
 		} finally {
 			this.applyingFit = false;
 		}
@@ -1541,11 +1559,20 @@ export class PenDFView extends FileView {
 			},
 			{ passive: true },
 		);
+		// a drag (window, Split View, panel edge) changes the width every frame: refit once it settles
 		this.containerRo = new ResizeObserver(() => {
 			const w = this.container.clientWidth;
 			if (w === this.lastContainerWidth) return;
+			if (this.lastContainerWidth === 0) {
+				this.lastContainerWidth = w;
+				return;
+			}
 			this.lastContainerWidth = w;
-			this.onWidthChange();
+			if (this.widthTimer !== null) window.clearTimeout(this.widthTimer);
+			this.widthTimer = window.setTimeout(() => {
+				this.widthTimer = null;
+				this.onWidthChange();
+			}, 120);
 		});
 		this.containerRo.observe(this.container);
 	}
@@ -1555,7 +1582,7 @@ export class PenDFView extends FileView {
 		const s = this.session;
 		if (!s?.ready || s.zoom.active) return;
 		const anchor = this.lastTop ?? this.captureTop();
-		if (this.fitMode) this.fitWidth();
+		if (this.fitMode) this.fitWidth(s.viewer.currentPageNumber);
 		if (anchor) this.restoreTop(anchor);
 		this.lastTop = this.captureTop();
 	}
@@ -1771,6 +1798,7 @@ export class PenDFView extends FileView {
 		this.loadToken++;
 		await this.teardown();
 		this.containerRo?.disconnect();
+		if (this.widthTimer !== null) window.clearTimeout(this.widthTimer);
 		if (this.topRaf !== null) window.cancelAnimationFrame(this.topRaf);
 		this.panel?.destroy();
 		this.panel = null;
