@@ -926,7 +926,7 @@
 				v.undo();
 				res.afterUndo = live();
 				// 4. panel lists both, renders Markdown, and follows the view
-				await P().showAnnotationsPanel();
+				await P().showSidebarPanel();
 				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
 				await waitFor(() => panel.contentEl.querySelectorAll(".pendf-panel-item").length >= 2, 5000).catch(() => {});
 				res.panelItems = panel.contentEl.querySelectorAll(".pendf-panel-item").length;
@@ -1060,7 +1060,7 @@
 				const outline = await v.outline();
 				res.outline = { top: outline.length, first: [outline[0].title, outline[0].page], named: [outline[29].title, outline[29].page], child: [outline[3].items[1].title, outline[3].items[1].page] };
 				// 2. panel → Outline tab → tap "Chapter 30"
-				await P().showAnnotationsPanel("outline");
+				await P().showSidebarPanel("outline");
 				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
 				// let the sidebar finish opening: pdf.js re-fits the width on resize and returns to its last
 				// recorded spot, so wait until the PDF area's width has been stable for a while
@@ -1316,7 +1316,7 @@
 				const res = {};
 				const { v } = await openPenDF("long-300.pdf");
 				const s = v.debugSession;
-				await P().showAnnotationsPanel("pages");
+				await P().showSidebarPanel("pages");
 				const panel = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
 				await waitFor(() => panel.contentEl.querySelectorAll(".pendf-thumb").length === 300, 8000);
 				res.cells = panel.contentEl.querySelectorAll(".pendf-thumb").length;
@@ -1365,7 +1365,7 @@
 				// Korean, in an embedded-font PDF
 				closeOurs();
 				const k = await openPenDF("korean-embedded.pdf");
-				await P().showAnnotationsPanel("search");
+				await P().showSidebarPanel("search");
 				const panel2 = await waitFor(() => app.workspace.getLeavesOfType("pendf-annotations")[0]?.view, 5000);
 				await sleep(400);
 				const input2 = await waitFor(() => panel2.contentEl.querySelector(".pendf-search-panel-input"), 5000);
@@ -1827,6 +1827,168 @@
 					res.budget?.rendersIn3sIdle === 0 &&
 					res.presetSwitch?.preset === "low-memory" && res.presetSwitch.maxCanvasPixels === 2 ** 23 && res.presetSwitch.back.preset === "default" && res.presetSwitch.back.maxCanvasPixels === 2 ** 25 &&
 					res.invert && !res.invert.farHasCanvas && res.invert.farPageBg === "rgb(0, 0, 0)" && res.invert.nearWrapperBg === "rgb(255, 255, 255)" && /invert/.test(res.invert.nearWrapperFilter);
+				return res;
+			});
+
+			await check("in-view-panel", async () => {
+				// 0.8.0 (D-42): the panel inside the view — placement by width, reading position kept when it
+				// opens, resizes and closes, thumbnails freed off screen, sidebar setting, overlay closes outside
+				const res = {};
+				const pl = P();
+				const locBefore = pl.settings.panelLocation;
+				const sidebarBefore = app.workspace.getLeavesOfType("pendf-annotations").length;
+				const rightCollapsed = app.workspace.rightSplit.collapsed;
+				const leftCollapsed = app.workspace.leftSplit.collapsed;
+				const { v, leaf } = await openPenDF("long-300.pdf");
+				const s = v.debugSession;
+				const c = s.viewer.container;
+				try {
+					v.panel.setOpen(false);
+					v.setScale("page-width");
+					await goPage(v, 40);
+					c.scrollTop += Math.round(pageView(v, 40).div.getBoundingClientRect().height * 0.37);
+					await sleep(400);
+					await waitIdle(v);
+					// the content at the view's top edge: page + fraction
+					const top = () => {
+						const cr = c.getBoundingClientRect();
+						for (let n = 1; n <= s.viewer.pagesCount; n++) {
+							const r = pageView(v, n).div.getBoundingClientRect();
+							if (r.bottom > cr.top) return { page: n, fy: +((cr.top - r.top) / r.height).toFixed(4) };
+						}
+						return null;
+					};
+					const drift = (a, b) => (a && b && a.page === b.page ? Math.abs(a.fy - b.fy) * pageView(v, a.page).div.getBoundingClientRect().height : Infinity);
+					const before = top();
+					const scale0 = s.viewer.currentScale;
+					const body = v.containerEl.querySelector(".pendf-body");
+					// 1. open (auto placement)
+					v.panel.setState({ open: false, tab: "pages", width: 260, prefer: "auto" });
+					v.openPanel("pages");
+					await sleep(500);
+					await waitIdle(v);
+					const expectDocked = body.clientWidth >= 260 + 560 || v.panel.currentMode === "docked";
+					res.open = { mode: v.panel.currentMode, bodyWidth: body.clientWidth, expectDocked, scale: +s.viewer.currentScale.toFixed(4), scaleBefore: +scale0.toFixed(4), driftPx: +drift(before, top()).toFixed(2) };
+					// 1b. not wide enough to dock: collapse Obsidian's left sidebar for the docked case
+					if (v.panel.currentMode !== "docked") {
+						v.panel.setOpen(false);
+						await sleep(300);
+						if (!app.workspace.leftSplit.collapsed) app.workspace.leftSplit.collapse();
+						await sleep(600);
+						await waitIdle(v);
+						await goPage(v, 40);
+						c.scrollTop += Math.round(pageView(v, 40).div.getBoundingClientRect().height * 0.37);
+						await sleep(400);
+						await waitIdle(v);
+						const b2 = top();
+						const sc2 = s.viewer.currentScale;
+						v.openPanel("pages");
+						await sleep(500);
+						await waitIdle(v);
+						res.docked = { mode: v.panel.currentMode, bodyWidth: body.clientWidth, scale: +s.viewer.currentScale.toFixed(4), scaleBefore: +sc2.toFixed(4), driftPx: +drift(b2, top()).toFixed(2) };
+						before.page = b2.page;
+						before.fy = b2.fy;
+					}
+					// 2. resize (docked only: the pages get narrower, fit width refits)
+					if (v.panel.currentMode === "docked") {
+						v.panel.setState({ ...v.panel.state, width: 360 });
+						await sleep(500);
+						await waitIdle(v);
+						res.resize = { scale: +s.viewer.currentScale.toFixed(4), driftPx: +drift(before, top()).toFixed(2) };
+					}
+					// 3. thumbnails: only near-visible ones drawn, all within a few MB
+					await waitFor(() => v.panel.el.querySelectorAll(".pendf-thumb.is-rendered").length >= 3, 15000).catch(() => {});
+					const scroller = v.panel.el.querySelector(".pendf-inpanel-content");
+					res.thumbs = { cells: v.panel.el.querySelectorAll(".pendf-thumb").length, rendered: v.panel.el.querySelectorAll(".pendf-thumb.is-rendered").length, mb: +(v.thumbnailBytes() / 1048576).toFixed(2) };
+					scroller.scrollTop = scroller.scrollHeight;
+					await sleep(800);
+					await waitFor(() => v.panel.el.querySelector('.pendf-thumb[data-page="300"].is-rendered'), 15000).catch(() => {});
+					res.thumbs.lastRendered = !!v.panel.el.querySelector('.pendf-thumb[data-page="300"].is-rendered');
+					res.thumbs.page40Released = !v.panel.el.querySelector('.pendf-thumb[data-page="40"] canvas');
+					res.thumbs.mbAfterScroll = +(v.thumbnailBytes() / 1048576).toFixed(2);
+					res.thumbs.currentMarked = v.panel.el.querySelector(".pendf-thumb.is-current")?.dataset.page ?? null;
+					// 4. close: back to the old scale, same content at the top
+					v.panel.setOpen(false);
+					await sleep(500);
+					await waitIdle(v);
+					res.close = { scale: +s.viewer.currentScale.toFixed(4), driftPx: +drift(before, top()).toFixed(2) };
+					// 5. overlay: tap outside closes it, pages untouched
+					v.panel.setState({ open: true, tab: "outline", width: 260, prefer: "overlay" });
+					await sleep(300);
+					const scaleOverlay = s.viewer.currentScale;
+					const backdrop = v.containerEl.querySelector(".pendf-inpanel-backdrop");
+					res.overlay = { mode: v.panel.currentMode, backdropShown: !!backdrop && !backdrop.hasClass("is-hidden") };
+					backdrop.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerType: "touch" }));
+					await sleep(200);
+					res.overlay.closedByOutsideTap = !v.panel.isOpen;
+					res.overlay.scaleUnchanged = s.viewer.currentScale === scaleOverlay;
+					// 6. remembered as view state (not per file)
+					v.panel.setState({ open: true, tab: "bookmarks", width: 300, prefer: "auto" });
+					const st = leaf.getViewState().state?.panel;
+					res.viewState = st ?? null;
+					v.panel.setOpen(false);
+					// 7. setting "Obsidian sidebar": the panel button opens the sidebar panel instead
+					pl.settings.panelLocation = "sidebar";
+					v.togglePanel();
+					await sleep(500);
+					res.sidebar = { sidebarLeaves: app.workspace.getLeavesOfType("pendf-annotations").length, inViewOpen: v.panel.isOpen };
+				} finally {
+					pl.settings.panelLocation = locBefore;
+					v.panel?.setState({ open: false, tab: "outline", width: 280, prefer: "auto" });
+					if (!sidebarBefore) for (const l of app.workspace.getLeavesOfType("pendf-annotations")) l.detach();
+					if (rightCollapsed && !app.workspace.rightSplit.collapsed) app.workspace.rightSplit.collapse();
+					if (!leftCollapsed && app.workspace.leftSplit.collapsed) app.workspace.leftSplit.expand();
+				}
+				const o = res.open;
+				res.ok =
+					o.mode === (o.expectDocked ? "docked" : "overlay") &&
+					o.driftPx <= 2 &&
+					(o.mode === "overlay" ? o.scale === o.scaleBefore : o.scale < o.scaleBefore) &&
+					(!res.docked || (res.docked.mode === "docked" && res.docked.driftPx <= 2 && res.docked.scale < res.docked.scaleBefore)) &&
+					(!res.resize || res.resize.driftPx <= 2) &&
+					res.thumbs.cells === 300 && res.thumbs.rendered >= 3 && res.thumbs.rendered < 60 && res.thumbs.lastRendered && res.thumbs.page40Released && res.thumbs.mbAfterScroll < 8 &&
+					res.close.driftPx <= 2 && Math.abs(res.close.scale - (res.docked ? res.docked.scaleBefore : o.scaleBefore)) < 0.002 &&
+					res.overlay.mode === "overlay" && res.overlay.backdropShown && res.overlay.closedByOutsideTap && res.overlay.scaleUnchanged &&
+					res.viewState?.tab === "bookmarks" && res.viewState.width === 300 && res.viewState.open === true &&
+					res.sidebar.sidebarLeaves >= 1 && !res.sidebar.inViewOpen;
+				return res;
+			});
+
+			await check("toolbar-labels", async () => {
+				// 0.8.0: every toolbar button labelled; narrow widths move buttons into "More"; a long press
+				// shows the name without acting
+				const res = {};
+				const { v } = await openPenDF("a4.pdf");
+				const tb = v.containerEl.querySelector(".pendf-toolbar");
+				const buttons = [...tb.querySelectorAll("button")];
+				res.buttons = buttons.length;
+				res.unlabelled = buttons.filter((b) => !(b.getAttribute("aria-label") || "").trim()).map((b) => b.outerHTML.slice(0, 80));
+				res.groups = [...tb.querySelectorAll(".pendf-group")].map((g) => g.getAttribute("aria-label"));
+				// narrow: one line, priority-1 buttons stay
+				tb.style.width = "360px";
+				await sleep(300);
+				res.narrow = { overflowed: v.toolbarOverflow, fits: tb.scrollWidth <= tb.clientWidth + 1, moreShown: !tb.querySelector(".pendf-more").hasClass("is-hidden") };
+				res.narrow.keptVisible = ["note", "ink", "undo", "panel"].filter((id) => getComputedStyle(tb.querySelector(`[data-tool="${id}"]`)).display !== "none");
+				tb.style.width = "";
+				await sleep(300);
+				res.wide = { overflowed: v.toolbarOverflow, fits: tb.scrollWidth <= tb.clientWidth + 1, width: tb.clientWidth };
+				// long press (touch): name shown, button not run
+				const btn = tb.querySelector('[data-tool="rotate"]');
+				const rot0 = v.debugSession.viewer.pagesRotation;
+				btn.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch", pointerId: 51 }));
+				await sleep(600);
+				const tip = document.querySelector(".pendf-press-tip");
+				res.longPress = { tip: tip?.textContent ?? null };
+				btn.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch", pointerId: 51 }));
+				btn.click();
+				await sleep(100);
+				res.longPress.rotated = v.debugSession.viewer.pagesRotation !== rot0;
+				if (res.longPress.rotated) v.debugSession.viewer.pagesRotation = rot0;
+				res.ok =
+					res.buttons >= 14 && res.unlabelled.length === 0 && res.groups.length >= 4 &&
+					res.narrow.overflowed.length > 0 && res.narrow.fits && res.narrow.moreShown && res.narrow.keptVisible.length === 4 &&
+					res.wide.fits && res.wide.overflowed.length < res.narrow.overflowed.length &&
+					res.longPress.tip === "Rotate view" && !res.longPress.rotated;
 				return res;
 			});
 

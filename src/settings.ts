@@ -20,9 +20,21 @@ export interface PenDFSettings {
 	zoomRendering: ZoomPreset;
 	/** remember page/zoom per file across views */
 	rememberPosition: boolean;
-	positions: Record<string, { page: number; scale: string; t: number }>;
+	/** per-file view memory (plugin data, never the sidecar): position, outline folding, margin */
+	positions: Record<string, FileViewMemory>;
+	/** where the toolbar's panel button and the panel commands open the panel (0.8.0) */
+	panelLocation: "view" | "sidebar";
 	/** handwriting (Phase 6) */
 	ink: InkSettings;
+}
+
+export interface FileViewMemory {
+	page?: number;
+	scale?: string;
+	/** last change, ms (the oldest entries are dropped beyond MAX_POSITIONS) */
+	t: number;
+	/** keys of the outline entries the user left expanded */
+	outline?: string[];
 }
 
 export type InkTool = "pen" | "highlighter" | "eraser";
@@ -63,6 +75,7 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	zoomRendering: "default",
 	rememberPosition: true,
 	positions: {},
+	panelLocation: "view",
 	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
 };
 
@@ -77,6 +90,7 @@ const TEXT = {
 	openPdfsInPenDF: ["Open PDFs in penDF", "Use penDF instead of Obsidian's PDF viewer whenever a PDF is opened. Embeds in notes and hover previews still use Obsidian's viewer."],
 	invertPages: ["Invert page colors", "Dark reading mode: inverts the rendered pages (not your highlights)."],
 	rememberPosition: ["Remember position", "Reopen each PDF at the page and zoom you left it."],
+	panelLocation: ["Panel location", "Where the panel button and the panel commands (outline, page thumbnails, search, bookmarks, annotations) open the panel: inside the penDF view, or in Obsidian's right sidebar."],
 	handwriting: "Handwriting",
 	inkPencilAlways: ["Apple Pencil always writes", "The Pencil writes whenever it touches a page, with the last tool you picked (pen, highlighter or eraser); fingers scroll and select text. Off: the Pencil writes only in ink mode (toolbar pen button)."],
 	inkInput: ["Pencil and finger", "Default: the Pencil writes, fingers scroll and select text. If the Pencil scrolls the page instead of writing on your device, choose “Everything writes” (then leave ink mode to scroll)."],
@@ -123,7 +137,16 @@ export class PenDFSettingTab extends PluginSettingTab {
 					},
 				],
 			},
-			{ type: "group", heading: TEXT.viewer, items: [toggle("openPdfsInPenDF"), toggle("invertPages"), toggle("rememberPosition")] },
+			{
+				type: "group",
+				heading: TEXT.viewer,
+				items: [
+					toggle("openPdfsInPenDF"),
+					toggle("invertPages"),
+					toggle("rememberPosition"),
+					{ name: TEXT.panelLocation[0], desc: TEXT.panelLocation[1], control: { type: "dropdown", key: "panelLocation", options: { view: "In the penDF view", sidebar: "Obsidian sidebar" } } },
+				],
+			},
 			{
 				type: "group",
 				heading: TEXT.handwriting,
@@ -156,6 +179,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 		if (key === "inkInput") return s.ink.input;
 		if (key === "inkPencilAlways") return s.ink.pencilAlways;
 		if (key === "zoomRendering") return s.zoomRendering;
+		if (key === "panelLocation") return s.panelLocation;
 		return s[key as BoolKey];
 	}
 
@@ -180,6 +204,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 			s.ink = { ...s.ink, pencilAlways: Boolean(value) };
 		} else if (key === "inkInput") {
 			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
+		} else if (key === "panelLocation") {
+			s.panelLocation = value === "sidebar" ? "sidebar" : "view";
 		} else if (key === "zoomRendering") {
 			s.zoomRendering = isZoomPreset(value) ? value : "default";
 		} else {
@@ -224,6 +250,16 @@ export class PenDFSettingTab extends PluginSettingTab {
 		toggle("openPdfsInPenDF");
 		toggle("invertPages");
 		toggle("rememberPosition");
+		new Setting(containerEl)
+			.setName(TEXT.panelLocation[0])
+			.setDesc(TEXT.panelLocation[1])
+			.addDropdown((d) =>
+				d
+					.addOption("view", "In the penDF view")
+					.addOption("sidebar", "Obsidian sidebar")
+					.setValue(s.panelLocation)
+					.onChange((v) => set("panelLocation", v)),
+			);
 		new Setting(containerEl).setName(TEXT.handwriting).setHeading();
 		new Setting(containerEl)
 			.setName(TEXT.inkPencilAlways[0])

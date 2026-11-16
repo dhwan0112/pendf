@@ -1,7 +1,7 @@
 // The penDF view: an independent FileView rendering PDFs with the bundled
 // pdf.js. It never touches Obsidian's core PDF viewer or its DOM.
 
-import { FileView, Modal, Notice, Platform, Scope, Setting, TFile, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
+import { FileView, Modal, Notice, Platform, Scope, Setting, TFile, setIcon, setTooltip, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
 import type PenDFPlugin from "../main";
 import {
 	AnnotationEditorType,
@@ -38,6 +38,10 @@ import { ZoomController } from "../zoom/controller";
 import { ZoomTimeline, summary as zoomSummary, type GestureRecord } from "../zoom/timeline";
 import { renderConfig, type RenderConfig } from "../zoom/presets";
 import { canvasBytes, pagesOverBudget, releasePage, type PageViewLike } from "../zoom/budget";
+import { Toolbar } from "./toolbar";
+import { DEFAULT_PANEL_STATE, InViewPanel, parsePanelState, type InViewPanelState } from "../panel/InViewPanel";
+import type { PanelTab } from "../panel/tabs";
+import { scrollToTopAnchor, topAnchor, type TopAnchor } from "../panel/layout";
 
 export const VIEW_TYPE = "pendf-view";
 const log = logger("view");
@@ -124,6 +128,22 @@ export class PenDFView extends FileView {
 
 	// DOM
 	private toolbarEl!: HTMLElement;
+	private toolbar: Toolbar | null = null;
+	/** row holding the in-view panel and the pages */
+	private bodyEl!: HTMLElement;
+	/** panel inside the view (0.8.0) */
+	panel: InViewPanel | null = null;
+	private pendingPanel: InViewPanelState | null = null;
+	/** the scale follows the view width ("Fit width"), tracked by penDF (pdf.js does not refit on resize) */
+	private fitMode = true;
+	private applyingFit = false;
+	/** content at the top edge of the view, kept current while scrolling (restored after resizes) */
+	private lastTop: TopAnchor | null = null;
+	private topRaf: number | null = null;
+	private containerRo: ResizeObserver | null = null;
+	private lastContainerWidth = 0;
+	/** live thumbnail canvases (panels), counted against the canvas budget */
+	private thumbs = new Set<HTMLCanvasElement>();
 	private pageInput!: HTMLInputElement;
 	private pageCountEl!: HTMLElement;
 	private zoomLabel!: HTMLElement;
@@ -198,10 +218,17 @@ export class PenDFView extends FileView {
 		this.buildSearchBar(this.searchBar);
 		this.bannerEl = el.createDiv({ cls: "pendf-banner is-hidden" });
 
-		this.viewerRoot = el.createDiv({ cls: "pendf-root" });
+		this.bodyEl = el.createDiv({ cls: "pendf-body" });
+		this.viewerRoot = this.bodyEl.createDiv({ cls: "pendf-root" });
 		this.container = this.viewerRoot.createDiv({ cls: "pendf-container" });
 		this.container.tabIndex = 0;
 		this.viewerEl = this.container.createDiv({ cls: "pdfViewer" });
+		this.panel = new InViewPanel(this.app, this.bodyEl, this, () => this.app.workspace.requestSaveLayout());
+		if (this.pendingPanel) {
+			this.panel.setState(this.pendingPanel);
+			this.pendingPanel = null;
+		}
+		this.installResizeKeeping();
 		this.applySettings();
 		this.showEngineWarning();
 
@@ -214,8 +241,9 @@ export class PenDFView extends FileView {
 	}
 
 	private button(parent: HTMLElement, icon: string, label: string, onClick: () => void): HTMLButtonElement {
-		const b = parent.createEl("button", { cls: "pendf-icon-btn clickable-icon", attr: { "aria-label": label, title: label } });
+		const b = parent.createEl("button", { cls: "pendf-icon-btn clickable-icon", attr: { "aria-label": label } });
 		setIcon(b, icon);
+		setTooltip(b, label);
 		b.addEventListener("click", (e) => {
 			e.preventDefault();
 			onClick();
@@ -224,11 +252,14 @@ export class PenDFView extends FileView {
 	}
 
 	private buildToolbar(tb: HTMLElement): void {
-		const nav = tb.createDiv({ cls: "pendf-group" });
-		this.button(nav, "chevron-up", "Previous page", () => this.session?.viewer.previousPage());
+		const t = new Toolbar(tb);
+		this.toolbar = t;
+		// navigation & zoom
+		const nav = t.group("navigate");
+		t.add(nav, { id: "prev", icon: "chevron-up", label: "Previous page", priority: 2, run: () => this.session?.viewer.previousPage() });
 		this.pageInput = nav.createEl("input", { cls: "pendf-page-input", attr: { type: "text", inputmode: "numeric", "aria-label": "Page" } });
 		this.pageCountEl = nav.createSpan({ cls: "pendf-page-count", text: "/ –" });
-		this.button(nav, "chevron-down", "Next page", () => this.session?.viewer.nextPage());
+		t.add(nav, { id: "next", icon: "chevron-down", label: "Next page", priority: 2, run: () => this.session?.viewer.nextPage() });
 		this.pageInput.addEventListener("change", () => this.goToPage(Number(this.pageInput.value)));
 		this.pageInput.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
@@ -236,28 +267,54 @@ export class PenDFView extends FileView {
 				this.pageInput.blur();
 			}
 		});
-
-		const zoom = tb.createDiv({ cls: "pendf-group" });
-		this.button(zoom, "zoom-out", "Zoom out", () => this.zoom(-1));
+		const zoom = t.group("zoom");
+		t.add(zoom, { id: "zoom-out", icon: "zoom-out", label: "Zoom out", priority: 2, run: () => this.zoom(-1) });
 		this.zoomLabel = zoom.createSpan({ cls: "pendf-zoom-label", text: "–" });
-		this.button(zoom, "zoom-in", "Zoom in", () => this.zoom(1));
-		this.button(zoom, "move-horizontal", "Fit width", () => this.setScale("page-width"));
-		this.button(zoom, "rotate-cw", "Rotate view", () => this.rotate(90));
-
-		tb.createDiv({ cls: "pendf-spacer" });
-		const tools = tb.createDiv({ cls: "pendf-group" });
-		this.button(tools, "highlighter", "Highlight selection", () => this.session?.highlights.createFromSelection());
-		this.button(tools, "bookmark-plus", "Bookmark this spot", () => void this.addBookmark());
-		this.inkButton = this.button(tools, "pen-line", "Handwriting tools (pen, highlighter, eraser)", () => this.toggleInk());
-		this.noteButton = this.button(tools, "message-square-plus", "Add note (then tap the page)", () => {
-			const n = this.session?.notes;
-			if (n) n.setPlacing(!n.placing);
+		t.add(zoom, { id: "zoom-in", icon: "zoom-in", label: "Zoom in", priority: 2, run: () => this.zoom(1) });
+		t.add(zoom, { id: "fit-width", icon: "move-horizontal", label: "Fit width", priority: 3, run: () => this.setScale("page-width") });
+		t.add(zoom, { id: "rotate", icon: "rotate-cw", label: "Rotate view", priority: 3, run: () => this.rotate(90) });
+		t.spacer();
+		// annotation tools
+		const tools = t.group("annotate");
+		t.add(tools, { id: "highlight", icon: "highlighter", label: "Highlight selection", priority: 2, run: () => this.session?.highlights.createFromSelection() });
+		this.noteButton = t.add(tools, {
+			id: "note",
+			icon: "message-square-plus",
+			label: "Add note (then tap the page)",
+			priority: 1,
+			run: () => {
+				const n = this.session?.notes;
+				if (n) n.setPlacing(!n.placing);
+			},
 		});
-		this.button(tools, "undo-2", "Undo", () => this.undo());
-		this.button(tools, "redo-2", "Redo", () => this.redo());
-		this.button(tools, "search", "Find in PDF", () => this.openSearch());
-		this.button(tools, "link", "Copy link to this page", () => this.copyPageLink());
-		this.button(tools, "list", "Outline, bookmarks and annotations", () => void this.plugin.showAnnotationsPanel());
+		this.inkButton = t.add(tools, { id: "ink", icon: "pen-line", label: "Handwriting tools (pen, highlighter, eraser)", priority: 1, run: () => this.toggleInk() });
+		t.add(tools, { id: "bookmark", icon: "bookmark-plus", label: "Bookmark this spot", priority: 3, run: () => void this.addBookmark() });
+		// history
+		const history = t.group("history");
+		t.add(history, { id: "undo", icon: "undo-2", label: "Undo", priority: 1, run: () => this.undo() });
+		t.add(history, { id: "redo", icon: "redo-2", label: "Redo", priority: 2, run: () => this.redo() });
+		// search, link, panel
+		const misc = t.group("find");
+		t.add(misc, { id: "search", icon: "search", label: "Find in PDF", priority: 2, run: () => this.openSearch() });
+		t.add(misc, { id: "link", icon: "link", label: "Copy link to this page", priority: 3, run: () => this.copyPageLink() });
+		t.add(misc, { id: "panel", icon: "list", label: "Outline, pages, bookmarks and annotations", priority: 1, run: () => this.togglePanel() });
+		t.done();
+	}
+
+	/** Toolbar panel button: the panel in this view, or the sidebar panel (setting). */
+	togglePanel(): void {
+		if (this.plugin.settings.panelLocation === "sidebar") void this.plugin.showSidebarPanel();
+		else this.panel?.toggle();
+	}
+
+	/** Open the in-view panel on a tab. */
+	openPanel(tab?: PanelTab): void {
+		this.panel?.setOpen(true, tab);
+	}
+
+	/** Labels of the toolbar buttons in the More menu (tests). */
+	get toolbarOverflow(): string[] {
+		return this.toolbar?.overflowed() ?? [];
 	}
 
 	private buildSearchBar(bar: HTMLElement): void {
@@ -534,6 +591,7 @@ export class PenDFView extends FileView {
 		eventBus.on("scalechanging", (e: { scale: number }) => {
 			// a zoom commit corrects the scroll here, before pdf.js picks pages to render
 			zoom.onScaleChanging();
+			if (!this.applyingFit) this.fitMode = (e as { presetValue?: string }).presetValue === "page-width";
 			this.zoomLabel.setText(`${Math.round(e.scale * 100)}%`);
 			this.scheduleStateSave();
 		}, { signal: ac.signal });
@@ -817,6 +875,7 @@ export class PenDFView extends FileView {
 			const viewport = pdfPage.getViewport({ scale: (cssWidth * dpr) / base.width, rotation });
 			canvas.width = Math.max(1, Math.floor(viewport.width));
 			canvas.height = Math.max(1, Math.floor(viewport.height));
+			this.thumbs.add(canvas);
 			task = pdfPage.render({ canvas, viewport, annotationMode: AnnotationMode.DISABLE });
 			try {
 				await task.promise;
@@ -832,6 +891,37 @@ export class PenDFView extends FileView {
 				task?.cancel();
 			},
 		};
+	}
+
+	/** Free a thumbnail canvas (scrolled away, panel closed). */
+	releaseThumbnail(canvas: HTMLCanvasElement): void {
+		this.thumbs.delete(canvas);
+		canvas.width = 0;
+		canvas.height = 0;
+		canvas.remove();
+	}
+
+	/** Memory of the live thumbnail canvases (w×h×4), bytes. */
+	thumbnailBytes(): number {
+		let b = 0;
+		for (const c of [...this.thumbs]) {
+			if (!c.isConnected || !c.width) {
+				this.thumbs.delete(c);
+				continue;
+			}
+			b += c.width * c.height * 4;
+		}
+		return b;
+	}
+
+	/** Outline entries the user left expanded in this file (null: never changed). */
+	outlineOpenKeys(): Set<string> | null {
+		const m = this.file ? this.plugin.fileMemory(this.file.path) : undefined;
+		return m?.outline ? new Set(m.outline) : null;
+	}
+
+	setOutlineOpenKeys(keys: string[]): void {
+		if (this.file) this.plugin.patchFileMemory(this.file.path, { outline: keys });
 	}
 
 	private pageText(s: Session, page: number): Promise<PageText> {
@@ -931,6 +1021,7 @@ export class PenDFView extends FileView {
 	}
 
 	private notifyChange(): void {
+		this.panel?.refresh();
 		for (const fn of this.changeListeners) {
 			try {
 				fn();
@@ -1102,7 +1193,8 @@ export class PenDFView extends FileView {
 			seen.add(id);
 			pages.push({ id, bytes: canvasBytes(div) });
 		}
-		const over = pagesOverBudget(pages, s.zoom.visiblePages(this.container.getBoundingClientRect()), budgetBytes);
+		// thumbnails in the panels share the budget with the pages
+		const over = pagesOverBudget(pages, s.zoom.visiblePages(this.container.getBoundingClientRect()), Math.max(0, budgetBytes - this.thumbnailBytes()));
 		let freed = 0;
 		for (const id of over) {
 			const pv = s.viewer.getPageView(id - 1) as unknown as PageViewLike | undefined;
@@ -1125,9 +1217,11 @@ export class PenDFView extends FileView {
 		const s = this.session;
 		if (!s) return;
 		const remembered = this.plugin.settings.rememberPosition ? this.plugin.settings.positions[file.path] : undefined;
-		const state = this.pendingState ?? (remembered ? { page: remembered.page, scale: remembered.scale } : {});
+		const state: ViewerState = this.pendingState ?? (remembered ? { page: remembered.page, scale: remembered.scale } : {});
 		this.pendingState = null;
-		s.viewer.currentScaleValue = state.scale && isScaleValue(state.scale) ? state.scale : "page-width";
+		const scale = state.scale && isScaleValue(state.scale) ? state.scale : "page-width";
+		if (scale === "page-width") this.fitWidth();
+		else s.viewer.currentScaleValue = scale;
 		if (state.page && state.page >= 1 && state.page <= s.viewer.pagesCount) s.viewer.currentPageNumber = state.page;
 		this.pageInput.value = String(s.viewer.currentPageNumber);
 		s.layers.schedule();
@@ -1146,7 +1240,95 @@ export class PenDFView extends FileView {
 	}
 
 	setScale(value: string): void {
-		if (this.session) this.session.viewer.currentScaleValue = value;
+		if (!this.session) return;
+		if (value === "page-width") this.fitWidth();
+		else this.session.viewer.currentScaleValue = value;
+	}
+
+	/** Extra page-box width beyond the page, as a share of the page width (margin, 0.8.0). */
+	protected extraWidthRatio(): number {
+		return 0;
+	}
+
+	/** Fit the page width (and its margin, when shown) to the view width. */
+	fitWidth(): void {
+		const s = this.session;
+		if (!s) return;
+		this.applyingFit = true;
+		try {
+			s.viewer.currentScaleValue = "page-width";
+			const extra = this.extraWidthRatio();
+			if (extra > 0) s.viewer.currentScale = s.viewer.currentScale / (1 + extra);
+		} finally {
+			this.applyingFit = false;
+		}
+		this.fitMode = true;
+	}
+
+	/** Scale as remembered: "page-width" while the scale follows the view width. */
+	scaleValueForState(): string {
+		const v = this.session?.viewer;
+		if (!v) return "page-width";
+		return this.fitMode ? "page-width" : v.currentScaleValue;
+	}
+
+	/** pdf.js page div of page n (1-based). */
+	pageDivOf(n: number): HTMLElement | null {
+		const pv = this.session?.viewer.getPageView(n - 1) as unknown as PageViewLike | undefined;
+		return pv?.div ?? null;
+	}
+
+	/** Content at the top edge of the view. */
+	private captureTop(): TopAnchor | null {
+		const s = this.session;
+		if (!s?.ready) return null;
+		const cr = this.container.getBoundingClientRect();
+		const vis = [...s.zoom.visiblePages(cr)];
+		if (!vis.length) return null;
+		const page = Math.min(...vis);
+		const r = this.pageDivOf(page)?.getBoundingClientRect();
+		return r ? topAnchor(page, r.top, r.height, cr.top) : null;
+	}
+
+	private restoreTop(a: TopAnchor): void {
+		const r = this.pageDivOf(a.page)?.getBoundingClientRect();
+		if (!r) return;
+		this.container.scrollTop += scrollToTopAnchor(a, r.top, r.height, this.container.getBoundingClientRect().top);
+	}
+
+	/**
+	 * When the view width changes (panel opened, closed or resized, window, Split View):
+	 * refit in fit-width mode and keep the content at the top edge where it was.
+	 */
+	private installResizeKeeping(): void {
+		this.container.addEventListener(
+			"scroll",
+			() => {
+				if (this.topRaf !== null) return;
+				this.topRaf = window.requestAnimationFrame(() => {
+					this.topRaf = null;
+					this.lastTop = this.captureTop();
+				});
+			},
+			{ passive: true },
+		);
+		this.containerRo = new ResizeObserver(() => {
+			const w = this.container.clientWidth;
+			if (w === this.lastContainerWidth) return;
+			this.lastContainerWidth = w;
+			this.onWidthChange();
+		});
+		this.containerRo.observe(this.container);
+	}
+
+	/** Refit (fit-width mode) and restore the reading position. Public for tests. */
+	onWidthChange(): void {
+		const s = this.session;
+		if (!s?.ready || s.zoom.active) return;
+		const anchor = this.lastTop ?? this.captureTop();
+		if (this.fitMode) this.fitWidth();
+		if (anchor) this.restoreTop(anchor);
+		this.lastTop = this.captureTop();
 	}
 
 	rotate(delta: number): void {
@@ -1226,9 +1408,10 @@ export class PenDFView extends FileView {
 	getState(): Record<string, unknown> {
 		const state = super.getState();
 		const v = this.session?.ready ? this.session.viewer : null;
+		state.panel = this.panel?.state ?? this.pendingPanel ?? DEFAULT_PANEL_STATE;
 		if (v) {
 			state.page = v.currentPageNumber;
-			state.scale = v.currentScaleValue;
+			state.scale = this.scaleValueForState();
 		} else if (this.pendingState) {
 			if (this.pendingState.page) state.page = this.pendingState.page;
 			if (this.pendingState.scale) state.scale = this.pendingState.scale;
@@ -1237,7 +1420,12 @@ export class PenDFView extends FileView {
 	}
 
 	async setState(state: unknown, result: ViewStateResult): Promise<void> {
-		const st = (state ?? {}) as { page?: unknown; scale?: unknown };
+		const st = (state ?? {}) as { page?: unknown; scale?: unknown; panel?: unknown };
+		if (st.panel !== undefined) {
+			const ps = parsePanelState(st.panel);
+			if (this.panel) this.panel.setState(ps);
+			else this.pendingPanel = ps;
+		}
 		const vs: ViewerState = {};
 		if (typeof st.page === "number") vs.page = st.page;
 		if (typeof st.scale === "string" || typeof st.scale === "number") vs.scale = String(st.scale);
@@ -1246,7 +1434,7 @@ export class PenDFView extends FileView {
 		if (!sameFile || !v) this.pendingState = vs.page || vs.scale ? vs : null;
 		await super.setState(state, result);
 		if (sameFile && v) {
-			if (vs.scale && isScaleValue(vs.scale)) v.currentScaleValue = vs.scale;
+			if (vs.scale && isScaleValue(vs.scale)) this.setScale(vs.scale);
 			if (vs.page) this.goToPage(vs.page);
 		}
 	}
@@ -1274,7 +1462,7 @@ export class PenDFView extends FileView {
 			const s = this.session;
 			if (!s?.ready) return;
 			this.app.workspace.requestSaveLayout();
-			this.plugin.rememberPosition(s.file.path, s.viewer.currentPageNumber, s.viewer.currentScaleValue);
+			this.plugin.rememberPosition(s.file.path, s.viewer.currentPageNumber, this.scaleValueForState());
 		}, 800);
 	}
 
@@ -1352,6 +1540,12 @@ export class PenDFView extends FileView {
 	async onClose(): Promise<void> {
 		this.loadToken++;
 		await this.teardown();
+		this.containerRo?.disconnect();
+		if (this.topRaf !== null) window.cancelAnimationFrame(this.topRaf);
+		this.panel?.destroy();
+		this.panel = null;
+		this.toolbar?.destroy();
+		this.toolbar = null;
 		this.hud?.destroy();
 		this.hud = null;
 		this.changeListeners.clear();
@@ -1377,6 +1571,7 @@ export class PenDFView extends FileView {
 		out.page = `${s.viewer.currentPageNumber}/${s.viewer.pagesCount}`;
 		out.scale = Math.round(s.viewer.currentScale * 100) + "%";
 		out.canvasMB = s.timeline.canvasMemory().mb.toFixed(1);
+		out.thumbMB = (this.thumbnailBytes() / 1048576).toFixed(1);
 		out.zoomPreset = s.render.preset;
 		const z = s.timeline.lastRecord();
 		if (z) out.lastZoom = zoomSummary(z);

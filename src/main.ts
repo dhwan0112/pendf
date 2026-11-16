@@ -2,7 +2,7 @@ import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type
 import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
 import { ANNOTATIONS_VIEW, AnnotationsView, type PanelTab } from "./panel/AnnotationsView";
-import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type PenDFSettings } from "./settings";
+import { DEFAULT_SETTINGS, MAX_POSITIONS, PenDFSettingTab, type FileViewMemory, type PenDFSettings } from "./settings";
 import { destroyWorker } from "./pdfjs";
 import { checkEngine, type EngineReport } from "./pdfjs/engine";
 import { moveSidecar, type SidecarStore } from "./store/sidecar";
@@ -223,7 +223,24 @@ export default class PenDFPlugin extends Plugin {
 	}
 
 	/** Reveal the panel in the right sidebar (creating it once), optionally on a tab. */
+	/**
+	 * Open the panel where the "Panel location" setting says: inside the active (or most
+	 * recent) penDF view, or Obsidian's right sidebar. Without a penDF view: the sidebar.
+	 */
 	async showAnnotationsPanel(tab?: PanelTab): Promise<void> {
+		if (this.settings.panelLocation === "view") {
+			const recent = this.app.workspace.getMostRecentLeaf();
+			const view = recent?.view instanceof PenDFView ? recent.view : this.app.workspace.getLeavesOfType(VIEW_TYPE).map((l) => l.view).find((v): v is PenDFView => v instanceof PenDFView);
+			if (view) {
+				view.openPanel(tab);
+				return;
+			}
+		}
+		await this.showSidebarPanel(tab);
+	}
+
+	/** The panel in Obsidian's right sidebar. */
+	async showSidebarPanel(tab?: PanelTab): Promise<void> {
 		const ws = this.app.workspace;
 		let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(ANNOTATIONS_VIEW)[0] ?? null;
 		if (!leaf) {
@@ -311,7 +328,17 @@ export default class PenDFPlugin extends Plugin {
 
 	rememberPosition(path: string, page: number, scale: string): void {
 		if (!this.settings.rememberPosition) return;
-		this.settings.positions[path] = { page, scale, t: Date.now() };
+		this.patchFileMemory(path, { page, scale });
+	}
+
+	/** Per-file view memory (plugin data). */
+	fileMemory(path: string): FileViewMemory | undefined {
+		return this.settings.positions[path];
+	}
+
+	/** Merge into a file's view memory (keeps the other fields), drop the oldest entries beyond the cap. */
+	patchFileMemory(path: string, patch: Partial<FileViewMemory>): void {
+		this.settings.positions[path] = { ...(this.settings.positions[path] ?? {}), ...patch, t: Date.now() };
 		const keys = Object.keys(this.settings.positions);
 		if (keys.length > MAX_POSITIONS) {
 			keys.sort((a, b) => this.settings.positions[a].t - this.settings.positions[b].t);
@@ -335,6 +362,7 @@ export default class PenDFPlugin extends Plugin {
 		if (typeof this.settings.positions !== "object" || !this.settings.positions) this.settings.positions = {};
 		this.settings.ink = { ...structuredClone(DEFAULT_SETTINGS.ink), ...(typeof data.ink === "object" && data.ink ? data.ink : {}) };
 		if (!isZoomPreset(this.settings.zoomRendering)) this.settings.zoomRendering = DEFAULT_SETTINGS.zoomRendering;
+		if (this.settings.panelLocation !== "sidebar") this.settings.panelLocation = "view";
 	}
 
 	async saveSettings(): Promise<void> {
