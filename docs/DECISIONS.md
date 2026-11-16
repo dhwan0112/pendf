@@ -198,7 +198,7 @@
 - **안전장치:** 두 규칙 모두 정확히 1회 일치해야 빌드가 된다(pdf.js를 올렸을 때 조용히 빠지지 않게). `check-standalone`이 빌드된 `main.js`에서 `pendf_d` 1회, 원래 패턴 0회, `--viewer-container-height`는 컨테이너에만 쓰는지 확인하고, `build-tools.test.ts`가 변환 결과를 확인한다.
 - **대안:** 문서를 열 때마다 다른 id를 쓰게 pdf.js를 고치는 것(더 큰 패치), 또는 FontFace 대신 경로 렌더링(`disableFontFace`, 느림).
 - **되돌리기:** `scripts/pdfjs-transform.mjs`의 두 규칙과 check-standalone의 `namespace-*` 검사를 지운다.
-- **B-06:** 이 수정이 B-06을 고치는지는 Obsidian 안에서 확인해야 한다(B-07 해소 후 `ground-truth-after-core`·`-after-embed`·`-same-pdf-embed`).
+- **B-06:** 테스트 볼트에서 수정 전·후 빌드 모두 B-06이 재현되지 않았다(INVESTIGATION §12 Obsidian 재검증). 이 수정은 B-06의 해결책이라기보다 실제로 존재하는 이름 충돌을 막는 방어 수정이다.
 
 ## D-33 표준 글꼴 대체에서 `url(embedded://…)` 빼기 (2026-11-15, 0.7.1)
 - **결정:** PDF에 들어 있지 않은 표준 글꼴(Helvetica-Bold 등)에 대해 pdf.js가 만드는 CSS 글꼴 소스 `local(…), …, url(<standardFontDataUrl><파일>)`에서, 경로가 penDF 내부 주소 `embedded:`이면 `url()`을 넣지 않는다(워커 변환, 1회 일치).
@@ -233,3 +233,8 @@ D-23, D-25, D-30을 합쳐 지금 코드가 실제로 하는 일을 한 곳에 �
 - **한계:** Playwright WebKit은 iOS WKWebView가 아니다. OS 글꼴·메모리 한도·터치/Pencil 입력·Obsidian 앱 껍데기·iPadOS 버전별 차이는 검사하지 못한다. 문법·내장 기능·워커·렌더링 문제를 iPad 전에 잡는 용도다.
 - **찾은 것:** 표준 글꼴 `url(embedded://…)` 요청 실패(D-33, 고침). 시험 페이지에 `<html lang>`이 없으면 텍스트 레이어 폭이 5% 어긋남(측정 canvas와 DOM의 글꼴 대체 차이, INVESTIGATION §12).
 - **결과(로컬, 2026-11-15):** WebKit 27.2·Chromium 156 모두 9개 fixture 319쪽, 오류 0, 내장 객체 변경 0, 끝 오차 −0.11/−0.18 pt, 엔진 간 quad 차이 최대 0.28 pt.
+
+## D-37 하네스 검사의 위치 가정 (2026-11-16, 0.7.1)
+- **결정:** `notes`, `persist-restart-rename`은 PDF를 연 뒤 1쪽으로 직접 이동하고, `state-restore`는 자기가 연 탭을 집는다(`getLeavesOfType(...)[0]` 대신).
+- **근거:** 테스트 볼트에는 사용자가 연 penDF 탭이 있고, penDF는 파일마다 마지막 위치를 기억하므로 "열면 1쪽", "첫 penDF 탭 = 방금 연 탭"이라는 가정이 깨졌다(SciWiki에서는 우연히 맞았다). 제품 동작이 아니라 검사의 가정 문제다.
+- **되돌리기:** 해당 줄을 이전 형태로.

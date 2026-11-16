@@ -4,7 +4,7 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
-## 0.7.1 — unreleased
+## 0.7.1 — 2026-11-16
 
 - **Shared-page names (B-06):** penDF's pdf.js now names its documents `pendf_d0…` instead of `d0…`, so
   its font families and SVG filter ids no longer collide with Obsidian's own pdf.js in the same
@@ -22,7 +22,8 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 - **Test vault:** the desktop harness and `install-dev` only run in a vault marked with
   `.pendf-test-vault` (`scripts/make-test-vault.mjs`); default `pendf-testvault` (D-34).
 - Harness: new checks `shared-namespace`, `ground-truth-after-core`, `ground-truth-after-embed`,
-  `ground-truth-same-pdf-embed`; sidebars are restored after a run.
+  `ground-truth-same-pdf-embed`; sidebars are restored after a run. All 31 checks pass in the test vault.
+  B-06 did not reproduce there with either the old or the new build (kept open for SciWiki-only causes).
 
 ## 0.7.0 — 2026-11-15
 

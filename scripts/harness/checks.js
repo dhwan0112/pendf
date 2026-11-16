@@ -428,8 +428,10 @@
 				const restored = { page: v2.debugSession.viewer.currentPageNumber, scale: v2.debugSession.viewer.currentScale };
 				closeOurs();
 				// per-file memory without any leaf state
+				const penBefore = new Set(app.workspace.getLeavesOfType(VIEW));
 				await P().openPdf(file("a4.pdf"), true);
-				const v3 = app.workspace.getLeavesOfType(VIEW)[0].view;
+				// the tab just opened (the vault may already show penDF tabs of its own)
+				const v3 = app.workspace.getLeavesOfType(VIEW).find((l) => !penBefore.has(l)).view;
 				await waitFor(() => v3.debugSession && v3.debugSession.ready);
 				await sleep(300);
 				const remembered = { page: v3.debugSession.viewer.currentPageNumber, scale: v3.debugSession.viewer.currentScale };
@@ -601,7 +603,7 @@
 				const afterCore = new Set(faces());
 				const varAfterCore = htmlVar();
 				const { v } = await openPenDF("rotations.pdf");
-				await waitText(v, 1);
+				await goPage(v, 1);
 				await document.fonts.ready;
 				const penFaces = faces().filter((f) => !afterCore.has(f));
 				const coreNames = new Set(coreFaces.map(fam));
@@ -870,7 +872,7 @@
 
 			await check("notes", async () => {
 				const { v, leaf } = await openPenDF("a4.pdf");
-				await waitText(v, 1);
+				await goPage(v, 1); // the file may be remembered at another page
 				const s = v.debugSession;
 				const store = s.store;
 				const res = {};
@@ -1384,6 +1386,7 @@
 				await reloadPlugin();
 				const { v } = await openPenDF("rotations.pdf");
 				const afterRestart = store(v).all().length;
+				await goPage(v, 1); // the highlight is on page 1; the file may be remembered elsewhere
 				await waitFor(() => v.containerEl.querySelector(".pendf-hl polygon"));
 				closeOurs();
 				const f = file("rotations.pdf");

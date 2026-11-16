@@ -1,30 +1,31 @@
-# REPORT — penDF 현재 상태 (0.7.1 작업 기준, 2026-11-15)
+# REPORT — penDF 현재 상태 (0.7.1, 2026-11-16)
 
 버전별 변경은 [CHANGELOG.md](../CHANGELOG.md), 결정은 [DECISIONS.md](DECISIONS.md), 막힌 것은 [BLOCKERS.md](BLOCKERS.md), iPad 확인 절차는 [DEVICE_CHECKLIST.md](DEVICE_CHECKLIST.md)에 있다. 이 문서는 시간순 기록이 아니라 지금의 상태다.
 
 ## 한눈에
 
-- 목표 문서의 6단계(뷰어, 하이라이트, 텍스트 주석, 링크, 북마크, 필기)와 추가 기능(기본 열기, 썸네일, 전체 검색, Pencil 상시 필기)이 모두 구현되어 있다. 최신 릴리스는 0.7.0. **0.7.1은 push했지만 태그하지 않았다:** build·test·lint·smoke:webkit은 통과했으나 전체 하네스를 돌리지 못했다(B-07). 볼트 등록 뒤 하네스가 통과하면 `git tag 0.7.1 && git push origin 0.7.1`로 릴리스한다.
+- 목표 문서의 6단계(뷰어, 하이라이트, 텍스트 주석, 링크, 북마크, 필기)와 추가 기능(기본 열기, 썸네일, 전체 검색, Pencil 상시 필기)이 모두 구현되어 있다. 최신 릴리스 **0.7.1**.
+- 0.7.1은 build·test·lint·`smoke:webkit`·CI와 **전용 테스트 볼트에서의 전체 하네스 31개**를 모두 통과한 뒤 태그했다.
 - **iPad에서는 아직 아무것도 확인되지 않았다.** 데스크톱(Obsidian/Chromium)과 Obsidian 밖 WebKit에서만 검증했다.
-- 0.7.1의 데스크톱 하네스는 **아직 돌리지 못했다**: 전용 테스트 볼트가 Obsidian에 등록되지 않았다(B-07). 그래서 B-06 수정이 Obsidian 안에서 효과가 있는지도 미확인이다.
+- B-06은 테스트 볼트에서 재현되지 않았다(수정 전 빌드로도). SciWiki 고유 조건으로 열어 둔다.
 
 ## 기능별 상태
 
-검증 열: **단위** = vitest, **하네스** = 실제 Obsidian 데스크톱 자동 검사(마지막 실행 버전), **WebKit** = Playwright WebKit/Chromium 스모크(Obsidian 밖, 0.7.1), **iPad** = 실기기.
+검증 열: **단위** = vitest, **하네스** = 실제 Obsidian 데스크톱 자동 검사(0.7.1, 테스트 볼트, 31/31), **WebKit** = Playwright WebKit/Chromium 스모크(Obsidian 밖, 0.7.1), **iPad** = 실기기.
 
 | 기능 | 구현 | 단위 | 하네스 | WebKit | iPad |
 | --- | --- | --- | --- | --- | --- |
-| Phase 1 뷰어: 연속 스크롤, 가상화, 줌, 회전, 검색 막대, 내부·외부 링크, 위치 기억, 다크 페이지 | 0.1.0 | ○ | ○ 0.7.0(`fixtures-render`, `search`, `links`, `state-restore`, `long-300-memory` …) | ○ 모든 fixture 전 페이지 렌더, 텍스트, 검색 | 미확인 |
-| 엔진 격리: 전역·내장 객체 무변경, Blob 워커 | 0.1.0 | ○ | ○ 0.7.0(`pdfjs-footprint`, `fallback-main-thread`) | ○ 내장 객체 변경 0, Blob 워커 | 미확인 |
-| Phase 2 하이라이트: 여러 줄·2단·쪽 넘김, 색 변경, 실행 취소 | 0.1.0 | ○ | ○ 0.7.0(`highlight-*`) | ○ 선택→quad 계산, WebKit·Chromium 차이 0.28 pt | 미확인 |
-| Phase 3 메모: 하이라이트·지점 메모, 마크다운, 패널 | 0.2.0 | ○ | ○ 0.7.0(`notes`) | — | 미확인 |
-| Phase 4 링크: 복사, 정확한 위치 이동, 플러그인 없이 쪽 열기 | 0.3.0 | ○ | ○ 0.7.0(`pdf-links`) | — | 미확인 |
-| Phase 5 북마크: 개요, 사용자 북마크, PDF 무수정 | 0.4.0 | ○ | ○ 0.7.0(`bookmarks`) | — | 미확인 |
-| Phase 6 필기: 펜, 형광펜, 지우개, 실행 취소 | 0.5.0 | ○ | ○ 0.7.0(`ink`, 합성 Pencil 이벤트) | — | **미확인(입력 분기·지연은 실기기로만)** |
-| Pencil 상시 필기 | 0.6.0 | — | ○ 0.7.0(`ink`의 `pencilAlways`) | — | 미확인 |
-| 썸네일·전체 검색 | 0.7.0 | — | ○ 0.7.0(`pages-search`) | — | 미확인 |
-| 기본 열기(탭 전환)와 링크 위치 전달 | 0.1.5 / 0.3.0 | ○ | ○ 0.7.0(`open-by-default`, `pdf-links`) | — | 미확인(D-35) |
-| 공유 이름 분리(B-06 수정) | 0.7.1 | ○ 변환·check-standalone | **미실행(B-07)** `shared-namespace`, `ground-truth-after-*` | ○ 충돌 수정 전 1~2 → 후 0 | 미확인 |
+| Phase 1 뷰어: 연속 스크롤, 가상화, 줌, 회전, 검색 막대, 내부·외부 링크, 위치 기억, 다크 페이지 | 0.1.0 | ○ | ○ (`fixtures-render`, `search`, `links`, `state-restore`, `long-300-memory` …) | ○ 모든 fixture 전 페이지 렌더, 텍스트, 검색 | 미확인 |
+| 엔진 격리: 전역·내장 객체 무변경, Blob 워커 | 0.1.0 | ○ | ○ (`pdfjs-footprint`, `fallback-main-thread`) | ○ 내장 객체 변경 0, Blob 워커 | 미확인 |
+| Phase 2 하이라이트: 여러 줄·2단·쪽 넘김, 색 변경, 실행 취소 | 0.1.0 | ○ | ○ (`highlight-*`) | ○ 선택→quad 계산, WebKit·Chromium 차이 0.28 pt | 미확인 |
+| Phase 3 메모: 하이라이트·지점 메모, 마크다운, 패널 | 0.2.0 | ○ | ○ (`notes`) | — | 미확인 |
+| Phase 4 링크: 복사, 정확한 위치 이동, 플러그인 없이 쪽 열기 | 0.3.0 | ○ | ○ (`pdf-links`) | — | 미확인 |
+| Phase 5 북마크: 개요, 사용자 북마크, PDF 무수정 | 0.4.0 | ○ | ○ (`bookmarks`) | — | 미확인 |
+| Phase 6 필기: 펜, 형광펜, 지우개, 실행 취소 | 0.5.0 | ○ | ○ (`ink`, 합성 Pencil 이벤트) | — | **미확인(입력 분기·지연은 실기기로만)** |
+| Pencil 상시 필기 | 0.6.0 | — | ○ (`ink`의 `pencilAlways`) | — | 미확인 |
+| 썸네일·전체 검색 | 0.7.0 | — | ○ (`pages-search`) | — | 미확인 |
+| 기본 열기(탭 전환)와 링크 위치 전달 | 0.1.5 / 0.3.0 | ○ | ○ (`open-by-default`, `pdf-links`) | — | 미확인(D-35) |
+| 공유 이름 분리(B-06 방어 수정) | 0.7.1 | ○ 변환·check-standalone | ○ `shared-namespace`, `ground-truth-after-*`(−0.71 pt) | ○ 충돌 수정 전 1~2 → 후 0 | 미확인 |
 
 ## 0.7.1에서 한 일
 
@@ -38,14 +39,15 @@
 
 - `docs/evidence/b06-namespace-browsers-2026-11-15.json` — WebKit/Chromium 스모크와 B-06 시나리오 20개(수정 전/후 × 코어 먼저/안 먼저 × 글꼴 조합).
 - `docs/evidence/webkit-smoke-0.7.1-2026-11-15.json` — 0.7.1 최종 코드의 `pnpm smoke:webkit` 결과(통과).
-- `docs/evidence/harness-2026-11-15-0.5.0.json` — 마지막 전체 하네스(0.5.0, SciWiki, 26개 통과). 0.6.0·0.7.0은 해당 검사를 SciWiki에서 부분 실행했다(커밋 기록). **0.7.1 전체 하네스는 B-07 해소 뒤** `docs/evidence/`에 추가한다.
+- `docs/evidence/harness-2026-11-16-0.7.1.json` — 0.7.1 전체 하네스(테스트 볼트, 31개 통과).
+- `docs/evidence/b06-obsidian-2026-11-16.json` — Obsidian 안 B-06 비교(수정 전·후 빌드, 기본 모양·Wikibaum 모양).
+- `docs/evidence/harness-2026-11-15-0.5.0.json` — 이전 전체 하네스(0.5.0, SciWiki).
 
 ## 열린 버그
 
 | # | 내용 | 상태 |
 | --- | --- | --- |
-| B-06 | 코어 뷰어를 먼저 연 뒤 `rotations.pdf` 하이라이트 끝 3.21 pt(기준 3 pt) | 공유 이름 수정 적용, Obsidian 재검증 대기(B-07). 다른 후보: 측정 canvas와 DOM의 글꼴 대체 차이(INVESTIGATION §12) |
-| B-07 | 테스트 볼트 미등록 | 사용자 작업 대기 |
+| B-06 | SciWiki에서 코어 뷰어를 먼저 연 뒤 `rotations.pdf` 하이라이트 끝 3.21 pt(기준 3 pt) | 테스트 볼트에서는 수정 전·후 모두 −0.71 pt로 재현 안 됨. SciWiki의 다른 플러그인·스니펫·창 폭이 후보. SciWiki에서 시험해도 될 때 판정 |
 
 ## 알려진 한계
 
@@ -58,10 +60,9 @@
 
 ## 사용자가 할 일
 
-1. **테스트 볼트 등록(B-07):** Obsidian → 볼트 전환 → "Open folder as vault" → `C:\Users\denny\pendf-testvault` → 작성자 신뢰, 커뮤니티 플러그인 켜기. 그 뒤 `node scripts/obsidian-harness.mjs`(기본값이 이 볼트)로 전체 하네스를 돌리면 B-06 판정과 0.7.1 증거가 나온다.
-2. **iPad:** 펜 프로브부터(DEVICE_CHECKLIST 6장 머리말), 이어서 0~7장과 새 항목 4-6~4-8. 로그(**penDF: Export log**)와 프로브 JSON을 가져온다.
-3. **커뮤니티 심사 스캐너 재실행:** 0.2.0 이후 버전을 아직 거치지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 세 번 결과가 달랐다.
-4. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
+1. **iPad:** 펜 프로브부터(DEVICE_CHECKLIST 6장 머리말), 이어서 0~7장과 새 항목 4-6~4-8. 로그(**penDF: Export log**)와 프로브 JSON을 가져온다.
+2. **커뮤니티 심사 스캐너 재실행:** 0.2.0 이후 버전을 아직 거치지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 세 번 결과가 달랐다.
+3. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
    - `C:\Users\denny\Documents\Obsidian Vault\.obsidian\SciWiki\.obsidian\plugins\pendf\main.js`
    - `…\SciWiki\.obsidian\plugins\pendf\manifest.json`
    - `…\SciWiki\.obsidian\plugins\pendf\styles.css`
@@ -70,6 +71,6 @@
 
 ## 다음 권장 작업
 
-1. 테스트 볼트에서 전체 하네스 → B-06 판정. 수정으로 해결되지 않았으면 측정 글꼴 가설(INVESTIGATION §12) 조사.
-2. iPad 체크리스트 결과로 입력 기본값(Pencil 상시 필기, touch 처리), `maxCanvasPixels`, 글꼴 정책(D-33) 조정.
-3. 커뮤니티 심사 재실행 후 0.7.1(또는 iPad 수정 반영 버전) 제출.
+1. iPad 체크리스트(펜 프로브부터) 결과로 입력 기본값(Pencil 상시 필기, touch 처리), `maxCanvasPixels`, 글꼴 정책(D-33) 조정.
+2. 커뮤니티 심사 재실행 후 제출.
+3. B-06: SciWiki에서 시험해도 되면 `ground-truth-after-core`를 그 볼트에서 돌려, 플러그인·스니펫을 하나씩 끄며 원인을 좁힌다.

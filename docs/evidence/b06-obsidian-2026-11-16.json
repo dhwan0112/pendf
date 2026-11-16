@@ -1,0 +1,836 @@
+{
+ "vault": "pendf-testvault",
+ "fixedBuild": {
+  "shared-namespace": {
+   "ok": false,
+   "error": "Error: timeout waiting for () => pageView(v, n)?.textLayer?.div?.querySelector(\"span\")\n    at waitFor (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:21:37)\n    at async eval (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:604:5)\n    at async check (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:289:16)\n    at async run (eval at <anonymous> (eval at <anonymous> (app://obsidian.md/app.js:320:488)), <anonymous>:590:4)"
+  },
+  "ground-truth-after-core": {
+   "ok": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-after-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-same-pdf-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "highlight-ground-truth": {
+   "ok": true,
+   "out": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.13,
+     "topAboveBaseline": 1.13,
+     "bottomBelowBaseline": 0.32,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.86,
+      0.86,
+      0.95,
+      0.95
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.01,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 1.02,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.41,
+     "ok": true,
+     "ious": [
+      1,
+      0.97,
+      0.97,
+      0.94,
+      0.94
+     ]
+    }
+   ]
+  }
+ },
+ "preFixBuild": {
+  "shared-namespace": {
+   "ok": false,
+   "coreFonts": [
+    "g_d8_sf2",
+    "g_d8_sf4",
+    "g_d8_sf6"
+   ],
+   "penFonts": [
+    "g_d3_sf2",
+    "g_d3_sf4"
+   ],
+   "collisions": [],
+   "duplicateIds": [],
+   "penPrefixed": false,
+   "htmlVarAfterCore": "682px",
+   "htmlVarAfterPenDF": "682px"
+  },
+  "ground-truth-after-core": {
+   "ok": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-after-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.44
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "ground-truth-same-pdf-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    }
+   ],
+   "maxAbsDxEnd": 0.71
+  },
+  "highlight-ground-truth": {
+   "ok": true,
+   "out": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.13,
+     "topAboveBaseline": 1.13,
+     "bottomBelowBaseline": 0.32,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.86,
+      0.86,
+      0.95,
+      0.95
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.01,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 1.02,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.41,
+     "ok": true,
+     "ious": [
+      1,
+      0.97,
+      0.97,
+      0.94,
+      0.94
+     ]
+    }
+   ]
+  }
+ },
+ "wikibaumAppearance": {
+  "fixedBuild": {
+   "shared-namespace": {
+    "ok": true,
+    "coreFonts": [
+     "g_d12_sf2",
+     "g_d12_sf4",
+     "g_d12_sf6"
+    ],
+    "penFonts": [
+     "g_pendf_d3_sf2",
+     "g_pendf_d3_sf4"
+    ],
+    "collisions": [],
+    "duplicateIds": [],
+    "penPrefixed": true,
+    "htmlVarAfterCore": "682px",
+    "htmlVarAfterPenDF": "682px"
+   },
+   "ground-truth-after-core": {
+    "ok": true,
+    "rows": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "cropbox.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": 0,
+      "dxEnd": 0.44
+     }
+    ],
+    "maxAbsDxEnd": 0.71
+   },
+   "ground-truth-same-pdf-embed": {
+    "ok": true,
+    "embedRendered": true,
+    "rows": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     }
+    ],
+    "maxAbsDxEnd": 0.71
+   },
+   "highlight-ground-truth": {
+    "ok": true,
+    "out": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.21,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.21,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": 0,
+      "dxEnd": -0.13,
+      "topAboveBaseline": 1.13,
+      "bottomBelowBaseline": 0.32,
+      "heightRatio": 1.45,
+      "ok": true,
+      "ious": [
+       1,
+       0.86,
+       0.86,
+       0.95,
+       0.95
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.33,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "cropbox.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.01,
+      "dxEnd": 0.42,
+      "topAboveBaseline": 1.02,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.41,
+      "ok": true,
+      "ious": [
+       1,
+       0.97,
+       0.97,
+       0.94,
+       0.94
+      ]
+     }
+    ]
+   }
+  },
+  "preFixBuild": {
+   "shared-namespace": {
+    "ok": false,
+    "coreFonts": [
+     "g_d15_sf2",
+     "g_d15_sf4",
+     "g_d15_sf6"
+    ],
+    "penFonts": [
+     "g_d3_sf2",
+     "g_d3_sf4"
+    ],
+    "collisions": [],
+    "duplicateIds": [],
+    "penPrefixed": false,
+    "htmlVarAfterCore": "682px",
+    "htmlVarAfterPenDF": "682px"
+   },
+   "ground-truth-after-core": {
+    "ok": true,
+    "rows": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "cropbox.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": 0,
+      "dxEnd": 0.44
+     }
+    ],
+    "maxAbsDxEnd": 0.71
+   },
+   "ground-truth-same-pdf-embed": {
+    "ok": true,
+    "embedRendered": true,
+    "rows": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": -0.03,
+      "dxEnd": -0.71
+     }
+    ],
+    "maxAbsDxEnd": 0.71
+   },
+   "highlight-ground-truth": {
+    "ok": true,
+    "out": [
+     {
+      "file": "rotations.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.21,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 2,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.21,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 3,
+      "quads": 1,
+      "dxStart": 0,
+      "dxEnd": -0.13,
+      "topAboveBaseline": 1.13,
+      "bottomBelowBaseline": 0.32,
+      "heightRatio": 1.45,
+      "ok": true,
+      "ious": [
+       1,
+       0.86,
+       0.86,
+       0.95,
+       0.95
+      ]
+     },
+     {
+      "file": "rotations.pdf",
+      "page": 4,
+      "quads": 1,
+      "dxStart": 0.02,
+      "dxEnd": -0.33,
+      "topAboveBaseline": 1.11,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.5,
+      "ok": true,
+      "ious": [
+       1,
+       0.92,
+       0.92,
+       0.99,
+       0.99
+      ]
+     },
+     {
+      "file": "cropbox.pdf",
+      "page": 1,
+      "quads": 1,
+      "dxStart": -0.01,
+      "dxEnd": 0.42,
+      "topAboveBaseline": 1.02,
+      "bottomBelowBaseline": 0.39,
+      "heightRatio": 1.41,
+      "ok": true,
+      "ious": [
+       1,
+       0.97,
+       0.97,
+       0.94,
+       0.94
+      ]
+     }
+    ]
+   }
+  }
+ }
+}
