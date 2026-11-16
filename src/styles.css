@@ -832,3 +832,114 @@
 .pendf-view .pendf-inpanel.pendf-panel {
 	padding: 0;
 }
+
+/* ---- 0.8.0: margin space (D-41) — part of each page's box: the border on the margin side grows ---- */
+.pendf-root .pdfViewer .page {
+	--pendf-mw: 0px;
+}
+.pendf-root.pendf-margin-on .pdfViewer .page {
+	--pendf-mw: calc(var(--total-scale-factor) * var(--pendf-margin-pts, 0) * 1px);
+	--pendf-margin-bg: #fbfbf8;
+}
+.pendf-root.pendf-invert.pendf-margin-on .pdfViewer .page {
+	--pendf-margin-bg: #1b1b1b;
+}
+.pendf-root.pendf-margin-right .pdfViewer .page {
+	border-right-width: calc(9px + var(--pendf-mw));
+}
+.pendf-root.pendf-margin-left .pdfViewer .page {
+	border-left-width: calc(9px + var(--pendf-mw));
+}
+.pendf-root.pendf-margin-bottom .pdfViewer .page {
+	border-bottom-width: calc(9px + var(--pendf-mw));
+}
+.pendf-root.pendf-margin-top .pdfViewer .page {
+	border-top-width: calc(9px + var(--pendf-mw));
+}
+/* the margin's paper (behind every layer: first in paint order) */
+.pendf-root.pendf-margin-on .pdfViewer .page::before {
+	content: "";
+	position: absolute;
+	pointer-events: none;
+	background: var(--pendf-margin-bg);
+}
+.pendf-root.pendf-margin-right .pdfViewer .page::before {
+	top: 0;
+	bottom: 0;
+	left: 100%;
+	width: var(--pendf-mw);
+	border-left: 1px dashed var(--background-modifier-border);
+}
+.pendf-root.pendf-margin-left .pdfViewer .page::before {
+	top: 0;
+	bottom: 0;
+	right: 100%;
+	width: var(--pendf-mw);
+	border-right: 1px dashed var(--background-modifier-border);
+}
+.pendf-root.pendf-margin-bottom .pdfViewer .page::before {
+	left: 0;
+	right: 0;
+	top: 100%;
+	height: var(--pendf-mw);
+	border-top: 1px dashed var(--background-modifier-border);
+}
+.pendf-root.pendf-margin-top .pdfViewer .page::before {
+	left: 0;
+	right: 0;
+	bottom: 100%;
+	height: var(--pendf-mw);
+	border-bottom: 1px dashed var(--background-modifier-border);
+}
+/* what lies beyond the page shows only inside an open margin (a little slack for note markers) */
+.pendf-root .pendf-layer-host {
+	clip-path: inset(-12px);
+}
+.pendf-root.pendf-margin-right .pendf-layer-host {
+	clip-path: inset(-12px calc(-1 * var(--pendf-mw) - 1px) -12px -12px);
+}
+.pendf-root.pendf-margin-left .pendf-layer-host {
+	clip-path: inset(-12px -12px -12px calc(-1 * var(--pendf-mw) - 1px));
+}
+.pendf-root.pendf-margin-bottom .pendf-layer-host {
+	clip-path: inset(-12px -12px calc(-1 * var(--pendf-mw) - 1px) -12px);
+}
+.pendf-root.pendf-margin-top .pendf-layer-host {
+	clip-path: inset(calc(-1 * var(--pendf-mw) - 1px) -12px -12px -12px);
+}
+/* hidden margin content: a small tab on that edge of the page */
+.pendf-root .pdfViewer .page.pendf-hidden-right::after,
+.pendf-root .pdfViewer .page.pendf-hidden-left::after,
+.pendf-root .pdfViewer .page.pendf-hidden-top::after,
+.pendf-root .pdfViewer .page.pendf-hidden-bottom::after {
+	content: "";
+	position: absolute;
+	pointer-events: none;
+	border-radius: 2px;
+	background: var(--interactive-accent);
+	opacity: 0.85;
+}
+.pendf-root .pdfViewer .page.pendf-hidden-right::after {
+	right: -7px;
+	top: 16px;
+	width: 4px;
+	height: 28px;
+}
+.pendf-root .pdfViewer .page.pendf-hidden-left::after {
+	left: -7px;
+	top: 16px;
+	width: 4px;
+	height: 28px;
+}
+.pendf-root .pdfViewer .page.pendf-hidden-bottom::after {
+	bottom: -7px;
+	left: 16px;
+	width: 28px;
+	height: 4px;
+}
+.pendf-root .pdfViewer .page.pendf-hidden-top::after {
+	top: -7px;
+	left: 16px;
+	width: 28px;
+	height: 4px;
+}

@@ -46,6 +46,8 @@ export class NoteController implements LayerRenderer {
 	private popover: HTMLElement | null = null;
 	private popoverComp: Component | null = null;
 	private _placing = false;
+	/** a point note being moved: the next tap on a page (or its margin) puts it there */
+	private moving: NoteAnnotation | null = null;
 
 	constructor(private readonly host: NoteHost) {
 		host.layers.addRenderer(this);
@@ -97,6 +99,7 @@ export class NoteController implements LayerRenderer {
 			return;
 		}
 		this._placing = on;
+		if (!on) this.moving = null;
 		this.host.root.toggleClass("is-placing-note", on);
 		this.host.onPlacingChange?.(on);
 	}
@@ -109,8 +112,10 @@ export class NoteController implements LayerRenderer {
 			if (!spot) return;
 			e.preventDefault();
 			e.stopPropagation();
+			const moving = this.moving;
 			this.setPlacing(false);
-			this.createPointNote(spot.page, spot.x, spot.y);
+			if (moving) this.moveNote(moving.id, spot.page, spot.x, spot.y);
+			else this.createPointNote(spot.page, spot.x, spot.y);
 			return;
 		}
 		const sel = this.host.root.ownerDocument.getSelection();
@@ -238,6 +243,28 @@ export class NoteController implements LayerRenderer {
 		return note.id;
 	}
 
+	/** Start moving a point note: the next tap on a page or its margin places it. */
+	startMove(note: NoteAnnotation): void {
+		if (note.target.kind !== "point") return;
+		this.closePopover();
+		this.setPlacing(true);
+		this.moving = note;
+		this.host.notice("Tap where the note should go (on a page or in its margin).");
+	}
+
+	/** Move a point note to a page point (any page; margins included). Undoable. */
+	moveNote(id: string, page: number, x: number, y: number): boolean {
+		const w = this.writable();
+		if (!w) return false;
+		const cur = w.store.get(id);
+		if (!cur || cur.type !== "note" || cur.target.kind !== "point") return false;
+		const from = cur.page;
+		w.undo.record("move note", [id], () => w.store.upsert({ ...cur, page, target: { kind: "point", x, y } }));
+		this.host.layers.refresh(from);
+		if (page !== from) this.host.layers.refresh(page);
+		return true;
+	}
+
 	private update(note: NoteAnnotation, body: string): boolean {
 		const w = this.writable();
 		if (!w) return false;
@@ -279,6 +306,11 @@ export class NoteController implements LayerRenderer {
 				this.host.copyLink?.(note);
 				this.closePopover();
 			});
+		}
+		if (note.target.kind === "point") {
+			const mv = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Move note", title: "Move note" } });
+			setIcon(mv, "move");
+			mv.addEventListener("click", () => this.startMove(note));
 		}
 		const edit = actions.createEl("button", { cls: "pendf-icon-btn", attr: { "aria-label": "Edit note", title: "Edit note" } });
 		setIcon(edit, "pencil");

@@ -1992,6 +1992,233 @@
 				return res;
 			});
 
+			// ---- 0.8.0 margin (D-41) helpers ----
+			const marginRect = (v, n) => {
+				// the page's content box and its margin box (client coordinates, right margin, no view rotation)
+				const div = pageView(v, n).div;
+				const content = div.querySelector(":scope > .canvasWrapper").getBoundingClientRect();
+				const cs = getComputedStyle(div);
+				const mw = parseFloat(cs.borderRightWidth) - 9;
+				return { content, margin: new DOMRect(content.right, content.top, mw, content.height), mw };
+			};
+			const penStroke = async (v, pts, id = 61) => {
+				const c = v.debugSession.viewer.container;
+				const fire = (type, x, y) => {
+					const target = document.elementFromPoint(x, y) ?? c;
+					target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerType: "pen", pointerId: id, isPrimary: true, clientX: x, clientY: y, pressure: 0.5, buttons: type === "pointerup" ? 0 : 1 }));
+				};
+				fire("pointerdown", pts[0][0], pts[0][1]);
+				for (const [x, y] of pts.slice(1)) {
+					await sleep(16);
+					fire("pointermove", x, y);
+				}
+				fire("pointerup", pts[pts.length - 1][0], pts[pts.length - 1][1]);
+				await sleep(300);
+			};
+			const inksOn = (v, page) => v.debugSession.store.all().filter((a) => a.type === "ink" && !a.deleted && a.page === page);
+			const marginOff = async (v) => {
+				v.setMargin({ on: false, side: "right", ratio: 0.5 });
+				await sleep(200);
+			};
+
+			await check("margin-ink", async () => {
+				const res = {};
+				const pl = P();
+				const inkBefore = { ...pl.settings.ink };
+				const { v } = await openPenDF("a4.pdf");
+				const s = v.debugSession;
+				const made = [];
+				try {
+					v.setScale("page-width");
+					await goPage(v, 1);
+					await waitIdle(v);
+					const textBefore = pageView(v, 1).textLayer.div.getBoundingClientRect();
+					const canvasBefore = pageView(v, 1).div.querySelector(".canvasWrapper").getBoundingClientRect();
+					v.setMargin({ on: true, side: "right", ratio: 0.5 });
+					await sleep(400);
+					await waitIdle(v);
+					const m = marginRect(v, 1);
+					const text = pageView(v, 1).textLayer.div.getBoundingClientRect();
+					// pdf.js layers keep their place inside the page (relative to the page content)
+					res.layout = {
+						fitScaleBefore: null,
+						marginPx: +m.mw.toFixed(1),
+						marginShare: +(m.mw / m.content.width).toFixed(3),
+						textMatchesCanvas: Math.abs(text.left - m.content.left) < 0.5 && Math.abs(text.width - m.content.width) < 0.5 && Math.abs(text.top - m.content.top) < 0.5,
+						textWidthRatio: +(text.width / textBefore.width).toFixed(4),
+						canvasWidthRatio: +(m.content.width / canvasBefore.width).toFixed(4),
+						fitsContainer: pageView(v, 1).div.getBoundingClientRect().right <= s.viewer.container.getBoundingClientRect().right + 1,
+					};
+					// a Pencil stroke inside the margin (Pencil always writes, default on)
+					pl.settings.ink = { ...pl.settings.ink, tool: "pen", pencilAlways: true };
+					const y0 = m.margin.top + m.margin.height * 0.3;
+					const x0 = m.margin.left + m.margin.width * 0.2;
+					await penStroke(v, [[x0, y0], [x0 + 40, y0 + 10], [x0 + 80, y0 + 20], [x0 + 120, y0 + 10]]);
+					const ink = inksOn(v, 1).at(-1);
+					if (ink) made.push(ink.id);
+					const geom = s.layers.geometry(1);
+					res.stroke = { saved: !!ink, minX: ink ? Math.min(...ink.points.filter((_, i) => i % 2 === 0)) : null, pageWidthPt: geom.width, offPage: ink ? Math.min(...ink.points.filter((_, i) => i % 2 === 0)) > geom.viewBox[2] : false };
+					const path = () => pageView(v, 1).div.querySelector(`.pendf-ink[data-id="${ink?.id}"]`);
+					const pr = path()?.getBoundingClientRect();
+					res.stroke.drawnInMargin = !!pr && pr.left >= m.margin.left - 2 && pr.right <= m.margin.right + 2;
+					// zoom (D-38 commit) at a point in the margin: the stroke stays at the same place relative to the page
+					const frac = (r, c) => [(r.left - c.left) / c.width, (r.top - c.top) / c.height];
+					const before = frac(path().getBoundingClientRect(), marginRect(v, 1).content);
+					s.zoom.begin("pinch", x0, y0);
+					s.zoom.update(1.5, x0, y0);
+					await sleep(50);
+					s.zoom.end();
+					await sleep(300);
+					await waitIdle(v);
+					const after = frac(path().getBoundingClientRect(), marginRect(v, 1).content);
+					res.zoom = { commitErrorPx: s.zoom.lastCommit?.anchorErrorPx ?? null, strokeShift: +Math.hypot(after[0] - before[0], after[1] - before[1]).toFixed(4), marginShareAfter: +(marginRect(v, 1).mw / marginRect(v, 1).content.width).toFixed(3) };
+					v.setScale("page-width");
+					await sleep(300);
+					await waitIdle(v);
+					// closing the margin hides the stroke and marks the page edge
+					v.toggleMargin(false);
+					await sleep(400);
+					const host = pageView(v, 1).div.querySelector(".pendf-layer-host");
+					res.closed = { marked: pageView(v, 1).div.classList.contains("pendf-hidden-right"), clip: getComputedStyle(host).clipPath, borderRight: getComputedStyle(pageView(v, 1).div).borderRightWidth };
+					// reopening the PDF opens the margin by itself, wide enough for the stroke
+					await v.onLoadFile(v.file);
+					await waitFor(() => v.debugSession?.ready && v.debugSession.store, 20000);
+					await sleep(800);
+					res.autoOpen = v.marginConfig;
+					// eraser in the margin
+					const s2 = v.debugSession;
+					await waitIdle(v);
+					pl.settings.ink = { ...pl.settings.ink, tool: "eraser" };
+					const p2 = pageView(v, 1).div.querySelector(`.pendf-ink[data-id="${ink?.id}"]`)?.getBoundingClientRect();
+					if (p2) await penStroke(v, [[p2.left + p2.width * 0.5, p2.top - 8], [p2.left + p2.width * 0.5, p2.top + p2.height / 2], [p2.left + p2.width * 0.5, p2.bottom + 8]], 62);
+					res.erased = !s2.store.get(ink?.id) || s2.store.get(ink?.id).deleted;
+				} finally {
+					pl.settings.ink = inkBefore;
+					for (const id of made) v.debugSession?.store?.remove(id);
+					await marginOff(v);
+				}
+				const L = res.layout;
+				res.ok =
+					Math.abs(L.marginShare - 0.5) < 0.02 && L.textMatchesCanvas && L.fitsContainer &&
+					res.stroke.saved && res.stroke.offPage && res.stroke.drawnInMargin &&
+					res.zoom.commitErrorPx !== null && res.zoom.commitErrorPx <= 2 && res.zoom.strokeShift < 0.002 && Math.abs(res.zoom.marginShareAfter - 0.5) < 0.02 &&
+					res.closed.marked && /inset/.test(res.closed.clip) && res.closed.borderRight === "9px" &&
+					res.autoOpen?.on === true && res.autoOpen.side === "right" && res.autoOpen.ratio >= 0.5 &&
+					res.erased;
+				return res;
+			});
+
+			await check("margin-ground-truth", async () => {
+				// highlight math with the margin open (pdf.js text layer must not move)
+				// the views groundTruthRows opens read the margin from each file's view memory
+				const files = ["rotations.pdf", "cropbox.pdf"];
+				const shown = [];
+				const watch = app.workspace.on("layout-change", () => {
+					for (const l of app.workspace.getLeavesOfType(VIEW)) {
+						const m = l.view.marginConfig;
+						if (m && files.includes(l.view.file?.name)) shown.push([l.view.file.name, m.on, m.ratio]);
+					}
+				});
+				let g = { rows: [] };
+				try {
+					for (const f of files) P().patchFileMemory(FIX + f, { margin: { on: true, side: "right", ratio: 0.75 } });
+					g = await groundTruthRows(files);
+				} finally {
+					app.workspace.offref(watch);
+					for (const f of files) P().patchFileMemory(FIX + f, { margin: { on: false, side: "right", ratio: 0.5 } });
+				}
+				const rows = g.rows;
+				return { rows, marginSeen: shown.slice(0, 6), ok: rows.length >= 5 && rows.every((r) => r.quads === 1 && Math.abs(r.dxStart) < 2.5 && Math.abs(r.dxEnd) < 3) && shown.some((x) => x[1] === true && x[2] === 0.75) };
+			});
+
+			await check("margin-note", async () => {
+				const res = {};
+				const { v } = await openPenDF("a4.pdf");
+				const s = v.debugSession;
+				let id = null;
+				try {
+					v.setScale("page-width");
+					await goPage(v, 1);
+					v.setMargin({ on: true, side: "right", ratio: 0.5 });
+					await sleep(400);
+					await waitIdle(v);
+					const m = marginRect(v, 1);
+					const x = m.margin.left + m.margin.width * 0.5;
+					const y = m.margin.top + m.margin.height * 0.25;
+					// create where a tap in the margin points (the same input path a tap uses)
+					const spot = s.notes.pointAt(x, y);
+					res.spot = spot;
+					id = spot ? s.notes.createPointNote(spot.page, spot.x, spot.y, "margin note") : null;
+					await sleep(300);
+					const marker = () => pageView(v, 1).div.querySelector(`.pendf-note[data-id="${id}"]`)?.getBoundingClientRect();
+					const r = marker();
+					res.create = { id, drawnAt: r ? [Math.round(r.left + r.width / 2 - x), Math.round(r.top + r.height / 2 - y)] : null, hit: s.notes.hitTest(x, y)?.id === id };
+					// move by tap: Move → tap elsewhere in the margin
+					const note = s.store.get(id);
+					s.notes.startMove(note);
+					const x2 = m.margin.left + m.margin.width * 0.7;
+					const y2 = m.margin.top + m.margin.height * 0.6;
+					document.elementFromPoint(x2, y2).dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: x2, clientY: y2 }));
+					await sleep(300);
+					const moved = s.store.get(id);
+					const r2 = marker();
+					res.move = { target: moved?.target, drawnAt: r2 ? [Math.round(r2.left + r2.width / 2 - x2), Math.round(r2.top + r2.height / 2 - y2)] : null, offPage: moved?.target.x > s.layers.geometry(1).viewBox[2] };
+					v.undo();
+					await sleep(200);
+					res.undo = { backTo: s.store.get(id)?.target };
+					s.notes.remove(s.store.get(id));
+					res.deleted = !s.store.get(id) || s.store.get(id).deleted;
+					id = null;
+				} finally {
+					if (id) s.store.remove(id);
+					await marginOff(v);
+				}
+				const near = (d) => d && Math.abs(d[0]) <= 2 && Math.abs(d[1]) <= 2;
+				res.ok = !!res.spot && res.spot.x > 595 && near(res.create.drawnAt) && res.create.hit && res.move.offPage && near(res.move.drawnAt) && res.undo.backTo?.x === res.spot.x && res.deleted;
+				return res;
+			});
+
+			await check("margin-with-panel", async () => {
+				// the margin and a docked panel side by side: nothing overlaps, fit width includes the margin
+				const res = {};
+				const { v } = await openPenDF("long-300.pdf");
+				const s = v.debugSession;
+				const leftCollapsed = app.workspace.leftSplit.collapsed;
+				try {
+					if (!leftCollapsed) app.workspace.leftSplit.collapse();
+					await sleep(500);
+					v.setScale("page-width");
+					v.setMargin({ on: true, side: "right", ratio: 0.5 });
+					v.panel.setState({ open: true, tab: "outline", width: 280, prefer: "auto" });
+					await sleep(600);
+					await waitIdle(v);
+					const page = pageView(v, s.viewer.currentPageNumber).div.getBoundingClientRect();
+					const panel = v.panel.el.getBoundingClientRect();
+					const cont = s.viewer.container.getBoundingClientRect();
+					res.layout = { mode: v.panel.currentMode, panelRight: Math.round(panel.right), pageLeft: Math.round(page.left), pageRight: Math.round(page.right), containerRight: Math.round(cont.right), fitScale: +s.viewer.currentScale.toFixed(3) };
+					// canvas memory with margin + panel on, scrolling the 300-page PDF
+					let peak = 0;
+					let maxCanvases = 0;
+					for (const p of [20, 80, 150, 220, 290]) {
+						await goPage(v, p);
+						await waitIdle(v);
+						let b = 0;
+						const cvs = v.containerEl.querySelectorAll(".pendf-container canvas");
+						for (const c of cvs) b += c.width * c.height * 4;
+						peak = Math.max(peak, b);
+						maxCanvases = Math.max(maxCanvases, cvs.length);
+					}
+					res.memory = { pageCanvasesMax: maxCanvases, pageCanvasMBPeak: +(peak / 1048576).toFixed(1), thumbMB: +(v.thumbnailBytes() / 1048576).toFixed(2) };
+				} finally {
+					v.panel.setState({ open: false, tab: "outline", width: 280, prefer: "auto" });
+					await marginOff(v);
+					if (!leftCollapsed) app.workspace.leftSplit.expand();
+				}
+				const L = res.layout;
+				res.ok = (L.mode !== "docked" || L.panelRight <= L.pageLeft) && L.pageRight <= L.containerRight + 1 && res.memory.pageCanvasesMax <= 12;
+				return res;
+			});
+
 			await check("persist-restart-rename", async () => {
 				// self-contained: make sure rotations.pdf has a highlight (earlier checks may or may not have run)
 				{

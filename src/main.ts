@@ -13,6 +13,7 @@ import { describePlatform } from "./util/platform";
 import { LinkRecorder } from "./links/recorder";
 import { aliasFrom } from "./links/format";
 import { isZoomPreset } from "./zoom/presets";
+import { MARGIN_RATIOS } from "./margin/model";
 
 const log = logger("plugin");
 
@@ -132,6 +133,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "search-all", name: "Search the whole PDF", callback: () => void this.showAnnotationsPanel("search") });
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
 		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
+		this.addCommand({ id: "toggle-margin", name: "Toggle margin", checkCallback: (c) => this.withView(c, (v) => v.toggleMargin()) });
 		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });
 		this.addCommand({ id: "copy-page-link", name: "Copy link to current page", checkCallback: (c) => this.withView(c, (v) => v.copyPageLink()) });
 		this.addCommand({
@@ -363,6 +365,8 @@ export default class PenDFPlugin extends Plugin {
 		this.settings.ink = { ...structuredClone(DEFAULT_SETTINGS.ink), ...(typeof data.ink === "object" && data.ink ? data.ink : {}) };
 		if (!isZoomPreset(this.settings.zoomRendering)) this.settings.zoomRendering = DEFAULT_SETTINGS.zoomRendering;
 		if (this.settings.panelLocation !== "sidebar") this.settings.panelLocation = "view";
+		if (this.settings.marginSide !== "left") this.settings.marginSide = "right";
+		if (!(MARGIN_RATIOS as readonly number[]).includes(this.settings.marginRatio)) this.settings.marginRatio = 0.5;
 	}
 
 	async saveSettings(): Promise<void> {

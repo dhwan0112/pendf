@@ -58,6 +58,24 @@ Quads use the Acrobat `/QuadPoints` order **relative to the displayed text**:
 upper-left, upper-right, lower-left, lower-right, flattened as
 `[x1, y1, x2, y2, x3, y3, x4, y4]`.
 
+### Off-page coordinates (margin, 0.8.0)
+
+Points may lie **outside the page box**. penDF's margin (D-41) stores the handwriting and notes
+written beside a page as ordinary points of that page's PDF user space, just beyond its box. Readers
+must not clip or reject them.
+
+- **Which side is "right":** the side of the page as it is displayed with the page's own `/Rotate`
+  applied (its intrinsic orientation), not the side of the screen. A point right of the page on a
+  page with `/Rotate 90` is therefore beyond the page box in the direction that `/Rotate 90` turns to
+  the right. When the reader rotates the view, the margin turns with the page: the content stays next
+  to the same edge of the page.
+- **Extent:** a margin is as wide as `ratio × page width` (the width of the page box in its intrinsic
+  orientation); penDF opens a margin automatically, wide enough for the content it finds (up to 3×
+  the page width).
+- The margin's visibility and width are a *view* setting kept in the plugin's data per PDF, never in
+  the sidecar: a sidecar only has the points.
+- Writing such annotations into the PDF (Phase 11) needs a MediaBox / CropBox enlarged to contain them.
+
 ## Annotation types
 
 ### `highlight` (Phase 2, implemented)

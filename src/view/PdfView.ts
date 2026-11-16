@@ -42,6 +42,8 @@ import { Toolbar } from "./toolbar";
 import { DEFAULT_PANEL_STATE, InViewPanel, parsePanelState, type InViewPanelState } from "../panel/InViewPanel";
 import type { PanelTab } from "../panel/tabs";
 import { scrollToTopAnchor, topAnchor, type TopAnchor } from "../panel/layout";
+import { MarginController, type MarginPageView } from "../margin/controller";
+import { autoMargin, normalizeMargin, type MarginConfig } from "../margin/model";
 
 export const VIEW_TYPE = "pendf-view";
 const log = logger("view");
@@ -73,6 +75,8 @@ interface Session {
 	text: Map<number, Promise<PageText>>;
 	/** pinch / trackpad zoom (0.7.2) */
 	zoom: ZoomController;
+	/** margin space beside the pages (0.8.0) */
+	margin: MarginController;
 	timeline: ZoomTimeline;
 	render: RenderConfig;
 }
@@ -158,6 +162,8 @@ export class PenDFView extends FileView {
 	private saveStateTimer: number | null = null;
 	private noteButton: HTMLButtonElement | null = null;
 	private inkButton: HTMLButtonElement | null = null;
+	private marginButton: HTMLButtonElement | null = null;
+	private marginTimer: number | null = null;
 	private inkBar!: HTMLElement;
 	/** set while ink edits run, so the side panel is not re-rendered for every stroke */
 	private quiet = false;
@@ -288,6 +294,7 @@ export class PenDFView extends FileView {
 			},
 		});
 		this.inkButton = t.add(tools, { id: "ink", icon: "pen-line", label: "Handwriting tools (pen, highlighter, eraser)", priority: 1, run: () => this.toggleInk() });
+		this.marginButton = t.add(tools, { id: "margin", icon: "panel-right-open", label: "Show margin", priority: 2, run: () => this.toggleMargin() });
 		t.add(tools, { id: "bookmark", icon: "bookmark-plus", label: "Bookmark this spot", priority: 3, run: () => void this.addBookmark() });
 		// history
 		const history = t.group("history");
@@ -502,6 +509,17 @@ export class PenDFView extends FileView {
 			},
 			timeline,
 		});
+		const memory = this.plugin.fileMemory(file.path);
+		const margin = new MarginController(
+			{
+				root: this.viewerRoot,
+				pagesCount: () => viewer.pagesCount,
+				pageView: (n) => (viewer.getPageView(n - 1) as unknown as MarginPageView | undefined) ?? null,
+				viewRotation: () => viewer.pagesRotation,
+				annotations: () => session.store?.all() ?? [],
+			},
+			normalizeMargin(memory?.margin, { on: false, side: this.plugin.settings.marginSide, ratio: this.plugin.settings.marginRatio }),
+		);
 		const session: Session = {
 			file,
 			opened,
@@ -522,6 +540,7 @@ export class PenDFView extends FileView {
 			zoom,
 			timeline,
 			render,
+			margin,
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -578,8 +597,12 @@ export class PenDFView extends FileView {
 		});
 		this.session = session;
 
+		eventBus.on("pagesloaded", () => this.relayoutKeepingTop(), { signal: ac.signal });
+		eventBus.on("rotationchanging", () => margin.apply(), { signal: ac.signal });
 		eventBus.on("pagesinit", () => {
 			session.ready = true;
+			margin.apply();
+			if (session.store) window.setTimeout(() => this.session === session && this.autoOpenMargin(), 0);
 			this.applyInitialState(file);
 			this.tryNav();
 		}, { signal: ac.signal });
@@ -627,6 +650,7 @@ export class PenDFView extends FileView {
 					layers.refresh();
 				}
 				if (store.status !== "ok") this.showStoreStatus(store);
+				this.scheduleMarginRefresh();
 				if (!this.quiet) this.notifyChange();
 			},
 			onProblem: (m) => log.warn(`${store.path}: ${m}`),
@@ -642,6 +666,7 @@ export class PenDFView extends FileView {
 		this.plugin.trackStore(store);
 		this.showStoreStatus(store);
 		layers.refresh();
+		if (session.ready) this.autoOpenMargin();
 		this.notifyChange();
 		this.tryNav();
 	}
@@ -1022,6 +1047,7 @@ export class PenDFView extends FileView {
 
 	private notifyChange(): void {
 		this.panel?.refresh();
+		this.scheduleMarginRefresh();
 		for (const fn of this.changeListeners) {
 			try {
 				fn();
@@ -1246,8 +1272,74 @@ export class PenDFView extends FileView {
 	}
 
 	/** Extra page-box width beyond the page, as a share of the page width (margin, 0.8.0). */
-	protected extraWidthRatio(): number {
-		return 0;
+	private extraWidthRatio(): number {
+		const m = this.session?.margin.cfg;
+		return m?.on ? m.ratio : 0;
+	}
+
+	/** Margin state of the open PDF (tests, panel). */
+	get marginConfig(): MarginConfig | null {
+		return this.session ? { ...this.session.margin.cfg } : null;
+	}
+
+	/** Show or hide the margin beside the pages ("Toggle margin"). */
+	toggleMargin(on?: boolean): void {
+		const s = this.session;
+		if (!s) return;
+		this.setMargin({ on: on ?? !s.margin.cfg.on });
+	}
+
+	/** Change the margin (on, side, width), remember it for this file and keep the reading position. */
+	setMargin(patch: Partial<MarginConfig>): void {
+		const s = this.session;
+		if (!s) return;
+		s.margin.cfg = normalizeMargin({ ...s.margin.cfg, ...patch }, s.margin.cfg);
+		this.plugin.patchFileMemory(s.file.path, { margin: { ...s.margin.cfg } });
+		this.toolbar?.relabel("margin", s.margin.cfg.on ? "Hide margin" : "Show margin");
+		this.marginButton?.toggleClass("is-active", s.margin.cfg.on);
+		this.relayoutKeepingTop();
+	}
+
+	/** Margin content changed (any edit, ink included): refresh the hidden-content marks. The margin never closes by itself. */
+	private scheduleMarginRefresh(): void {
+		if (!this.session || this.marginTimer !== null) return;
+		this.marginTimer = window.setTimeout(() => {
+			this.marginTimer = null;
+			const s = this.session;
+			if (!s) return;
+			s.margin.recompute();
+			s.margin.apply();
+		}, 200);
+	}
+
+	/** Re-apply the margin (page box widths) and refit in fit-width mode, keeping the content at the top edge. */
+	private relayoutKeepingTop(): void {
+		const s = this.session;
+		if (!s?.ready) {
+			s?.margin.apply();
+			return;
+		}
+		const anchor = this.captureTop();
+		s.margin.recompute();
+		s.margin.apply();
+		if (this.fitMode) this.fitWidth();
+		if (anchor) this.restoreTop(anchor);
+		this.lastTop = this.captureTop();
+	}
+
+	/** After the annotations load: a PDF with margin content opens its margin, wide enough for it. */
+	private autoOpenMargin(): void {
+		const s = this.session;
+		if (!s) return;
+		s.margin.recompute();
+		const next = autoMargin(s.margin.documentExtent(), s.margin.cfg);
+		if (next.on !== s.margin.cfg.on || next.side !== s.margin.cfg.side || next.ratio !== s.margin.cfg.ratio) {
+			log.info(`margin content found: showing the ${next.side} margin at ${Math.round(next.ratio * 100)} %`);
+			s.margin.cfg = next;
+			this.marginButton?.toggleClass("is-active", next.on);
+			this.toolbar?.relabel("margin", next.on ? "Hide margin" : "Show margin");
+			this.relayoutKeepingTop();
+		} else s.margin.apply();
 	}
 
 	/** Fit the page width (and its margin, when shown) to the view width. */

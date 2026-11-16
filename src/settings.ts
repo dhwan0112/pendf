@@ -1,6 +1,7 @@
 import { type App, PluginSettingTab, Setting, type SettingDefinition, type SettingDefinitionItem } from "obsidian";
 import type PenDFPlugin from "./main";
 import { ZOOM_PRESETS, isZoomPreset, type ZoomPreset } from "./zoom/presets";
+import { MARGIN_RATIOS, type MarginConfig, type MarginSide } from "./margin/model";
 
 export interface HighlightColor {
 	name: string;
@@ -24,6 +25,9 @@ export interface PenDFSettings {
 	positions: Record<string, FileViewMemory>;
 	/** where the toolbar's panel button and the panel commands open the panel (0.8.0) */
 	panelLocation: "view" | "sidebar";
+	/** default side and width of a newly opened margin (0.8.0) */
+	marginSide: MarginSide;
+	marginRatio: number;
 	/** handwriting (Phase 6) */
 	ink: InkSettings;
 }
@@ -35,6 +39,8 @@ export interface FileViewMemory {
 	t: number;
 	/** keys of the outline entries the user left expanded */
 	outline?: string[];
+	/** margin shown / side / width for this file (a view setting — never in the sidecar) */
+	margin?: MarginConfig;
 }
 
 export type InkTool = "pen" | "highlighter" | "eraser";
@@ -76,6 +82,8 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	rememberPosition: true,
 	positions: {},
 	panelLocation: "view",
+	marginSide: "right",
+	marginRatio: 0.5,
 	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
 };
 
@@ -90,6 +98,7 @@ const TEXT = {
 	openPdfsInPenDF: ["Open PDFs in penDF", "Use penDF instead of Obsidian's PDF viewer whenever a PDF is opened. Embeds in notes and hover previews still use Obsidian's viewer."],
 	invertPages: ["Invert page colors", "Dark reading mode: inverts the rendered pages (not your highlights)."],
 	rememberPosition: ["Remember position", "Reopen each PDF at the page and zoom you left it."],
+	margin: ["Margin", "Space beside the page for notes and handwriting (toolbar button or command “Toggle margin”). Side and width of a new margin; each PDF remembers its own."],
 	panelLocation: ["Panel location", "Where the panel button and the panel commands (outline, page thumbnails, search, bookmarks, annotations) open the panel: inside the penDF view, or in Obsidian's right sidebar."],
 	handwriting: "Handwriting",
 	inkPencilAlways: ["Apple Pencil always writes", "The Pencil writes whenever it touches a page, with the last tool you picked (pen, highlighter or eraser); fingers scroll and select text. Off: the Pencil writes only in ink mode (toolbar pen button)."],
@@ -145,6 +154,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 					toggle("invertPages"),
 					toggle("rememberPosition"),
 					{ name: TEXT.panelLocation[0], desc: TEXT.panelLocation[1], control: { type: "dropdown", key: "panelLocation", options: { view: "In the penDF view", sidebar: "Obsidian sidebar" } } },
+					{ name: TEXT.margin[0], desc: TEXT.margin[1], control: { type: "dropdown", key: "marginSide", options: { right: "Right of the page", left: "Left of the page" } } },
+					{ name: "Margin width", desc: "Share of the page width.", control: { type: "dropdown", key: "marginRatio", options: Object.fromEntries(MARGIN_RATIOS.map((r) => [String(r), `${Math.round(r * 100)} %`])) } },
 				],
 			},
 			{
@@ -180,6 +191,8 @@ export class PenDFSettingTab extends PluginSettingTab {
 		if (key === "inkPencilAlways") return s.ink.pencilAlways;
 		if (key === "zoomRendering") return s.zoomRendering;
 		if (key === "panelLocation") return s.panelLocation;
+		if (key === "marginSide") return s.marginSide;
+		if (key === "marginRatio") return String(s.marginRatio);
 		return s[key as BoolKey];
 	}
 
@@ -204,6 +217,11 @@ export class PenDFSettingTab extends PluginSettingTab {
 			s.ink = { ...s.ink, pencilAlways: Boolean(value) };
 		} else if (key === "inkInput") {
 			s.ink = { ...s.ink, input: value === "exclusive" ? "exclusive" : "stylus" };
+		} else if (key === "marginSide") {
+			s.marginSide = value === "left" ? "left" : "right";
+		} else if (key === "marginRatio") {
+			const r = Number(value);
+			s.marginRatio = (MARGIN_RATIOS as readonly number[]).includes(r) ? r : 0.5;
 		} else if (key === "panelLocation") {
 			s.panelLocation = value === "sidebar" ? "sidebar" : "view";
 		} else if (key === "zoomRendering") {
@@ -260,6 +278,20 @@ export class PenDFSettingTab extends PluginSettingTab {
 					.setValue(s.panelLocation)
 					.onChange((v) => set("panelLocation", v)),
 			);
+		new Setting(containerEl)
+			.setName(TEXT.margin[0])
+			.setDesc(TEXT.margin[1])
+			.addDropdown((d) =>
+				d
+					.addOption("right", "Right of the page")
+					.addOption("left", "Left of the page")
+					.setValue(s.marginSide)
+					.onChange((v) => set("marginSide", v)),
+			)
+			.addDropdown((d) => {
+				for (const r of MARGIN_RATIOS) d.addOption(String(r), `${Math.round(r * 100)} %`);
+				d.setValue(String(s.marginRatio)).onChange((v) => set("marginRatio", v));
+			});
 		new Setting(containerEl).setName(TEXT.handwriting).setHeading();
 		new Setting(containerEl)
 			.setName(TEXT.inkPencilAlways[0])
