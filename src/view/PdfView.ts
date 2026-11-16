@@ -21,7 +21,9 @@ import { LayerManager, pageContentRect, svgEl } from "../layers";
 import { HighlightController } from "../highlight/controller";
 import { NoteController } from "../notes/controller";
 import { InkController } from "../ink/controller";
-import { PEN_COLORS, PEN_WIDTHS, type InkTool } from "../settings";
+import { ToolPalette } from "../tools/palette";
+import { TextTool } from "../tools/text";
+import { fingerUsesTool, isInkTool, type ToolId } from "../tools/model";
 import { noteAnchor } from "../notes/model";
 import type { Annotation, AreaAnnotation } from "../store/schema";
 import { aliasFrom, buildSubpath, parseSubpath, type PdfTarget } from "../links/format";
@@ -82,6 +84,7 @@ interface Session {
 	margin: MarginController;
 	/** area excerpts (0.8.0) */
 	area: AreaController;
+	textTool: TextTool;
 	timeline: ZoomTimeline;
 	render: RenderConfig;
 }
@@ -166,12 +169,14 @@ export class PenDFView extends FileView {
 	private viewerEl!: HTMLDivElement;
 	private hud: DebugHud | null = null;
 	private saveStateTimer: number | null = null;
-	private noteButton: HTMLButtonElement | null = null;
-	private inkButton: HTMLButtonElement | null = null;
 	private marginButton: HTMLButtonElement | null = null;
-	private areaButton: HTMLButtonElement | null = null;
 	private marginTimer: number | null = null;
-	private inkBar!: HTMLElement;
+	/** bottom tool palette (D-46) */
+	palette: ToolPalette | null = null;
+	/** setTool is running (controller callbacks must not re-enter it) */
+	private settingTool = false;
+	/** the tool to return to when a note has been placed */
+	private toolBeforeNote: ToolId | null = null;
 	/** set while ink edits run, so the side panel is not re-rendered for every stroke */
 	private quiet = false;
 	private changeListeners = new Set<() => void>();
@@ -226,7 +231,6 @@ export class PenDFView extends FileView {
 
 		this.toolbarEl = el.createDiv({ cls: "pendf-toolbar" });
 		this.buildToolbar(this.toolbarEl);
-		this.inkBar = el.createDiv({ cls: "pendf-inkbar is-hidden" });
 		this.searchBar = el.createDiv({ cls: "pendf-searchbar is-hidden" });
 		this.buildSearchBar(this.searchBar);
 		this.bannerEl = el.createDiv({ cls: "pendf-banner is-hidden" });
@@ -237,6 +241,15 @@ export class PenDFView extends FileView {
 		this.container.tabIndex = 0;
 		this.viewerEl = this.container.createDiv({ cls: "pdfViewer" });
 		this.panel = new InViewPanel(this.app, this.bodyEl, this, () => this.app.workspace.requestSaveLayout());
+		this.palette = new ToolPalette(this.bodyEl, {
+			viewArea: this.viewerRoot,
+			settings: () => this.plugin.settings,
+			tool: () => this.currentTool,
+			select: (t) => this.setTool(t),
+			undo: () => this.undo(),
+			redo: () => this.redo(),
+			save: () => this.plugin.saveQuietly(),
+		});
 		if (this.pendingPanel) {
 			this.panel.setState(this.pendingPanel);
 			this.pendingPanel = null;
@@ -287,27 +300,10 @@ export class PenDFView extends FileView {
 		t.add(zoom, { id: "fit-width", icon: "move-horizontal", label: "Fit width", priority: 3, run: () => this.setScale("page-width") });
 		t.add(zoom, { id: "rotate", icon: "rotate-cw", label: "Rotate view", priority: 3, run: () => this.rotate(90) });
 		t.spacer();
-		// annotation tools
-		const tools = t.group("annotate");
-		t.add(tools, { id: "highlight", icon: "highlighter", label: "Highlight selection", priority: 2, run: () => this.session?.highlights.createFromSelection() });
-		this.noteButton = t.add(tools, {
-			id: "note",
-			icon: "message-square-plus",
-			label: "Add note (then tap the page)",
-			priority: 1,
-			run: () => {
-				const n = this.session?.notes;
-				if (n) n.setPlacing(!n.placing);
-			},
-		});
-		this.inkButton = t.add(tools, { id: "ink", icon: "pen-line", label: "Handwriting tools (pen, highlighter, eraser)", priority: 1, run: () => this.toggleInk() });
-		this.areaButton = t.add(tools, { id: "area", icon: "square-dashed", label: "Area excerpt (drag a rectangle)", priority: 2, run: () => this.toggleArea() });
-		this.marginButton = t.add(tools, { id: "margin", icon: "panel-right-open", label: "Show margin", priority: 2, run: () => this.toggleMargin() });
-		t.add(tools, { id: "bookmark", icon: "bookmark-plus", label: "Bookmark this spot", priority: 3, run: () => void this.addBookmark() });
-		// history
-		const history = t.group("history");
-		t.add(history, { id: "undo", icon: "undo-2", label: "Undo", priority: 1, run: () => this.undo() });
-		t.add(history, { id: "redo", icon: "redo-2", label: "Redo", priority: 2, run: () => this.redo() });
+		// view: margin, bookmark (annotation tools live in the bottom palette, D-46)
+		const view = t.group("view");
+		this.marginButton = t.add(view, { id: "margin", icon: "panel-right-open", label: "Show margin", priority: 2, run: () => this.toggleMargin() });
+		t.add(view, { id: "bookmark", icon: "bookmark-plus", label: "Bookmark this spot", priority: 3, run: () => void this.addBookmark() });
 		// search, link, panel
 		const misc = t.group("find");
 		t.add(misc, { id: "search", icon: "search", label: "Find in PDF", priority: 2, run: () => this.openSearch() });
@@ -366,58 +362,82 @@ export class PenDFView extends FileView {
 		}
 		this.session?.layers.refresh();
 		this.session?.ink.applyInputMode();
-		if (this.session?.ink.active) this.renderInkBar();
+		this.syncToolClasses();
+		this.palette?.refresh();
 	}
 
 	// --------------------------------------------------- handwriting (Phase 6)
 
+	/** Handwriting on/off (command, tests): the last ink tool, or no tool. */
 	toggleInk(on?: boolean): void {
-		const ink = this.session?.ink;
-		if (!ink) return;
-		ink.setActive(on ?? !ink.active);
+		const want = on ?? !this.session?.ink.active;
+		this.setTool(want ? this.plugin.settings.ink.tool : "none");
 	}
 
-	private setInk(patch: Partial<typeof this.plugin.settings.ink>): void {
-		this.plugin.settings.ink = { ...this.plugin.settings.ink, ...patch };
-		this.renderInkBar();
-		void this.plugin.saveSettings();
+	/** The tool in effect, read from the controllers (they can also switch themselves off). */
+	get currentTool(): ToolId {
+		const s = this.session;
+		if (!s) return this.plugin.settings.tools.last;
+		if (s.notes.placing) return "note";
+		if (s.area.active) return "area";
+		if (s.textTool.active) return "text";
+		if (s.ink.active) return this.plugin.settings.ink.tool;
+		return "none";
 	}
 
-	private renderInkBar(): void {
-		const bar = this.inkBar;
-		const ink = this.plugin.settings.ink;
-		bar.empty();
-		const tools = bar.createDiv({ cls: "pendf-group" });
-		const tool = (id: InkTool, icon: string, label: string) => {
-			const b = this.button(tools, icon, label, () => this.setInk({ tool: id }));
-			b.toggleClass("is-active", ink.tool === id);
-		};
-		tool("pen", "pen-line", "Pen");
-		tool("highlighter", "highlighter", "Highlighter");
-		tool("eraser", "eraser", "Stroke eraser");
-		if (ink.tool !== "eraser") {
-			const colors = bar.createDiv({ cls: "pendf-group pendf-ink-colors" });
-			const list = ink.tool === "pen" ? PEN_COLORS : this.plugin.settings.colors.map((c) => c.hex);
-			const current = ink.tool === "pen" ? ink.penColor : ink.highlighterColor;
-			for (const hex of list) {
-				const b = colors.createEl("button", { cls: "pendf-swatch pendf-ink-swatch", attr: { "aria-label": hex, title: hex } });
-				b.setCssProps({ "--pendf-swatch": hex });
-				b.toggleClass("is-active", hex.toLowerCase() === current.toLowerCase());
-				b.addEventListener("click", () => this.setInk(ink.tool === "pen" ? { penColor: hex } : { highlighterColor: hex }));
+	/**
+	 * Select a tool (palette, commands). The only place that switches the controllers; their
+	 * callbacks only refresh the palette. Ink tools also become the ink controller's tool;
+	 * pen and highlighter become the Pencil's "last pen tool".
+	 */
+	setTool(tool: ToolId, opts: { quiet?: boolean } = {}): void {
+		const s = this.session;
+		const settings = this.plugin.settings;
+		if (this.settingTool) return;
+		this.settingTool = true;
+		try {
+			if (s && tool !== "none" && !s.store?.writable) {
+				if (!opts.quiet) new Notice("penDF: annotations for this PDF are read-only (see the banner).");
+				tool = "none";
 			}
-			const widths = bar.createDiv({ cls: "pendf-group pendf-ink-widths" });
-			const wl = ink.tool === "pen" ? PEN_WIDTHS : [8, 12, 18];
-			const cw = ink.tool === "pen" ? ink.penWidth : ink.highlighterWidth;
-			wl.forEach((w, i) => {
-				const b = widths.createEl("button", { cls: "pendf-icon-btn pendf-ink-width", attr: { "aria-label": `Width ${w} pt`, title: `${w} pt` } });
-				b.createSpan({ cls: "pendf-ink-dot" }).setCssProps({ "--pendf-dot": `${4 + i * 4}px` });
-				b.toggleClass("is-active", w === cw);
-				b.addEventListener("click", () => this.setInk(ink.tool === "pen" ? { penWidth: w } : { highlighterWidth: w }));
-			});
+			if (tool === "note") this.toolBeforeNote = this.currentTool === "note" ? this.toolBeforeNote : this.currentTool;
+			else this.toolBeforeNote = null;
+			if (isInkTool(tool)) {
+				settings.ink = { ...settings.ink, tool };
+				if (tool !== "eraser") settings.tools.lastPen = tool;
+			}
+			if (s) {
+				if (tool !== "note") s.notes.setPlacing(false);
+				if (tool !== "area") s.area.setActive(false);
+				if (tool !== "text") s.textTool.setActive(false);
+				if (!isInkTool(tool)) s.ink.setActive(false);
+				s.highlights.hidePalette();
+				s.highlights.closeMenu();
+				if (isInkTool(tool)) s.ink.setActive(true);
+				else if (tool === "area") s.area.setActive(true);
+				else if (tool === "text") s.textTool.setActive(true);
+				else if (tool === "note") s.notes.setPlacing(true);
+			}
+			if (tool !== "note") settings.tools.last = tool;
+		} finally {
+			this.settingTool = false;
 		}
-		bar.createDiv({ cls: "pendf-spacer" });
-		const done = bar.createEl("button", { cls: "pendf-ink-done", text: "Done" });
-		done.addEventListener("click", () => this.toggleInk(false));
+		this.syncToolClasses();
+		this.palette?.refresh();
+		this.plugin.saveQuietly();
+	}
+
+	/** Root classes that depend on the tool and the input mode. */
+	private syncToolClasses(): void {
+		const tool = this.currentTool;
+		this.viewerRoot?.toggleClass("is-fingers-draw", fingerUsesTool(tool, this.plugin.settings.ink.input));
+	}
+
+	/** A controller switched itself on/off (Escape, a placed note, read-only): show the real state. */
+	private onToolChanged(): void {
+		if (this.settingTool) return;
+		this.syncToolClasses();
+		this.palette?.refresh();
 	}
 
 	// ------------------------------------------------------------- file load
@@ -553,6 +573,7 @@ export class PenDFView extends FileView {
 			render,
 			margin,
 			area: null as unknown as AreaController,
+			textTool: null as unknown as TextTool,
 		};
 		session.highlights = new HighlightController({
 			root: this.viewerRoot,
@@ -578,8 +599,16 @@ export class PenDFView extends FileView {
 			sourcePath: () => session.file.path,
 			notice: (m) => new Notice(m),
 			onPlacingChange: (on) => {
-				if (on) session.area?.setActive(false);
-				this.noteButton?.toggleClass("is-active", on);
+				if (on) {
+					// a note move (from the note popover) also places: remember what to come back to
+					if (!this.settingTool && this.toolBeforeNote === null) this.toolBeforeNote = session.ink.active ? this.plugin.settings.ink.tool : session.area?.active ? "area" : session.textTool?.active ? "text" : "none";
+				} else if (!this.settingTool) {
+					// placed (or Escape): back to the tool in use before
+					const back = this.toolBeforeNote ?? "none";
+					this.toolBeforeNote = null;
+					window.setTimeout(() => this.session === session && this.currentTool === "none" && back !== "none" && this.setTool(back), 0);
+				}
+				this.onToolChanged();
 			},
 			closeOthers: () => {
 				session.highlights.hidePalette();
@@ -595,13 +624,13 @@ export class PenDFView extends FileView {
 			undo: () => session.undo,
 			settings: () => this.plugin.settings.ink,
 			notice: (m) => new Notice(m),
-			onActiveChange: (on) => {
-				if (on) session.area?.setActive(false);
-				this.inkButton?.toggleClass("is-active", on);
-				this.inkBar.toggleClass("is-hidden", !on);
-				if (on) this.renderInkBar();
+			onActiveChange: () => this.onToolChanged(),
+			busy: () => (session.notes?.placing ?? false) || (session.area?.active ?? false) || (session.textTool?.active ?? false),
+			inkTool: () => {
+				const ink = this.plugin.settings.ink;
+				// with a tool selected, its own; with none (Pencil always writes), the last pen tool
+				return session.ink.active ? ink.tool : this.plugin.settings.tools.lastPen;
 			},
-			busy: () => (session.notes?.placing ?? false) || (session.area?.active ?? false),
 			quietly: (fn) => {
 				this.quiet = true;
 				try {
@@ -625,15 +654,18 @@ export class PenDFView extends FileView {
 			copyLink: (a) => this.copyLink({ page: a.page, id: a.id }, aliasFrom(a.label || a.text) || `p. ${a.page}`),
 			copyImage: (a) => this.copyAreaImage(a),
 			saveImage: (a) => this.saveAreaImage(a),
-			onActiveChange: (on) => {
-				this.areaButton?.toggleClass("is-active", on);
-				if (on) {
-					session.ink.setActive(false);
-					session.notes.setPlacing(false);
-					session.highlights.hidePalette();
-					session.highlights.closeMenu();
-				}
+			onActiveChange: () => this.onToolChanged(),
+			areaColor: () => this.plugin.settings.tools.areaColor,
+			fingersDraw: () => this.plugin.settings.ink.input === "exclusive",
+		});
+		session.textTool = new TextTool({
+			root: this.viewerRoot,
+			container: this.container,
+			writable: () => !!session.store?.writable,
+			highlight: () => {
+				session.highlights.createFromSelection(this.plugin.settings.tools.textColor);
 			},
+			onActiveChange: () => this.onToolChanged(),
 		});
 		this.session = session;
 
@@ -643,6 +675,7 @@ export class PenDFView extends FileView {
 			session.ready = true;
 			margin.apply();
 			if (session.store) window.setTimeout(() => this.session === session && this.autoOpenMargin(), 0);
+			this.restoreLastTool(session);
 			this.applyInitialState(file);
 			this.tryNav();
 		}, { signal: ac.signal });
@@ -707,8 +740,20 @@ export class PenDFView extends FileView {
 		this.showStoreStatus(store);
 		layers.refresh();
 		if (session.ready) this.autoOpenMargin();
+		this.restoreLastTool(session);
 		this.notifyChange();
 		this.tryNav();
+	}
+
+	/** Select the remembered tool once the PDF is shown and its annotations are loaded (silently; not when read-only). */
+	private restoreLastTool(session: Session): void {
+		this.palette?.refresh();
+		if (!session.ready || !session.store?.writable) return;
+		const last = this.plugin.settings.tools.last;
+		if (last === "none" || last === "note") return;
+		window.setTimeout(() => {
+			if (this.session === session && this.currentTool === "none") this.setTool(last, { quiet: true });
+		}, 0);
 	}
 
 	// ------------------------------------------------------- links (Phase 4)
@@ -1335,7 +1380,8 @@ export class PenDFView extends FileView {
 	/** The "Area excerpt" tool on / off. */
 	toggleArea(on?: boolean): void {
 		const a = this.session?.area;
-		if (a) a.setActive(on ?? !a.active);
+		if (!a) return;
+		this.setTool((on ?? !a.active) ? "area" : "none");
 	}
 
 	/** Most pixels an area image may use now: the canvas budget left over, iOS's canvas limit, the preset's page limit. */
@@ -1772,9 +1818,9 @@ export class PenDFView extends FileView {
 		s.notes.destroy();
 		s.ink.destroy();
 		s.area.destroy();
+		s.textTool.destroy();
 		s.zoom.cancel();
-		this.inkBar?.addClass("is-hidden");
-		this.inkButton?.removeClass("is-active");
+		this.toolBeforeNote = null;
 		s.layers.destroy();
 		this.hud?.detach();
 		s.ac.abort();
@@ -1804,6 +1850,8 @@ export class PenDFView extends FileView {
 		this.panel = null;
 		this.toolbar?.destroy();
 		this.toolbar = null;
+		this.palette?.destroy();
+		this.palette = null;
 		this.hud?.destroy();
 		this.hud = null;
 		this.changeListeners.clear();

@@ -2,6 +2,7 @@ import { type App, PluginSettingTab, Setting, type SettingDefinition, type Setti
 import type PenDFPlugin from "./main";
 import { ZOOM_PRESETS, isZoomPreset, type ZoomPreset } from "./zoom/presets";
 import { MARGIN_RATIOS, type MarginConfig, type MarginSide } from "./margin/model";
+import type { ToolId } from "./tools/model";
 
 export interface HighlightColor {
 	name: string;
@@ -32,6 +33,21 @@ export interface PenDFSettings {
 	marginRatio: number;
 	/** handwriting (Phase 6) */
 	ink: InkSettings;
+	/** bottom tool palette (D-46): last tool, colours of the text/area tools, folded */
+	tools: ToolSettings;
+}
+
+export interface ToolSettings {
+	/** tool selected when a PDF opens (a placed note is one-shot: never remembered) */
+	last: ToolId;
+	/** last pen tool (pen or highlighter): what the Pencil writes with when no tool is selected */
+	lastPen: "pen" | "highlighter";
+	/** colour of the text-highlight tool */
+	textColor: string;
+	/** colour of the area-excerpt tool */
+	areaColor: string;
+	/** the palette is folded into its handle */
+	collapsed: boolean;
 }
 
 export interface FileViewMemory {
@@ -61,8 +77,10 @@ export interface InkSettings {
 	 * (fallback for devices where the Pencil would otherwise scroll the page).
 	 */
 	input: "stylus" | "exclusive";
-	/** the Apple Pencil writes whenever it touches a page, without turning on ink mode */
+	/** the Apple Pencil writes whenever it touches a page, with no tool selected too (last pen tool) */
 	pencilAlways: boolean;
+	/** highlighter stroke opacity, 0–1 (0.35 before the tool palette) */
+	highlighterOpacity: number;
 }
 
 export const PEN_COLORS = ["#1f1f1f", "#1f5fbf", "#c62828", "#2e7d32"];
@@ -87,7 +105,8 @@ export const DEFAULT_SETTINGS: PenDFSettings = {
 	marginSide: "right",
 	marginRatio: 0.5,
 	areaImageScale: 2,
-	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true },
+	ink: { tool: "pen", penColor: "#1f1f1f", penWidth: 1.5, highlighterColor: "#ffd400", highlighterWidth: 12, input: "stylus", pencilAlways: true, highlighterOpacity: 0.35 },
+	tools: { last: "none", lastPen: "pen", textColor: "#ffd400", areaColor: "#ffd400", collapsed: false },
 };
 
 export const MAX_POSITIONS = 300;
@@ -104,8 +123,8 @@ const TEXT = {
 	margin: ["Margin", "Space beside the page for notes and handwriting (toolbar button or command “Toggle margin”). Side and width of a new margin; each PDF remembers its own."],
 	panelLocation: ["Panel location", "Where the panel button and the panel commands (outline, page thumbnails, search, bookmarks, annotations) open the panel: inside the penDF view, or in Obsidian's right sidebar."],
 	handwriting: "Handwriting",
-	inkPencilAlways: ["Apple Pencil always writes", "The Pencil writes whenever it touches a page, with the last tool you picked (pen, highlighter or eraser); fingers scroll and select text. Off: the Pencil writes only in ink mode (toolbar pen button)."],
-	inkInput: ["Pencil and finger", "Default: the Pencil writes, fingers scroll and select text. If the Pencil scrolls the page instead of writing on your device, choose “Everything writes” (then leave ink mode to scroll)."],
+	inkPencilAlways: ["Apple Pencil always writes", "With no tool selected in the tool palette, the Pencil writes with the last pen tool (pen or highlighter); fingers scroll and select text. Off: with no tool selected the Pencil scrolls and selects like a finger."],
+	inkInput: ["Pencil and finger", "Default: the Pencil uses the selected tool, fingers scroll and select text. If the Pencil scrolls the page instead of writing on your device, choose “Everything writes” (then fingers use the pen, highlighter, eraser and area tools too; pick “no tool” to scroll)."],
 	diagnostics: "Diagnostics",
 	debugHud: ["Debug overlay", "Shows pages being rendered, render time, canvas count and annotation count."],
 	penProbe: ["Pen probe", "Enables the 'Open pen probe' command: measures Apple Pencil / touch input in this webview."],
@@ -170,7 +189,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 					{
 						name: TEXT.inkInput[0],
 						desc: TEXT.inkInput[1],
-						control: { type: "dropdown", key: "inkInput", options: { stylus: "Pencil writes, finger scrolls", exclusive: "Everything writes (in ink mode)" } },
+						control: { type: "dropdown", key: "inkInput", options: { stylus: "Pencil writes, finger scrolls", exclusive: "Everything writes (with a tool selected)" } },
 					},
 				],
 			},
@@ -318,7 +337,7 @@ export class PenDFSettingTab extends PluginSettingTab {
 			.addDropdown((d) =>
 				d
 					.addOption("stylus", "Pencil writes, finger scrolls")
-					.addOption("exclusive", "Everything writes (in ink mode)")
+					.addOption("exclusive", "Everything writes (with a tool selected)")
 					.setValue(s.ink.input)
 					.onChange((v) => set("inkInput", v)),
 			);

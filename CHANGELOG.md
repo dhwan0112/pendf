@@ -4,6 +4,21 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
+## Unreleased
+
+- **Tool palette (D-46):** the annotation tools moved from the top toolbar into a palette floating at
+  the bottom of the page area — no tool, pen, highlighter, stroke eraser, text highlight, area excerpt,
+  note, undo/redo. Press the selected tool again for its options (colours, widths, highlighter
+  opacity); the last tool and the options are remembered; the palette folds into a handle; it keeps
+  clear of the panel and the iPad home indicator, and the last page scrolls above it. The ink bar is
+  gone. The top toolbar keeps viewing and navigation.
+- The Apple Pencil uses the selected tool; with no tool it writes with the last pen tool (never the
+  eraser). The **text highlight** tool highlights what the Pencil (or mouse) drags over.
+- **Changed:** with the area tool selected, fingers now scroll; they drag areas only with **Everything
+  writes**.
+- Commands **Select tool: …** for each tool and **Show or hide the tool palette** (assign hotkeys).
+- Highlighter strokes store an optional `opacity` (older versions keep it and draw 35 %).
+
 ## 0.8.1 — 2026-11-17
 
 - **Fix (0.8.0 regression):** text under a highlight looked washed out. The margin's clipping made the

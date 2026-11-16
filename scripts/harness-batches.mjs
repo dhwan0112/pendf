@@ -54,6 +54,7 @@ const BATCHES = [
 	["margin-ink", "margin-ground-truth"],
 	["margin-note", "margin-with-panel"],
 	["highlight-blend", "margin-rotated"],
+	["tool-palette"],
 	["area-ground-truth", "area-image", "area-link"],
 	["index-rename", "index-perf"],
 	["long-300-memory", "pdfjs-footprint"],

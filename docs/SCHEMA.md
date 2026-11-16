@@ -124,10 +124,12 @@ outline is only read, never written.
 | `color` | string | CSS color |
 | `width` | number > 0 | stroke width in points |
 | `points` | number[] | one stroke, flattened `[x0, y0, x1, y1, …]` |
+| `opacity` | number, optional | highlighter only: 0 < opacity ≤ 1; absent = 0.35 (D-46) |
 
 Points are in PDF user space, rounded to 0.01 pt and simplified (Ramer–Douglas–Peucker, 0.08 pt for
 the pen, 0.3 pt for the highlighter). A single point is a dot. The pen draws with a uniform width
-(no pressure). The highlighter is drawn at 35 % opacity, blended with the page like text highlights.
+(no pressure). The highlighter is drawn at its `opacity` (default 35 %), blended with the page like text highlights.
+Versions without `opacity` keep the field and draw the stroke at 35 %.
 
 penDF writes coordinate arrays (`points`, `quads`, `quad`) on one line each; the file is still plain JSON.
 

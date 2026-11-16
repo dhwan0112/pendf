@@ -33,6 +33,10 @@ export interface AreaHost {
 	saveImage(a: AreaAnnotation): Promise<string | null>;
 	/** the tool was switched on or off (toolbar button state, other tools off) */
 	onActiveChange(on: boolean): void;
+	/** colour of a new area (tool palette); default: the default highlight colour */
+	areaColor?(): string;
+	/** fingers drag areas too ("Everything writes" input); otherwise they scroll (D-46) */
+	fingersDraw?(): boolean;
 }
 
 interface Drag {
@@ -64,6 +68,15 @@ export class AreaController implements LayerRenderer {
 		c.addEventListener("pointercancel", (e) => void this.onUp(e, true), { capture: true, signal: this.ac.signal });
 		c.addEventListener("click", (e) => this.onClick(e), sig);
 		c.addEventListener("scroll", () => this.closeMenu(), { passive: true, signal: this.ac.signal });
+		// iPadOS: cancel the Pencil's touchstart so it drags an area instead of scrolling (fingers still scroll)
+		c.addEventListener(
+			"touchstart",
+			(e) => {
+				if (!this._active) return;
+				if (Array.from(e.changedTouches).some((t) => (t as Touch & { touchType?: string }).touchType === "stylus")) e.preventDefault();
+			},
+			{ passive: false, capture: true, signal: this.ac.signal },
+		);
 		host.root.ownerDocument.addEventListener(
 			"keydown",
 			(e) => {
@@ -137,6 +150,8 @@ export class AreaController implements LayerRenderer {
 			return;
 		}
 		if (e.pointerType === "mouse" && e.button !== 0) return;
+		// fingers keep scrolling and selecting unless "Everything writes" is on (D-46)
+		if (e.pointerType === "touch" && this.host.fingersDraw && !this.host.fingersDraw()) return;
 		if ((e.target as HTMLElement | null)?.closest(".pendf-floating, a, button, input")) return;
 		const pageDiv = this.pageAt(e.clientX, e.clientY);
 		if (!pageDiv) return;
@@ -225,7 +240,7 @@ export class AreaController implements LayerRenderer {
 		}
 		const now = Date.now();
 		const colors = this.host.colors();
-		const color = opts.color ?? colors[this.host.defaultColor()]?.hex ?? "#2ea8e5";
+		const color = opts.color ?? this.host.areaColor?.() ?? colors[this.host.defaultColor()]?.hex ?? "#2ea8e5";
 		const a: AreaAnnotation = { id: uuid(), type: "area", page, createdAt: now, updatedAt: now, deleted: false, quad: quad.map((v) => Math.round(v * 100) / 100) as AreaAnnotation["quad"], color, text };
 		if (opts.label) a.label = opts.label;
 		w.undo.record("area", [a.id], () => w.store.upsert(a));

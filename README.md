@@ -39,7 +39,13 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
 - Limits: PDFs embedded in notes and hover previews still use Obsidian's viewer.
 - Select text → pick a color from the palette that appears. Tap a highlight to
   recolor, copy or delete it. ⌘/Ctrl+Z / ⌘/Ctrl+Shift+Z undo/redo.
-- Notes: tap a highlight → note button, or toolbar **Add note** then tap the page. Tap a
+- **Two bars:** the top toolbar is for viewing and moving around (pages, zoom, fit width, rotate,
+  margin, bookmark, search, link, panel). The annotation tools sit in the **tool palette** floating at
+  the bottom of the page area: no tool (read and select), pen, highlighter, stroke eraser, text
+  highlight, area excerpt, note, undo/redo. Press the selected tool again for its colours, widths and
+  (highlighter) opacity; the palette remembers them and the last tool. Fold it with its ⌄ button. Each
+  tool has a command (**Select tool: …**) for hotkeys.
+- Notes: tap a highlight → note button, or the palette's **note** tool then tap the page. Tap a
   note marker to read it (Markdown), edit or delete it. Deleting a highlight deletes its notes
   too (undo brings both back).
 - Toolbar **Annotations** (or command **penDF: Show annotations panel**) lists the highlights
@@ -54,22 +60,22 @@ from a [release](https://github.com/dhwan0112/pendf/releases) into
   jump and flash it — commands **Show page thumbnails**, **Search the whole PDF**), **Bookmarks**
   (yours: the toolbar bookmark button or **Bookmark this spot** marks the top of the view;
   rename, move up/down, copy link, delete) and **Annotations**.
-- Handwriting: the Apple Pencil writes as soon as it touches a page (**Settings → penDF → Apple
-  Pencil always writes**, on by default); fingers always scroll and select text. The toolbar pen
-  button (or **Toggle handwriting**) shows the ink bar to pick pen, highlighter or stroke eraser,
-  colors and widths; turn the setting off to write only while the ink bar is open. If on your device the Pencil scrolls the page instead, set
-  **Settings → penDF → Pencil and finger → Everything writes**. Undo/redo cover strokes too.
-- **Margin** (toolbar button or **Toggle margin**): empty space beside each page for handwriting
+- Handwriting: the Apple Pencil uses the palette's tool; with no tool selected it writes with the
+  last pen tool (pen or highlighter) when **Settings → penDF → Apple Pencil always writes** is on
+  (default). Fingers scroll, select text and pinch. The text tool highlights the text the Pencil
+  drags over. If on your device the Pencil scrolls the page instead, set **Settings → penDF → Pencil
+  and finger → Everything writes**. Undo/redo cover strokes too.
+- **Margin** (top toolbar button or **Toggle margin**): empty space beside each page for handwriting
   and notes, without covering the text. Width and side in the settings; each PDF remembers its own.
   A PDF with margin content opens its margin by itself; with the margin closed, a small mark on the
   page edge shows there is something in it. A note's **Move** button, then a tap, moves it (also into
   the margin).
-- **Area excerpt** (toolbar button or command): drag a rectangle with the Pencil, a finger or the
-  mouse. Tap an area for colour, note, link, **Copy image** and **Save image** (Obsidian's attachment
+- **Area excerpt** (palette tool or command): drag a rectangle with the Pencil or the mouse
+  (fingers scroll, unless **Everything writes** is set). Tap an area for colour, note, link, **Copy image** and **Save image** (Obsidian's attachment
   location); the Annotations tab shows it with a thumbnail. Only the coordinates are stored.
 - **Search annotations in vault** (command): highlights, notes, excerpts, bookmarks and handwriting
   of every PDF; filter with `type:highlight` / `color:yellow`; pick one to open it in penDF.
-- Toolbar buttons have names (hover, or press and hold on iPad); on a narrow view the less used
+- Every button has a name (hover, or press and hold on iPad); on a narrow view the less used
   ones move into **More** (⋯).
 - ⌘/Ctrl+F searches.
 

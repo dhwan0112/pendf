@@ -1,0 +1,4143 @@
+{
+ "at": "2026-11-16T18:49:53.940Z",
+ "vault": "pendf-testvault",
+ "summary": "47/47",
+ "batches": [
+  {
+   "batch": 1,
+   "checks": [
+    "fixtures-render",
+    "search",
+    "links"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:41:11.404Z",
+    "systemFreeMB": 5654,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1009,
+    "obsidianPrivateMB": 1876
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:41:23.625Z",
+    "systemFreeMB": 5536,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1101,
+    "obsidianPrivateMB": 2002
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 386
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 155772,
+     "title": "",
+     "workingSetMB": 221,
+     "privateMB": 177
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 188
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 427
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 155772,
+     "title": "",
+     "workingSetMB": 311,
+     "privateMB": 261
+    }
+   ]
+  },
+  {
+   "batch": 2,
+   "checks": [
+    "open-by-default",
+    "state-restore",
+    "coexistence-core-first"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:41:31.866Z",
+    "systemFreeMB": 5766,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1010,
+    "obsidianPrivateMB": 1878
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:41:51.833Z",
+    "systemFreeMB": 5528,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1108,
+    "obsidianPrivateMB": 2062
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 164352,
+     "title": "",
+     "workingSetMB": 221,
+     "privateMB": 177
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 187,
+     "privateMB": 489
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 164352,
+     "title": "",
+     "workingSetMB": 309,
+     "privateMB": 257
+    }
+   ]
+  },
+  {
+   "batch": 3,
+   "checks": [
+    "coexistence-pendf-first",
+    "css-inward",
+    "highlight-ground-truth"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:42:00.080Z",
+    "systemFreeMB": 5718,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1007,
+    "obsidianPrivateMB": 1873
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:42:14.426Z",
+    "systemFreeMB": 4869,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1049,
+    "obsidianPrivateMB": 2173
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161884,
+     "title": "",
+     "workingSetMB": 224,
+     "privateMB": 180
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 652
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161884,
+     "title": "",
+     "workingSetMB": 257,
+     "privateMB": 207
+    }
+   ]
+  },
+  {
+   "batch": 4,
+   "checks": [
+    "shared-namespace",
+    "ground-truth-after-core",
+    "ground-truth-after-embed"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:42:22.691Z",
+    "systemFreeMB": 4466,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1013,
+    "obsidianPrivateMB": 1893
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:42:33.190Z",
+    "systemFreeMB": 4463,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1095,
+    "obsidianPrivateMB": 1958
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 400
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161448,
+     "title": "",
+     "workingSetMB": 224,
+     "privateMB": 179
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 384
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161448,
+     "title": "",
+     "workingSetMB": 302,
+     "privateMB": 258
+    }
+   ]
+  },
+  {
+   "batch": 5,
+   "checks": [
+    "ground-truth-same-pdf-embed",
+    "highlight-multiline-columns",
+    "highlight-korean"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:42:41.509Z",
+    "systemFreeMB": 4656,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1011,
+    "obsidianPrivateMB": 1877
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:42:50.098Z",
+    "systemFreeMB": 4683,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1063,
+    "obsidianPrivateMB": 1936
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 153660,
+     "title": "",
+     "workingSetMB": 221,
+     "privateMB": 176
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 396
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 153660,
+     "title": "",
+     "workingSetMB": 272,
+     "privateMB": 225
+    }
+   ]
+  },
+  {
+   "batch": 6,
+   "checks": [
+    "highlight-cross-page",
+    "smoke-ui",
+    "rename-while-open"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:42:58.411Z",
+    "systemFreeMB": 4742,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1007,
+    "obsidianPrivateMB": 1874
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:43:09.083Z",
+    "systemFreeMB": 4734,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1041,
+    "obsidianPrivateMB": 1922
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 26032,
+     "title": "",
+     "workingSetMB": 225,
+     "privateMB": 181
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 402
+    },
+    {
+     "id": 26032,
+     "title": "",
+     "workingSetMB": 250,
+     "privateMB": 205
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    }
+   ]
+  },
+  {
+   "batch": 7,
+   "checks": [
+    "highlight-palette",
+    "highlight-menu-undo",
+    "notes"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:43:20.544Z",
+    "systemFreeMB": 4658,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1004,
+    "obsidianPrivateMB": 1870
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:43:29.064Z",
+    "systemFreeMB": 4731,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1042,
+    "obsidianPrivateMB": 1914
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 386
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 156944,
+     "title": "",
+     "workingSetMB": 221,
+     "privateMB": 177
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 390
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 156944,
+     "title": "",
+     "workingSetMB": 252,
+     "privateMB": 208
+    }
+   ]
+  },
+  {
+   "batch": 8,
+   "checks": [
+    "pdf-links",
+    "bookmarks",
+    "ink"
+   ],
+   "attempts": 2,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:46:21.126Z",
+    "systemFreeMB": 4601,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1032,
+    "obsidianPrivateMB": 1902
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:46:47.292Z",
+    "systemFreeMB": 4683,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1196,
+    "obsidianPrivateMB": 2115
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 162696,
+     "title": "",
+     "workingSetMB": 244,
+     "privateMB": 202
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 145,
+     "privateMB": 168
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 192,
+     "privateMB": 471
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 162696,
+     "title": "",
+     "workingSetMB": 412,
+     "privateMB": 348
+    }
+   ]
+  },
+  {
+   "batch": 9,
+   "checks": [
+    "pages-search",
+    "zoom-gesture"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:44:05.993Z",
+    "systemFreeMB": 4876,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 981,
+    "obsidianPrivateMB": 1838
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:44:37.969Z",
+    "systemFreeMB": 4610,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1119,
+    "obsidianPrivateMB": 2050
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 155,
+     "privateMB": 179
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 377
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 165076,
+     "title": "",
+     "workingSetMB": 193,
+     "privateMB": 149
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 460
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 165076,
+     "title": "",
+     "workingSetMB": 328,
+     "privateMB": 275
+    }
+   ]
+  },
+  {
+   "batch": 10,
+   "checks": [
+    "zoom-extras",
+    "persist-restart-rename"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:44:46.242Z",
+    "systemFreeMB": 4752,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1034,
+    "obsidianPrivateMB": 1880
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:45:06.543Z",
+    "systemFreeMB": 4685,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1111,
+    "obsidianPrivateMB": 2069
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 364
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 162584,
+     "title": "",
+     "workingSetMB": 245,
+     "privateMB": 203
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 175,
+     "privateMB": 199
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 181,
+     "privateMB": 484
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 162584,
+     "title": "",
+     "workingSetMB": 308,
+     "privateMB": 260
+    }
+   ]
+  },
+  {
+   "batch": 11,
+   "checks": [
+    "in-view-panel",
+    "toolbar-labels"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:45:14.849Z",
+    "systemFreeMB": 4919,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 971,
+    "obsidianPrivateMB": 1804
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:45:31.329Z",
+    "systemFreeMB": 4557,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1048,
+    "obsidianPrivateMB": 1927
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 155,
+     "privateMB": 179
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 353
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 160692,
+     "title": "",
+     "workingSetMB": 191,
+     "privateMB": 146
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 398
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 160692,
+     "title": "",
+     "workingSetMB": 257,
+     "privateMB": 213
+    }
+   ]
+  },
+  {
+   "batch": 12,
+   "checks": [
+    "margin-ink",
+    "margin-ground-truth"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:45:39.607Z",
+    "systemFreeMB": 4793,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1034,
+    "obsidianPrivateMB": 1881
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:45:52.121Z",
+    "systemFreeMB": 4634,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1074,
+    "obsidianPrivateMB": 1960
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 364
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161384,
+     "title": "",
+     "workingSetMB": 245,
+     "privateMB": 203
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 410
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161384,
+     "title": "",
+     "workingSetMB": 281,
+     "privateMB": 235
+    }
+   ]
+  },
+  {
+   "batch": 13,
+   "checks": [
+    "margin-note",
+    "margin-with-panel"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:46:55.585Z",
+    "systemFreeMB": 4574,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1032,
+    "obsidianPrivateMB": 1905
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:47:08.097Z",
+    "systemFreeMB": 4881,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1076,
+    "obsidianPrivateMB": 1991
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 156,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 391
+    },
+    {
+     "id": 33088,
+     "title": "",
+     "workingSetMB": 243,
+     "privateMB": 200
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 182,
+     "privateMB": 441
+    },
+    {
+     "id": 33088,
+     "title": "",
+     "workingSetMB": 282,
+     "privateMB": 234
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    }
+   ]
+  },
+  {
+   "batch": 14,
+   "checks": [
+    "highlight-blend",
+    "margin-rotated"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:47:16.365Z",
+    "systemFreeMB": 4594,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 980,
+    "obsidianPrivateMB": 1837
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:47:28.845Z",
+    "systemFreeMB": 4941,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1016,
+    "obsidianPrivateMB": 1910
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 155,
+     "privateMB": 179
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 377
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 159872,
+     "title": "",
+     "workingSetMB": 193,
+     "privateMB": 148
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 413
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 159872,
+     "title": "",
+     "workingSetMB": 225,
+     "privateMB": 181
+    }
+   ]
+  },
+  {
+   "batch": 15,
+   "checks": [
+    "tool-palette"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:47:37.167Z",
+    "systemFreeMB": 4883,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1022,
+    "obsidianPrivateMB": 1888
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:47:55.461Z",
+    "systemFreeMB": 4303,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1039,
+    "obsidianPrivateMB": 1931
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 386
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 164752,
+     "title": "",
+     "workingSetMB": 232,
+     "privateMB": 187
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 411
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 164752,
+     "title": "",
+     "workingSetMB": 248,
+     "privateMB": 204
+    }
+   ]
+  },
+  {
+   "batch": 16,
+   "checks": [
+    "area-ground-truth",
+    "area-image",
+    "area-link"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:48:03.751Z",
+    "systemFreeMB": 4722,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1019,
+    "obsidianPrivateMB": 1886
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:48:20.075Z",
+    "systemFreeMB": 4762,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1037,
+    "obsidianPrivateMB": 1974
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 386
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 44836,
+     "title": "",
+     "workingSetMB": 229,
+     "privateMB": 185
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 165,
+     "privateMB": 189
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 456
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 44836,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 203
+    }
+   ]
+  },
+  {
+   "batch": 17,
+   "checks": [
+    "index-rename",
+    "index-perf"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:48:28.364Z",
+    "systemFreeMB": 4812,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1019,
+    "obsidianPrivateMB": 1891
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:49:12.084Z",
+    "systemFreeMB": 4430,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1081,
+    "obsidianPrivateMB": 1951
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 392
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 157564,
+     "title": "",
+     "workingSetMB": 230,
+     "privateMB": 184
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 166,
+     "privateMB": 190
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 391
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 157564,
+     "title": "",
+     "workingSetMB": 290,
+     "privateMB": 243
+    }
+   ]
+  },
+  {
+   "batch": 18,
+   "checks": [
+    "long-300-memory",
+    "pdfjs-footprint"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:49:20.455Z",
+    "systemFreeMB": 4788,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1015,
+    "obsidianPrivateMB": 1881
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:49:35.115Z",
+    "systemFreeMB": 4396,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1162,
+    "obsidianPrivateMB": 2332
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 182
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 386
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161564,
+     "title": "",
+     "workingSetMB": 232,
+     "privateMB": 187
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 166,
+     "privateMB": 190
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 692
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 161564,
+     "title": "",
+     "workingSetMB": 371,
+     "privateMB": 324
+    }
+   ]
+  },
+  {
+   "batch": 19,
+   "checks": [
+    "fingerprint-mismatch",
+    "fallback-main-thread",
+    "unload-cleanup"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T18:49:43.403Z",
+    "systemFreeMB": 4525,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1013,
+    "obsidianPrivateMB": 1889
+   },
+   "memAfter": {
+    "at": "2026-11-16T18:49:53.938Z",
+    "systemFreeMB": 4541,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1006,
+    "obsidianPrivateMB": 1875
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 397
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 159264,
+     "title": "",
+     "workingSetMB": 230,
+     "privateMB": 185
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "penDF - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 146,
+     "privateMB": 169
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 178,
+     "privateMB": 389
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 185,
+     "privateMB": 419
+    },
+    {
+     "id": 159264,
+     "title": "",
+     "workingSetMB": 236,
+     "privateMB": 190
+    }
+   ]
+  }
+ ],
+ "checks": {
+  "fixtures-render": {
+   "ok": true,
+   "out": {
+    "a4.pdf": {
+     "pages": 3,
+     "chars": 2505,
+     "sample": "A4 fixture — page 1Whose spectra electro"
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "chars": 1965,
+     "sample": "US Letter — page 1Quick at peaks seven f"
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "chars": 1368,
+     "sample": "/Rotate 0This line is near the top-left "
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "chars": 1621,
+     "sample": "Inside the CropBox [100 150 500 700]Wiza"
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "chars": 3378,
+     "sample": "Two-column layout — page 1[1.1.1] A with"
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "chars": 136,
+     "sample": "1-1. 한국어 CMap 테스트 문서입니다.1-2. 이 글꼴은 PDF에 "
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "chars": 913,
+     "sample": "한국어 임베디드 글꼴 — 1쪽물리화학은 분자의 구조와 에너지, 그리고 반"
+    },
+    "links.pdf": {
+     "pages": 3,
+     "chars": 75,
+     "sample": "Links fixture — page 1Go to page 2Go to "
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "chars": 592,
+     "sample": "300-page fixture — contentsChapter 1 … p"
+    }
+   }
+  },
+  "search": {
+   "ok": true,
+   "first": "1 / 24",
+   "second": "2 / 24",
+   "highlighted": 17,
+   "none": "No matches"
+  },
+  "links": {
+   "ok": true,
+   "jumped": 2,
+   "external": [
+    "https://example.com/"
+   ],
+   "tocJump": 92
+  },
+  "open-by-default": {
+   "ok": true,
+   "plainOpen": "pendf-view",
+   "plainOpenCounts": {
+    "takeovers": 2,
+    "loads": 1
+   },
+   "linkPage": 1,
+   "keptCore": "pdf",
+   "offType": "pdf"
+  },
+  "state-restore": {
+   "ok": true,
+   "savedState": {
+    "page": 3,
+    "scale": "1.5"
+   },
+   "restored": {
+    "page": 3,
+    "scale": 1.5
+   },
+   "remembered": {
+    "page": 3,
+    "scale": 1.5
+   }
+  },
+  "coexistence-core-first": {
+   "ok": true,
+   "coreVersion": "5.3.34",
+   "ourVersion": "6.5.438",
+   "sameLib": true,
+   "sameVersion": true,
+   "pdfjsWorkerUnchanged": true,
+   "pdfjsViewerBefore": "undefined",
+   "coreCanvasesBefore": 2,
+   "coreCanvasesAfter": 2,
+   "pendfCanvases": 3
+  },
+  "coexistence-pendf-first": {
+   "ok": true,
+   "diag": {
+    "cur": 1,
+    "scale": 0.4,
+    "states": [
+     3,
+     3
+    ],
+    "canvases": 3,
+    "size": [
+     328,
+     671
+    ],
+    "visible": true
+   },
+   "coreVersion": "5.3.34",
+   "libUntouchedByUs": true,
+   "coreCanvases": 2,
+   "pendfStillRenders": true
+  },
+  "css-inward": {
+   "ok": true,
+   "pageBorder": "9px solid",
+   "boxSizing": {
+    "page": "content-box",
+    "textLayer": "content-box",
+    "span": "content-box",
+    "canvasWrapper": "content-box",
+    "annotationLayer": "content-box"
+   },
+   "sizes": {
+    "text": [
+     628,
+     888
+    ],
+    "canvas": [
+     628,
+     888
+    ],
+    "page": [
+     646,
+     906
+    ]
+   },
+   "aligned": true,
+   "spanTransform": "matrix(1.06661, 0, 0, 1, 0, 0)",
+   "foreign": {
+    "textLayer": [
+     ".textLayer  {position: absolute; text-align: initial; inset: 0px; overflow: clip; opacity: 1; line-heig}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "span": [
+     ".textLayer span, .textLayer br  {color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: }  @app://obsidian.md/app.css",
+     ".textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent)  {z-index: 1;}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "body, [dir=\"ltr\"]  {--direction: 1; --inset-start: left; --inset-end: right; --safe-area-inline-start: var(--s}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "annotationLayer": [
+     ".annotationLayer  {--csstools-color-scheme--dark: ; color-scheme: light only; --annotation-unfocused-field-ba}  @app://obsidian.md/app.css",
+     ".annotationLayer  {--input-focus-border-color: CanvasText; --input-unfocused-border-color: ActiveText; --inpu}  @app://obsidian.md/app.css",
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "page": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .page  {--user-unit: 1; --total-scale-factor: calc(var(--scale-factor) * var(--user-unit)); --scal}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ],
+    "canvasWrapper": [
+     ":root *  {--csstools-light-dark-toggle--23: var(--csstools-color-scheme--dark) #0060df; --focus-ring}  @app://obsidian.md/app.css",
+     ".pdfViewer .canvasWrapper  {overflow: hidden; width: 100%; height: 100%;}  @app://obsidian.md/app.css",
+     "*  {text-shadow: none !important;}  @app://obsidian.md/app.css",
+     "*  {box-sizing: border-box;}  @app://obsidian.md/app.css",
+     "*  {scrollbar-width: var(--scrollbar-native-width);}  @app://obsidian.md/app.css"
+    ]
+   }
+  },
+  "highlight-ground-truth": {
+   "ok": true,
+   "out": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.21,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.13,
+     "topAboveBaseline": 1.13,
+     "bottomBelowBaseline": 0.32,
+     "heightRatio": 1.45,
+     "ok": true,
+     "ious": [
+      1,
+      0.86,
+      0.86,
+      0.95,
+      0.95
+     ]
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": -0.33,
+     "topAboveBaseline": 1.11,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.5,
+     "ok": true,
+     "ious": [
+      1,
+      0.92,
+      0.92,
+      0.99,
+      0.99
+     ]
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.01,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 1.02,
+     "bottomBelowBaseline": 0.39,
+     "heightRatio": 1.41,
+     "ok": true,
+     "ious": [
+      1,
+      0.97,
+      0.97,
+      0.94,
+      0.94
+     ]
+    }
+   ]
+  },
+  "shared-namespace": {
+   "ok": true,
+   "coreFonts": [
+    "g_pendf_d0_sf2",
+    "g_d0_sf2",
+    "g_d0_sf4",
+    "g_d0_sf6"
+   ],
+   "penFonts": [
+    "g_pendf_d1_sf2",
+    "g_pendf_d1_sf4"
+   ],
+   "collisions": [],
+   "duplicateIds": [],
+   "penPrefixed": true,
+   "htmlVarAfterCore": "",
+   "htmlVarAfterPenDF": ""
+  },
+  "ground-truth-after-core": {
+   "ok": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.02,
+     "dxEnd": 1.69
+    }
+   ],
+   "maxAbsDxEnd": 1.69
+  },
+  "ground-truth-after-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": -0.03,
+     "dxEnd": -0.71
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": -0.02,
+     "dxEnd": 1.69
+    }
+   ],
+   "maxAbsDxEnd": 1.69
+  },
+  "ground-truth-same-pdf-embed": {
+   "ok": true,
+   "embedRendered": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.28
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.28
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.28
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": -0.28
+    }
+   ],
+   "maxAbsDxEnd": 0.28
+  },
+  "highlight-multiline-columns": {
+   "ok": true,
+   "lines": 4,
+   "inLeftColumn": true,
+   "crossColumnQuads": 4,
+   "noBridge": true,
+   "text": "[1.1.1] A with through positions whose fox brown precision t"
+  },
+  "highlight-korean": {
+   "ok": true,
+   "res": {
+    "korean-embedded.pdf": {
+     "text": "상호작용을 통해 분자의 성질을 밝혀낸다. 이 문단은 여",
+     "quads": 1,
+     "iou": 1
+    },
+    "korean-cmap.pdf": {
+     "text": "문서입니다.",
+     "quads": 1,
+     "iou": 1
+    }
+   }
+  },
+  "highlight-cross-page": {
+   "ok": true,
+   "pages": [
+    1,
+    2
+   ],
+   "groups": [
+    "b215fc5f-0791-4f6d-8340-d6a317a54f8c"
+   ]
+  },
+  "smoke-ui": {
+   "ok": true,
+   "engine": {
+    "ok": true,
+    "missing": [],
+    "ponyfilled": {
+     "Map#getOrInsertComputed": false,
+     "Math.sumPrecise": false,
+     "Uint8Array#toBase64 / fromBase64 / toHex": false,
+     "Promise.try": true,
+     "RegExp.escape": true,
+     "URL.parse": true
+    }
+   },
+   "errorBanner": false,
+   "hud": "worker: web-worker | rendering: 0 | rendered: 3 | canvases: 3",
+   "hudGone": true,
+   "commands": {
+    "find": true,
+    "zoom-in": true,
+    "zoom-out": true,
+    "fit-width": true,
+    "undo": true,
+    "redo": true,
+    "highlight-selection": true,
+    "export-log": true,
+    "open-current-pdf": true,
+    "open-pdf": true,
+    "open-pen-probe": true
+   },
+   "searchOpened": true,
+   "highlightByCommand": true,
+   "logExported": true,
+   "logHasEngine": true,
+   "openCurrentWorked": true,
+   "modalShown": true,
+   "probeCommandHidden": true,
+   "probe": {
+    "penEvents": 9,
+    "fractional": 1,
+    "coalesced": true
+   },
+   "probeExported": true,
+   "fileMenu": true,
+   "fileMenuOpens": true,
+   "noMenuForMarkdown": true,
+   "settingsItems": 20
+  },
+  "rename-while-open": {
+   "ok": true,
+   "both": true,
+   "oldExists": false,
+   "viewFile": "pendf-fixtures/cropbox.pdf"
+  },
+  "highlight-palette": {
+   "ok": true,
+   "made": 1,
+   "color": "#2ea8e5",
+   "paletteGone": true,
+   "selectionCleared": true
+  },
+  "highlight-menu-undo": {
+   "ok": true,
+   "recolored": "#5fb236",
+   "deleted": true,
+   "polyGone": true,
+   "back": true,
+   "colorBack": "#ffd400"
+  },
+  "notes": {
+   "ok": true,
+   "placed": {
+    "page": 1,
+    "body": "**bold** from the editor",
+    "x": 174.41,
+    "y": 636.2
+   },
+   "placingOff": true,
+   "markerPx": 15,
+   "hitTest": true,
+   "popoverBold": "bold",
+   "highlightMenuNotOpened": true,
+   "beforeDelete": 2,
+   "afterDelete": 0,
+   "afterUndo": 2,
+   "panelItems": 2,
+   "panelBold": "bold",
+   "panelHighlightNote": true,
+   "reopened": [
+    "**bold** from the editor",
+    "note on *highlight*"
+   ]
+  },
+  "pdf-links": {
+   "ok": true,
+   "hlLink": "[[long-300.pdf#page=5&pendf=links-check-h|linked text]]",
+   "formats": true,
+   "reading": {
+    "page": 5,
+    "flashed": true
+   },
+   "editor": {
+    "page": 9,
+    "visible": [
+     9,
+     10
+    ],
+    "popover": "note"
+   },
+   "rect": {
+    "page": 12,
+    "visible": [
+     12,
+     13
+    ],
+    "flash": true
+   },
+   "plainOpen": {
+    "type": "pendf-view",
+    "page": 12
+   }
+  },
+  "bookmarks": {
+   "ok": true,
+   "outline": {
+    "top": 30,
+    "first": [
+     "Chapter 1",
+     2
+    ],
+    "named": [
+     "Chapter 30",
+     292
+    ],
+    "child": [
+     "4.2 Results",
+     37
+    ]
+   },
+   "outlineJump": 292,
+   "suggested": "Page 46 — 5.1 Introduction",
+   "added": [
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta",
+    "Gamma"
+   ],
+   "positions": [
+    [
+     46,
+     813
+    ],
+    [
+     50,
+     813
+    ],
+    [
+     120,
+     813
+    ],
+    [
+     7,
+     813
+    ]
+   ],
+   "afterMove": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta"
+   ],
+   "afterRenameDelete": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Beta 2"
+   ],
+   "afterUndo": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "panelRows": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "bookmarkJump": 120,
+   "link": "[[long-300.pdf#page=50&pendf=671c225d-1947-42f8-ab87-b45ce273c15f|Alpha]]",
+   "linkJump": 50,
+   "reopened": [
+    "Gamma",
+    "Page 46 — 5.1 Introduction",
+    "Alpha",
+    "Beta 2"
+   ],
+   "pdfUnchanged": true
+  },
+  "ink": {
+   "ok": true,
+   "geometry": [
+    {
+     "name": "rotations.pdf",
+     "page": 1,
+     "rotate": 0,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 2,
+     "rotate": 90,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 3,
+     "rotate": 180,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 4,
+     "rotate": 270,
+     "errPt": 0,
+     "svg": true
+    },
+    {
+     "name": "rotations.pdf",
+     "page": 2,
+     "viewRotated": true,
+     "rotate": 180,
+     "errPt": 0
+    },
+    {
+     "name": "cropbox.pdf",
+     "page": 1,
+     "rotate": 0,
+     "errPt": 0,
+     "svg": true
+    }
+   ],
+   "touch": null,
+   "pencilAlways": {
+    "writesWhenOn": true,
+    "mouseIgnored": true,
+    "ignoredWhenOff": true,
+    "inkModeOff": true
+   },
+   "menuAfterStroke": false,
+   "dot": {
+    "n": 2,
+    "svg": true
+   },
+   "beforeErase": 2,
+   "afterErase": 1,
+   "erasedLong": true,
+   "afterUndo": 2,
+   "stress": {
+    "strokes": 1500,
+    "upsertMs": 27,
+    "renderPageMs": 32,
+    "flushMs": 86,
+    "stringifyMs": 4,
+    "eraserMsPerMove": 0.17,
+    "erasedInDrag": 142,
+    "sidecarBytes": 974835,
+    "paths": 1500
+   },
+   "reopenedInk": 1502
+  },
+  "pages-search": {
+   "ok": true,
+   "cells": 300,
+   "rendered": 6,
+   "canvases": 7,
+   "thumbCssWidth": 104,
+   "darkPixelShare": 0.0378,
+   "lastRendered": true,
+   "firstReleased": true,
+   "canvasesAfterScroll": 12,
+   "thumbJump": 297,
+   "currentMarked": "297",
+   "status": "1 match on 1 page",
+   "hits": 1,
+   "firstHit": "chapter 15 · page 150 jackdaws positions the lazy through while dog lazy lake hel…",
+   "hitJump": 150,
+   "flashed": true,
+   "korean": {
+    "status": "2 matches on 2 pages",
+    "hits": 2,
+    "pages": 2
+   }
+  },
+  "zoom-gesture": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.413,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 17.8,
+     "frameGapMaxMs": 17.8,
+     "frameGapMaxAfterMs": 18.5,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 4.2,
+     "canvasPeak": 8,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.573,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 26.7,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 4.2,
+     "canvasPeak": 8,
+     "scrollMovesAfter": [
+      [
+       380,
+       52,
+       834,
+       0.573
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      -0.42
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.5728,
+      "anchorErrorPx": 0.42,
+      "ms": 20.600000023841858,
+      "released": 4,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.615,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 74,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.7,
+     "frameGapMaxAfterMs": 27,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 4,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       1308,
+       69,
+       1057,
+       0.615
+      ]
+     ],
+     "anchorErrorPx": 0.11,
+     "anchorErrXY": [
+      0,
+      0.11
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.615,
+      "anchorErrorPx": 0.11,
+      "ms": 22.899999976158142,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 0.615,
+     "scaleAfter": 0.663,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 18,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.1,
+     "frameGapMaxAfterMs": 27.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 4.6,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       344,
+       19,
+       246,
+       0.663
+      ]
+     ],
+     "anchorErrorPx": 0.66,
+     "anchorErrXY": [
+      -0.5,
+      0.43
+     ],
+     "commit": {
+      "scale": 0.6627,
+      "anchorErrorPx": 0.66,
+      "ms": 17.599999964237213,
+      "released": 1,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 3
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.509,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18,
+     "frameGapMaxMs": 18,
+     "frameGapMaxAfterMs": 27.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 3.4,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       376,
+       7,
+       472,
+       0.509
+      ]
+     ],
+     "anchorErrorPx": 0.46,
+     "anchorErrXY": [
+      -0.21,
+      0.41
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.5093,
+      "anchorErrorPx": 0.46,
+      "ms": 16,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.236,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 5,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 24.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 2.8,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [
+      [
+       380,
+       0,
+       -922,
+       0.236
+      ]
+     ],
+     "anchorErrorPx": 0.06,
+     "anchorErrXY": [
+      0,
+      -0.06
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.2361,
+      "anchorErrorPx": 0.06,
+      "ms": 18,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.849,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 23,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.5,
+     "frameGapMaxMs": 17.6,
+     "frameGapMaxAfterMs": 27.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 7.5,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [
+      [
+       578,
+       162,
+       2282,
+       0.849
+      ]
+     ],
+     "anchorErrorPx": 0.52,
+     "anchorErrXY": [
+      -0.5,
+      -0.14
+     ],
+     "commit": {
+      "scale": 0.849,
+      "anchorErrorPx": 0.52,
+      "ms": 18.30000001192093,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 3
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 0.455,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 6,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 26.4,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 2.3,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.13,
+     "anchorErrXY": [
+      0,
+      -0.13
+     ],
+     "commit": {
+      "scale": 0.4546,
+      "anchorErrorPx": 0.13,
+      "ms": 18.099999964237213,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.413,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 5,
+     "layerRemovalsDuringGesture": 20,
+     "cssOnlyRendersDuringGesture": 4,
+     "fullRendersDuringGesture": 9,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 158,
+     "frameGapAvgMs": 17.9,
+     "frameGapP95Ms": 24.8,
+     "frameGapMaxMs": 38.2,
+     "frameGapMaxAfterMs": 18.6,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 27.9,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       342,
+       188,
+       2617,
+       0.914
+      ],
+      [
+       831,
+       440,
+       5784,
+       2.02
+      ],
+      [
+       1296,
+       973,
+       12788,
+       4.467
+      ],
+      [
+       1325,
+       -2,
+       -1,
+       4.467
+      ],
+      [
+       1776,
+       2149,
+       28274,
+       9.876
+      ],
+      [
+       2266,
+       49,
+       652,
+       10
+      ]
+     ],
+     "rounds": 6,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 1,
+    "maxCanvasPixels": 33554432,
+    "preset": "default",
+    "budgetMB": 512
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T18:44:32.659Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 306,
+    "commitMs": 0.7,
+    "frames": [
+     16,
+     16.5,
+     18.1,
+     17.7,
+     16.4,
+     16.5,
+     16.5,
+     18.2,
+     16.6,
+     16.6,
+     16.7,
+     17.1,
+     16.7,
+     17,
+     16.9,
+     17.1,
+     17.2,
+     17.1
+    ],
+    "transformWrites": 16,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 19.8,
+    "memPeakMB": 19.8,
+    "memEndMB": 19.8,
+    "canvasPeak": 3,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "default",
+    "maxCanvasPixels": 33554432,
+    "dpr": 1,
+    "mobile": false
+   },
+   "failed": []
+  },
+  "zoom-extras": {
+   "ok": true,
+   "groundTruthAfterZoom": [
+    {
+     "page": 1,
+     "zoomed": 1.7,
+     "scale": 1.345,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 0.16
+    },
+    {
+     "page": 2,
+     "zoomed": 1.7,
+     "scale": 1.345,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 0.16
+    },
+    {
+     "page": 3,
+     "zoomed": 1.7,
+     "scale": 0.951,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 0.21
+    },
+    {
+     "page": 4,
+     "zoomed": 1.7,
+     "scale": 1.345,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": 0.16
+    }
+   ],
+   "budget": {
+    "budgetMB": 2,
+    "rendersWhileScrolling": 6,
+    "rendersIn3sIdle": 0,
+    "canvases": 4
+   },
+   "presetSwitch": {
+    "preset": "low-memory",
+    "maxCanvasPixels": 8388608,
+    "budgetMB": 192,
+    "back": {
+     "preset": "default",
+     "maxCanvasPixels": 33554432
+    }
+   },
+   "invert": {
+    "farHasCanvas": false,
+    "farPageBg": "rgb(0, 0, 0)",
+    "nearWrapperBg": "rgb(255, 255, 255)",
+    "nearWrapperFilter": "invert(1) hue-rotate(180deg)"
+   }
+  },
+  "persist-restart-rename": {
+   "ok": true,
+   "saved": 1,
+   "afterRestart": 1,
+   "moved": true,
+   "oldGone": true,
+   "afterRename": 1
+  },
+  "in-view-panel": {
+   "ok": true,
+   "open": {
+    "mode": "overlay",
+    "bodyWidth": 680,
+    "expectDocked": false,
+    "scale": 0.7912,
+    "scaleBefore": 0.7912,
+    "driftPx": 0
+   },
+   "docked": {
+    "mode": "docked",
+    "bodyWidth": 980,
+    "scale": 0.8416,
+    "scaleBefore": 1.1692,
+    "driftPx": 0.38
+   },
+   "resize": {
+    "scale": 0.7156,
+    "driftPx": 0.25
+   },
+   "thumbs": {
+    "cells": 300,
+    "rendered": 14,
+    "mb": 0.82,
+    "lastRendered": true,
+    "page40Released": true,
+    "mbAfterScroll": 0.58,
+    "currentMarked": "40"
+   },
+   "close": {
+    "scale": 1.1692,
+    "driftPx": 0
+   },
+   "overlay": {
+    "mode": "overlay",
+    "backdropShown": true,
+    "closedByOutsideTap": true,
+    "scaleUnchanged": true
+   },
+   "viewState": {
+    "open": true,
+    "tab": "bookmarks",
+    "width": 300,
+    "prefer": "auto"
+   },
+   "sidebar": {
+    "sidebarLeaves": 1,
+    "inViewOpen": false
+   }
+  },
+  "toolbar-labels": {
+   "ok": true,
+   "buttons": 12,
+   "unlabelled": [],
+   "groups": [
+    "navigate",
+    "zoom",
+    "view",
+    "find"
+   ],
+   "narrow": {
+    "overflowed": [
+     "fit-width",
+     "rotate",
+     "bookmark",
+     "search",
+     "link"
+    ],
+    "fits": true,
+    "moreShown": true,
+    "keptVisible": [
+     "panel"
+    ]
+   },
+   "wide": {
+    "overflowed": [],
+    "fits": true,
+    "width": 680
+   },
+   "longPress": {
+    "tip": "Rotate view",
+    "rotated": false
+   }
+  },
+  "margin-ink": {
+   "ok": true,
+   "layout": {
+    "fitScaleBefore": null,
+    "marginPx": 209,
+    "marginShare": 0.5,
+    "textMatchesCanvas": true,
+    "textWidthRatio": 0.6656,
+    "canvasWidthRatio": 0.6656,
+    "fitsContainer": true
+   },
+   "stroke": {
+    "saved": true,
+    "minX": 654.81,
+    "pageWidthPt": 595.28,
+    "offPage": true,
+    "drawnInMargin": true
+   },
+   "zoom": {
+    "commitErrorPx": 0.45,
+    "strokeShift": 0,
+    "marginShareAfter": 0.499
+   },
+   "closed": {
+    "marked": true,
+    "clip": "inset(-12px)",
+    "hostClip": "none",
+    "borderRight": "9px"
+   },
+   "autoOpen": {
+    "on": true,
+    "side": "right",
+    "ratio": 0.5
+   },
+   "erased": true
+  },
+  "margin-ground-truth": {
+   "ok": true,
+   "rows": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": 0.45
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": 0.45
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": 0.45
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.02,
+     "dxEnd": 0.45
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.89
+    }
+   ],
+   "marginSeen": [
+    [
+     "rotations.pdf",
+     true,
+     0.75
+    ],
+    [
+     "rotations.pdf",
+     true,
+     0.75
+    ],
+    [
+     "cropbox.pdf",
+     true,
+     0.75
+    ]
+   ]
+  },
+  "margin-note": {
+   "ok": true,
+   "spot": {
+    "page": 1,
+    "x": 744.1,
+    "y": 631.42
+   },
+   "create": {
+    "id": "f1f4dc7c-3769-4507-af17-abeda52ac79e",
+    "drawnAt": [
+     0,
+     0
+    ],
+    "hit": true
+   },
+   "move": {
+    "target": {
+     "kind": "point",
+     "x": 802.49,
+     "y": 337.11
+    },
+    "drawnAt": [
+     -1,
+     0
+    ],
+    "offPage": true
+   },
+   "undo": {
+    "backTo": {
+     "kind": "point",
+     "x": 744.1,
+     "y": 631.42
+    }
+   },
+   "deleted": true
+  },
+  "margin-with-panel": {
+   "ok": true,
+   "layout": {
+    "mode": "docked",
+    "panelRight": 324,
+    "pageLeft": 336,
+    "pageRight": 1001,
+    "containerRight": 1024,
+    "fitScale": 0.544,
+    "scaleChangesOnOpen": 1
+   },
+   "memory": {
+    "pageCanvasesMax": 10,
+    "pageCanvasMBPeak": 10,
+    "thumbMB": 0
+   }
+  },
+  "highlight-blend": {
+   "ok": true,
+   "pixels": {
+    "size": [
+     507,
+     12
+    ],
+    "darkestGlyphSum": 66,
+    "tintedShare": 0.097
+   },
+   "css": {
+    "blend": "multiply",
+    "hostClip": "none",
+    "hostIsolation": "auto"
+   }
+  },
+  "margin-rotated": {
+   "ok": true,
+   "layout": {
+    "rootClass": [
+     "pendf-margin-on",
+     "pendf-margin-top"
+    ],
+    "borderTop": 323,
+    "borderLeft": 9,
+    "fitNoMargin": 0.7912,
+    "fitWithMargin": 0.5595,
+    "contentHeight": 628
+   },
+   "stroke": {
+    "saved": true,
+    "extent": {
+     "left": 0.251,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    }
+   },
+   "fitCompare": {
+    "withTopMargin": 0.7912,
+    "withoutMargin": 0.7912,
+    "pages": [
+     2,
+     2
+    ]
+   }
+  },
+  "tool-palette": {
+   "ok": true,
+   "modalAtStart": false,
+   "structure": {
+    "inkBar": false,
+    "topIds": [
+     "prev",
+     "next",
+     "zoom-out",
+     "zoom-in",
+     "fit-width",
+     "rotate",
+     "margin",
+     "bookmark",
+     "search",
+     "link",
+     "panel"
+    ],
+    "annotationInTop": [],
+    "paletteIds": [
+     "none",
+     "pen",
+     "highlighter",
+     "eraser",
+     "text",
+     "area",
+     "note",
+     "undo",
+     "redo",
+     "collapse"
+    ],
+    "outsideRoot": true,
+    "unlabelled": 0,
+    "buttons": 24
+   },
+   "missingCommands": [],
+   "penTool": "pen",
+   "penDiag": {
+    "inkActive": true,
+    "busy": [
+     false,
+     false,
+     false
+    ],
+    "target": "SPAN.",
+    "inContainer": true,
+    "xy": [
+     458,
+     234
+    ],
+    "events": [
+     [
+      "pointerup",
+      false
+     ]
+    ],
+    "modal": false,
+    "page": 1,
+    "scrollTop": 0
+   },
+   "pen": {
+    "tool": "pen",
+    "color": "#1f1f1f",
+    "width": 1.5
+   },
+   "options": {
+    "openFor": "highlighter",
+    "labelled": true,
+    "saved": {
+     "color": "#2ea8e5",
+     "opacity": 0.5
+    },
+    "closedOnPress": true
+   },
+   "highlighter": {
+    "tool": "highlighter",
+    "color": "#2ea8e5",
+    "opacity": 0.5,
+    "renderedOpacity": "0.5"
+   },
+   "eraserTool": "eraser",
+   "erased": {
+    "pen": true,
+    "highlighterKept": true
+   },
+   "textTool": "text",
+   "text": {
+    "color": "#ffd400",
+    "chars": 90,
+    "quads": 1,
+    "expected": "#ffd400"
+   },
+   "textNoInk": true,
+   "area": {
+    "made": true,
+    "color": "#ffd400",
+    "expected": "#ffd400",
+    "fingerMade": 0
+   },
+   "noteTool": "note",
+   "note": {
+    "made": true,
+    "toolAfter": "area",
+    "undoRedo": true
+   },
+   "noTool": {
+    "tool": "none",
+    "alwaysWrote": "highlighter",
+    "offWrote": 0
+   },
+   "remembered": {
+    "toolAfterReopen": "pen",
+    "dataLast": "pen",
+    "dataOpacity": 0.5,
+    "dataColor": "#2ea8e5"
+   },
+   "longPress": {
+    "tip": "Stroke eraser",
+    "above": true,
+    "selected": false
+   },
+   "centre": {
+    "mode": "docked",
+    "offsetPx": 0,
+    "clearOfPanel": true
+   },
+   "lastPage": {
+    "open": {
+     "pageBottom": 712,
+     "paletteTop": 720,
+     "clear": true
+    },
+    "folded": {
+     "pageBottom": 730,
+     "paletteTop": 738,
+     "clear": true
+    }
+   },
+   "fold": {
+    "collapsed": true,
+    "barHidden": true,
+    "handle": true,
+    "expandedAgain": true
+   },
+   "narrow": {
+    "labels": false,
+    "overflowed": [
+     "eraser",
+     "text",
+     "area",
+     "note",
+     "redo"
+    ],
+    "fits": true
+   },
+   "wide": {
+    "labels": true,
+    "overflowed": []
+   }
+  },
+  "area-ground-truth": {
+   "ok": true,
+   "rows": [
+    {
+     "page": 1,
+     "pointer": "pen",
+     "maxErrPt": 0,
+     "got": [
+      150,
+      450,
+      330,
+      600
+     ],
+     "scale": 0.7912,
+     "client": [
+      522.24,
+      372.19,
+      712.14,
+      530.4
+     ],
+     "text": "Figure 1",
+     "menu": true
+    },
+    {
+     "page": 2,
+     "pointer": "touch",
+     "maxErrPt": 0,
+     "got": [
+      150,
+      450,
+      330,
+      600
+     ],
+     "scale": 0.7912,
+     "client": [
+      818.65,
+      275.29,
+      976.86,
+      465.19
+     ],
+     "text": "Figure 2",
+     "menu": true
+    },
+    {
+     "page": 3,
+     "pointer": "pen",
+     "maxErrPt": 0,
+     "got": [
+      150,
+      450,
+      330,
+      600
+     ],
+     "scale": 0.7912,
+     "client": [
+      634.86,
+      591.69,
+      824.76,
+      749.91
+     ],
+     "text": "Figure 3",
+     "menu": true
+    },
+    {
+     "page": 4,
+     "pointer": "touch",
+     "maxErrPt": 0,
+     "got": [
+      150,
+      450,
+      330,
+      600
+     ],
+     "scale": 0.7912,
+     "client": [
+      599.14,
+      396.91,
+      757.35,
+      586.8
+     ],
+     "text": "Figure 4",
+     "menu": true
+    },
+    {
+     "page": 5,
+     "pointer": "pen",
+     "maxErrPt": 0,
+     "got": [
+      200,
+      300,
+      380,
+      420
+     ],
+     "scale": 0.7912,
+     "client": [
+      563.75,
+      412.32,
+      753.2,
+      538.87
+     ],
+     "text": "Figure 5",
+     "menu": true
+    }
+   ],
+   "toolOn": true,
+   "pixelRows": [
+    {
+     "page": 1,
+     "canvasPx": [
+      320,
+      516,
+      703,
+      835
+     ],
+     "maxErrPt": 0.24
+    },
+    {
+     "page": 2,
+     "canvasPx": [
+      960,
+      320,
+      1279,
+      703
+     ],
+     "maxErrPt": 0.24
+    },
+    {
+     "page": 3,
+     "canvasPx": [
+      566,
+      960,
+      949,
+      1279
+     ],
+     "maxErrPt": 0.36
+    },
+    {
+     "page": 4,
+     "canvasPx": [
+      516,
+      566,
+      835,
+      949
+     ],
+     "maxErrPt": 0.36
+    },
+    {
+     "page": 5,
+     "canvasPx": [
+      214,
+      598,
+      596,
+      852
+     ],
+     "maxErrPt": 0.39
+    }
+   ],
+   "fingerStylusCreates": 0,
+   "toolOffCreates": 0
+  },
+  "area-image": {
+   "ok": true,
+   "pages": [
+    {
+     "page": 1,
+     "size": [
+      523,
+      443
+     ],
+     "expectSize": [
+      523,
+      443
+     ],
+     "insideOk": true,
+     "aroundOk": true,
+     "sample": [
+      26,
+      115,
+      204
+     ],
+     "text": "Figure 1"
+    },
+    {
+     "page": 2,
+     "size": [
+      443,
+      523
+     ],
+     "expectSize": [
+      443,
+      523
+     ],
+     "insideOk": true,
+     "aroundOk": true,
+     "sample": [
+      26,
+      115,
+      204
+     ],
+     "text": "Figure 2"
+    },
+    {
+     "page": 3,
+     "size": [
+      523,
+      443
+     ],
+     "expectSize": [
+      523,
+      443
+     ],
+     "insideOk": true,
+     "aroundOk": true,
+     "sample": [
+      26,
+      115,
+      204
+     ],
+     "text": "Figure 3"
+    },
+    {
+     "page": 4,
+     "size": [
+      443,
+      523
+     ],
+     "expectSize": [
+      443,
+      523
+     ],
+     "insideOk": true,
+     "aroundOk": true,
+     "sample": [
+      26,
+      115,
+      204
+     ],
+     "text": "Figure 4"
+    },
+    {
+     "page": 5,
+     "size": [
+      523,
+      363
+     ],
+     "expectSize": [
+      523,
+      363
+     ],
+     "insideOk": true,
+     "aroundOk": true,
+     "sample": [
+      26,
+      115,
+      204
+     ],
+     "text": "Figure 5"
+    }
+   ],
+   "saved": {
+    "path": "areas p1 excerpt.png",
+    "exists": true,
+    "bytes": 7944
+   },
+   "copied": true,
+   "panel": {
+    "items": 5,
+    "thumbs": 5
+   }
+  },
+  "area-link": {
+   "ok": true,
+   "link": "[[areas.pdf#page=3&pendf=19a3da9c-0bd8-4544-a14d-ba497c85224b|linked figure]]",
+   "nav": {
+    "page": 4,
+    "visible": [
+     3,
+     4
+    ]
+   }
+  },
+  "index-rename": {
+   "ok": true,
+   "afterSave": {
+    "paths": [
+     "pendf-fixtures/a4.pdf"
+    ],
+    "type": "area",
+    "text": "index probe area — precision reveal lazy encode precision. Whose in electrons box nuclei wizards frequencies and reveal fox lake quick. Reveal orbit frequencie…"
+   },
+   "afterRename": [
+    "pendf-fixtures/a4-idx-renamed.pdf"
+   ],
+   "copies": [
+    "pendf-fixtures/a4-indexcopy.pdf",
+    "pendf-fixtures/a4.pdf"
+   ],
+   "modal": {
+    "results": 1,
+    "firstText": "index probe area — precision reveal lazy encode precision. Whose in electrons bo",
+    "openedAt": "pendf-fixtures/a4.pdf"
+   }
+  },
+  "index-perf": {
+   "ok": true,
+   "writeMs": 2904,
+   "build": {
+    "ms": 111,
+    "sidecars": 501,
+    "annotations": 50000,
+    "read": 501,
+    "fromCache": 0,
+    "maxSliceMs": 12.2,
+    "slices": 7
+   },
+   "heapDeltaMB": 6.1,
+   "total": {
+    "sidecars": 501,
+    "annotations": 50000
+   },
+   "incremental": {
+    "reflected": true,
+    "ms": 389,
+    "includesDebounceMs": 300
+   },
+   "searchHits": 200,
+   "searchMs": 46,
+   "warm": {
+    "ms": 51,
+    "sidecars": 501,
+    "annotations": 49901,
+    "read": 0,
+    "fromCache": 501,
+    "maxSliceMs": 0.1,
+    "slices": 1
+   },
+   "after": {
+    "sidecars": 1,
+    "annotations": 0
+   }
+  },
+  "long-300-memory": {
+   "ok": true,
+   "maxCanvas": 11,
+   "maxLayers": 4,
+   "maxRendered": 10,
+   "seconds": 7.3,
+   "heapMB": 37
+  },
+  "pdfjs-footprint": {
+   "ok": true,
+   "viaWorker": {
+    "a4.pdf": {
+     "pages": 3,
+     "fingerprint": "e6ebc96f92d58a88e60477d3278a73cd",
+     "text": 122,
+     "ops": 959,
+     "rendered": 3
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "fingerprint": "e4ada3ef61964d5058f3a3b282c7e62e",
+     "text": 44,
+     "ops": 422,
+     "rendered": 2
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "fingerprint": "fd8fe2171353408aad988d526f27e993",
+     "text": 72,
+     "ops": 663,
+     "rendered": 3
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "fingerprint": "e3d6fade73c0d17d4cf524141cfd19e9",
+     "text": 29,
+     "ops": 309,
+     "rendered": 1
+    }
+   },
+   "viaMainThread": {
+    "a4.pdf": {
+     "pages": 3,
+     "fingerprint": "e6ebc96f92d58a88e60477d3278a73cd",
+     "text": 122,
+     "ops": 959,
+     "rendered": 3
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "fingerprint": "e4ada3ef61964d5058f3a3b282c7e62e",
+     "text": 44,
+     "ops": 422,
+     "rendered": 2
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "fingerprint": "fd8fe2171353408aad988d526f27e993",
+     "text": 72,
+     "ops": 663,
+     "rendered": 3
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "fingerprint": "e3d6fade73c0d17d4cf524141cfd19e9",
+     "text": 29,
+     "ops": 309,
+     "rendered": 1
+    }
+   },
+   "added": [],
+   "replaced": [],
+   "removed": []
+  },
+  "fingerprint-mismatch": {
+   "ok": true,
+   "status": "fingerprint-mismatch",
+   "banner": "Annotations hidden: pendf-fixtures/letter.pdf.pendf.json belongs to a different ",
+   "untouched": true
+  },
+  "fallback-main-thread": {
+   "ok": true,
+   "mode": "main-thread",
+   "rendered": true,
+   "pdfjsWorkerUnchanged": true,
+   "pdfjsLibUnchanged": true
+  },
+  "unload-cleanup": {
+   "ok": true,
+   "leaves": 2,
+   "leftovers": 0,
+   "workers": 2,
+   "allTerminated": true,
+   "blobWorkersInRun": 2,
+   "unterminatedInRun": 0,
+   "workerLog": [
+    "2026-11-16T18:49:48.505Z INFO  [pdfjs] web worker ready (blob URL, module)",
+    "2026-11-16T18:49:48.512Z INFO  [view] opened pendf-fixtures/a4.pdf (3 pages, worker: web-worker)",
+    "2026-11-16T18:49:48.610Z INFO  [view] opened pendf-fixtures/a4.pdf (3 pages, worker: web-worker)"
+   ],
+   "workerKinds": [
+    [
+     "blob:app://o",
+     true,
+     "pendf-worker",
+     8762,
+     "setup",
+     [
+      "at _p (plugin:pendf:602:951)"
+     ]
+    ],
+    [
+     "blob:app://o",
+     true,
+     "pendf-worker",
+     10110,
+     "fallback-main-thread",
+     [
+      "at _p (plugin:pendf:602:951)"
+     ]
+    ]
+   ],
+   "nativeWorker": false,
+   "blobRevoked": [
+    true,
+    true
+   ],
+   "pendingHighlightSaved": true,
+   "styleLeft": false
+  }
+ }
+}

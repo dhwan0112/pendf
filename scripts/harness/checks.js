@@ -147,6 +147,7 @@
 		const waitRendered = (v, n) => waitFor(() => pageView(v, n)?.renderingState === 3 && pageView(v, n).div.querySelector("canvas"), 20000);
 		const waitText = (v, n) => waitFor(() => pageView(v, n)?.textLayer?.div?.querySelector("span"), 20000);
 		const openPenDF = async (name, state = {}) => {
+			if (P()?.settings?.tools) P().settings.tools.last = "none";
 			const leaf = app.workspace.getLeaf("tab");
 			// Right after the plugin is (re-)enabled, Obsidian may still be re-creating its views and
 			// can leave this leaf empty (D-37): open again if the leaf did not keep our view type.
@@ -1973,7 +1974,7 @@
 				tb.style.width = "360px";
 				await sleep(300);
 				res.narrow = { overflowed: v.toolbarOverflow, fits: tb.scrollWidth <= tb.clientWidth + 1, moreShown: !tb.querySelector(".pendf-more").hasClass("is-hidden") };
-				res.narrow.keptVisible = ["note", "ink", "undo", "panel"].filter((id) => getComputedStyle(tb.querySelector(`[data-tool="${id}"]`)).display !== "none");
+				res.narrow.keptVisible = ["panel"].filter((id) => getComputedStyle(tb.querySelector(`[data-tool="${id}"]`)).display !== "none");
 				tb.style.width = "";
 				await sleep(300);
 				res.wide = { overflowed: v.toolbarOverflow, fits: tb.scrollWidth <= tb.clientWidth + 1, width: tb.clientWidth };
@@ -1990,8 +1991,8 @@
 				res.longPress.rotated = v.debugSession.viewer.pagesRotation !== rot0;
 				if (res.longPress.rotated) v.debugSession.viewer.pagesRotation = rot0;
 				res.ok =
-					res.buttons >= 14 && res.unlabelled.length === 0 && res.groups.length >= 4 &&
-					res.narrow.overflowed.length > 0 && res.narrow.fits && res.narrow.moreShown && res.narrow.keptVisible.length === 4 &&
+					res.buttons >= 11 && res.unlabelled.length === 0 && res.groups.length >= 4 &&
+					res.narrow.overflowed.length > 0 && res.narrow.fits && res.narrow.moreShown && res.narrow.keptVisible.length === 1 &&
 					res.wide.fits && res.wide.overflowed.length < res.narrow.overflowed.length &&
 					res.longPress.tip === "Rotate view" && !res.longPress.rotated;
 				return res;
@@ -2008,8 +2009,12 @@
 			};
 			const penStroke = async (v, pts, id = 61) => {
 				const c = v.debugSession.viewer.container;
+				let downTarget = null;
 				const fire = (type, x, y) => {
-					const target = document.elementFromPoint(x, y) ?? c;
+					let target = document.elementFromPoint(x, y) ?? c;
+					// pointer capture (see dragPointer): never deliver a captured stroke to the tool palette
+					if (type === "pointerdown") downTarget = target;
+					else if (downTarget && target.closest(".pendf-tools")) target = downTarget;
 					target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerType: "pen", pointerId: id, isPrimary: true, clientX: x, clientY: y, pressure: 0.5, buttons: type === "pointerup" ? 0 : 1 }));
 				};
 				fire("pointerdown", pts[0][0], pts[0][1]);
@@ -2093,10 +2098,11 @@
 					// eraser in the margin
 					const s2 = v.debugSession;
 					await waitIdle(v);
-					pl.settings.ink = { ...pl.settings.ink, tool: "eraser" };
+					v.setTool("eraser");
 					const p2 = pageView(v, 1).div.querySelector(`.pendf-ink[data-id="${ink?.id}"]`)?.getBoundingClientRect();
 					if (p2) await penStroke(v, [[p2.left + p2.width * 0.5, p2.top - 8], [p2.left + p2.width * 0.5, p2.top + p2.height / 2], [p2.left + p2.width * 0.5, p2.bottom + 8]], 62);
 					res.erased = !s2.store.get(ink?.id) || s2.store.get(ink?.id).deleted;
+					v.setTool("none");
 				} finally {
 					pl.settings.ink = inkBefore;
 					for (const id of made) v.debugSession?.store?.remove(id);
@@ -2245,8 +2251,13 @@
 				return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
 			};
 			const dragPointer = async (x0, y0, x1, y1, pointerType, id) => {
+				// the tools capture the pointer: moves and the release that pass over the tool palette
+				// still reach the element that got the press (synthetic events ignore capture)
+				let downTarget = null;
 				const fire = (type, x, y) => {
-					const target = document.elementFromPoint(x, y);
+					let target = document.elementFromPoint(x, y);
+					if (type === "pointerdown") downTarget = target;
+					else if (downTarget && (!target || target.closest(".pendf-tools"))) target = downTarget;
 					target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerType, pointerId: id, isPrimary: true, clientX: x, clientY: y, buttons: type === "pointerup" ? 0 : 1, button: 0 }));
 				};
 				fire("pointerdown", x0, y0);
@@ -2368,13 +2379,264 @@
 				return res;
 			});
 
+			await check("tool-palette", async () => {
+				// D-46: bottom tool palette — each tool records synthetic Pencil input as that tool, options and
+				// the last tool are remembered, the palette folds, the last page clears it, the ink bar is gone
+				const res = {};
+				const pl = P();
+				const before = { ink: { ...pl.settings.ink }, tools: { ...pl.settings.tools } };
+				const { v } = await openPenDF("a4.pdf");
+				const s = v.debugSession;
+				res.modalAtStart = !!document.querySelector(".modal-container");
+				const pal = v.containerEl.querySelector(".pendf-tools");
+				const bar = pal.querySelector(".pendf-tools-bar");
+				const btn = (id) => pal.querySelector(`[data-tool="${id}"]`);
+				const seen = new Set(s.store.all().map((a) => a.id));
+				const fresh = (type) => {
+					const out = s.store.all().filter((a) => !seen.has(a.id) && !a.deleted && (!type || a.type === type));
+					for (const a of s.store.all()) seen.add(a.id);
+					return out;
+				};
+				const made = [];
+				const content = () => pageView(v, 1).div.querySelector(":scope > .canvasWrapper").getBoundingClientRect();
+				const at = (fx, fy) => {
+					const c = content();
+					return [c.left + c.width * fx, c.top + c.height * fy];
+				};
+				const stroke = async (fx0, fy0, fx1, fy1, id) => {
+					const a = at(fx0, fy0);
+					const b = at(fx1, fy1);
+					await penStroke(v, [a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 3], b], id);
+					await sleep(150);
+				};
+				try {
+					pl.settings.ink = { ...pl.settings.ink, input: "stylus", pencilAlways: true, highlighterOpacity: 0.35 };
+					await goPage(v, 1);
+					await waitIdle(v);
+					s.viewer.container.scrollTop = 0;
+					await sleep(300);
+					// structure: annotation tools only in the palette, outside the page root, every button named
+					const topIds = [...v.containerEl.querySelectorAll(".pendf-toolbar [data-tool]")].map((b) => b.dataset.tool);
+					const allButtons = [...v.containerEl.querySelectorAll(".pendf-toolbar button, .pendf-tools button")];
+					res.structure = {
+						inkBar: !!v.containerEl.querySelector(".pendf-inkbar"),
+						topIds,
+						annotationInTop: topIds.filter((id) => ["highlight", "note", "ink", "area", "undo", "redo", "pen", "eraser", "text", "none"].includes(id)),
+						paletteIds: [...bar.querySelectorAll("[data-tool]")].map((b) => b.dataset.tool),
+						outsideRoot: !pal.closest(".pendf-root") && !pal.closest(".pendf-container"),
+						unlabelled: allButtons.filter((b) => !(b.getAttribute("aria-label") || "").trim()).length,
+						buttons: allButtons.length,
+					};
+					res.missingCommands = ["none", "pen", "highlighter", "eraser", "text", "area", "note"].map((t) => `pendf:select-tool-${t}`).concat(["pendf:toggle-tool-palette"]).filter((id) => !app.commands.commands[id]);
+
+					// pen
+					btn("pen").click();
+					res.penTool = v.currentTool;
+					{
+						const [dx, dy] = at(0.15, 0.12);
+						const t = document.elementFromPoint(dx, dy);
+						const seenDown = [];
+						const spy = (e) => seenDown.push([e.type, e.defaultPrevented]);
+						window.addEventListener("pointerdown", spy);
+						window.addEventListener("pointerup", spy);
+						await stroke(0.15, 0.12, 0.45, 0.13, 101);
+						window.removeEventListener("pointerdown", spy);
+						window.removeEventListener("pointerup", spy);
+						res.penDiag = { inkActive: s.ink.active, busy: [s.notes.placing, s.area.active, s.textTool.active], target: t ? `${t.tagName}.${t.className.baseVal ?? t.className}` : null, inContainer: !!t && s.viewer.container.contains(t), xy: [Math.round(dx), Math.round(dy)], events: seenDown, modal: !!document.querySelector(".modal-container"), page: s.viewer.currentPageNumber, scrollTop: s.viewer.container.scrollTop };
+					}
+					const pen = fresh("ink")[0];
+					if (pen) made.push(pen.id);
+					res.pen = pen ? { tool: pen.tool, color: pen.color, width: pen.width } : null;
+
+					// highlighter: press again → options; pick colour 3 and 50 %
+					btn("highlighter").click();
+					btn("highlighter").click();
+					res.options = { openFor: v.palette.optionsOpenFor };
+					const pop = pal.querySelector(".pendf-tools-options");
+					res.options.labelled = pop ? [...pop.querySelectorAll("button")].every((b) => (b.getAttribute("aria-label") || "").trim()) : false;
+					pop?.querySelector(`[data-hex="${pl.settings.colors[2].hex}"]`)?.click();
+					pal.querySelector('.pendf-tools-options [data-opacity="0.5"]')?.click();
+					res.options.saved = { color: pl.settings.ink.highlighterColor, opacity: pl.settings.ink.highlighterOpacity };
+					btn("highlighter").click();
+					res.options.closedOnPress = v.palette.optionsOpenFor === null;
+					await stroke(0.15, 0.2, 0.45, 0.2, 102);
+					const hl = fresh("ink")[0];
+					if (hl) made.push(hl.id);
+					const hlPath = hl ? pageView(v, 1).div.querySelector(`.pendf-ink[data-id="${hl.id}"]`) : null;
+					res.highlighter = hl ? { tool: hl.tool, color: hl.color, opacity: hl.opacity, renderedOpacity: hlPath ? getComputedStyle(hlPath).strokeOpacity : null } : null;
+
+					// eraser: crosses the pen stroke only
+					btn("eraser").click();
+					res.eraserTool = v.currentTool;
+					await stroke(0.3, 0.09, 0.3, 0.16, 103);
+					res.erased = { pen: !!pen && (!s.store.get(pen.id) || s.store.get(pen.id).deleted), highlighterKept: !!hl && !s.store.get(hl.id)?.deleted };
+					fresh();
+
+					// text highlight: a Pencil drag over a line of text
+					btn("text").click();
+					res.textTool = v.currentTool;
+					const sp = spans(v, 1).filter((x) => x.textContent.trim().length > 25)[1];
+					const sr = sp.getBoundingClientRect();
+					await penStroke(v, [[sr.left + 2, sr.top + sr.height / 2], [sr.left + sr.width / 2, sr.top + sr.height / 2], [sr.right - 2, sr.top + sr.height / 2]], 104);
+					await sleep(200);
+					const th = fresh("highlight")[0];
+					if (th) made.push(th.id);
+					res.text = th ? { color: th.color, chars: th.text.length, quads: th.quads.length, expected: pl.settings.tools.textColor } : null;
+					res.textNoInk = fresh("ink").length === 0;
+
+					// area: Pencil drags one; a finger (default input) scrolls instead
+					btn("area").click();
+					await dragPointer(...at(0.55, 0.42), ...at(0.8, 0.5), "pen", 105);
+					await sleep(300);
+					const ar = fresh("area")[0];
+					if (ar) made.push(ar.id);
+					s.area.closeMenu();
+					await dragPointer(...at(0.2, 0.42), ...at(0.4, 0.5), "touch", 106);
+					await sleep(300);
+					res.area = { made: !!ar, color: ar?.color, expected: pl.settings.tools.areaColor, fingerMade: fresh("area").length };
+
+					// note: one tap places it, then the previous tool (area) comes back
+					btn("note").click();
+					res.noteTool = v.currentTool;
+					const [nx, ny] = at(0.7, 0.58);
+					document.elementFromPoint(nx, ny).dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: nx, clientY: ny, view: window }));
+					const ta = await waitFor(() => document.querySelector(".pendf-note-editor textarea"), 5000).catch(() => null);
+					if (ta) {
+						ta.value = "palette note";
+						ta.dispatchEvent(new Event("input", { bubbles: true }));
+						document.querySelector(".pendf-note-editor").closest(".modal").querySelector("button.mod-cta").click();
+					}
+					await sleep(300);
+					const note = fresh("note")[0];
+					if (note) made.push(note.id);
+					res.note = { made: !!note, toolAfter: v.currentTool };
+					// undo / redo buttons
+					btn("undo").click();
+					const undone = !!note && (!s.store.get(note.id) || s.store.get(note.id).deleted);
+					btn("redo").click();
+					res.note.undoRedo = undone && !!note && !s.store.get(note.id)?.deleted;
+					fresh();
+
+					// no tool + "Apple Pencil always writes": the last pen tool (highlighter here, never the eraser)
+					btn("none").click();
+					await stroke(0.15, 0.3, 0.45, 0.3, 107);
+					const always = fresh("ink")[0];
+					if (always) made.push(always.id);
+					pl.settings.ink = { ...pl.settings.ink, pencilAlways: false };
+					await stroke(0.15, 0.35, 0.45, 0.35, 108);
+					const offInk = fresh("ink");
+					for (const a of offInk) made.push(a.id);
+					pl.settings.ink = { ...pl.settings.ink, pencilAlways: true };
+					res.noTool = { tool: v.currentTool, alwaysWrote: always?.tool ?? null, offWrote: offInk.length };
+
+					// remembered: the last tool and the options, in the plugin data
+					btn("pen").click();
+					await sleep(600);
+					const data = await pl.loadData();
+					await v.onLoadFile(v.file);
+					await waitFor(() => v.debugSession?.ready && v.debugSession.store, 20000);
+					await sleep(500);
+					res.remembered = { toolAfterReopen: v.currentTool, dataLast: data?.tools?.last, dataOpacity: data?.ink?.highlighterOpacity, dataColor: data?.ink?.highlighterColor };
+					btn("none").click();
+
+					// long press on a palette button: its name, above the button, without selecting it
+					const lp = btn("eraser");
+					lp.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch", pointerId: 109 }));
+					await sleep(600);
+					const tip = document.querySelector(".pendf-press-tip");
+					res.longPress = { tip: tip?.textContent ?? null, above: tip ? tip.getBoundingClientRect().bottom <= lp.getBoundingClientRect().top + 1 : false };
+					lp.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch", pointerId: 109 }));
+					lp.click();
+					res.longPress.selected = v.currentTool === "eraser";
+					if (res.longPress.selected) v.setTool("none");
+
+					// centred on the page area (docked panel open), clear of the panel
+					// room to dock the panel: fold the left sidebar for this step (put back right after)
+					const leftWasCollapsed = app.workspace.leftSplit.collapsed;
+					app.workspace.leftSplit.collapse();
+					await sleep(400);
+					v.panel.setState({ open: true, tab: "outline", width: 200, prefer: "auto" });
+					await sleep(600);
+					const rootR = v.containerEl.querySelector(".pendf-root").getBoundingClientRect();
+					let barR = bar.getBoundingClientRect();
+					const panelR = v.containerEl.querySelector(".pendf-inpanel")?.getBoundingClientRect();
+					res.centre = { mode: v.panel.currentMode, offsetPx: +Math.abs((barR.left + barR.right) / 2 - (rootR.left + rootR.right) / 2).toFixed(1), clearOfPanel: !panelR || v.panel.currentMode !== "docked" || barR.left >= panelR.right };
+					v.panel.setState({ open: false, tab: "outline", width: 280, prefer: "auto" });
+					if (!leftWasCollapsed) app.workspace.leftSplit.expand();
+					await sleep(500);
+
+					// the last page's bottom scrolls clear of the palette (open, then folded)
+					const lastBottom = async () => {
+						const ss = v.debugSession;
+						const n = ss.viewer.pagesCount;
+						v.goToPage(n);
+						await sleep(400);
+						ss.viewer.container.scrollTop = ss.viewer.container.scrollHeight;
+						await sleep(400);
+						const pr = pageView(v, n).div.getBoundingClientRect();
+						const el = pal.querySelector(".pendf-tools-bar:not(.is-hidden)") ?? pal.querySelector(".pendf-tools-handle");
+						return { pageBottom: Math.round(pr.bottom), paletteTop: Math.round(el.getBoundingClientRect().top), clear: pr.bottom <= el.getBoundingClientRect().top };
+					};
+					res.lastPage = { open: await lastBottom() };
+					btn("collapse").click();
+					await sleep(300);
+					res.fold = { collapsed: pl.settings.tools.collapsed, barHidden: bar.classList.contains("is-hidden"), handle: !pal.querySelector(".pendf-tools-handle").classList.contains("is-hidden") };
+					res.lastPage.folded = await lastBottom();
+					pal.querySelector(".pendf-tools-handle").click();
+					await sleep(300);
+					res.fold.expandedAgain = !bar.classList.contains("is-hidden") && !pl.settings.tools.collapsed;
+
+					// narrow page area: icons only, then the least-used tools move into "More"
+					const body = v.containerEl.querySelector(".pendf-body");
+					body.style.width = "330px";
+					await sleep(400);
+					v.palette.layout();
+					await sleep(100);
+					res.narrow = { labels: bar.classList.contains("has-labels"), overflowed: v.palette.overflowed, fits: bar.scrollWidth <= bar.clientWidth + 1 };
+					body.style.width = "";
+					await sleep(400);
+					v.palette.layout();
+					res.wide = { labels: bar.classList.contains("has-labels"), overflowed: v.palette.overflowed };
+				} finally {
+					// never leave the note editor open: a modal would cover the next checks
+					document.querySelector(".pendf-note-editor")?.closest(".modal-container")?.querySelector(".modal-close-button")?.click();
+					v.setTool("none");
+					for (const id of made) v.debugSession.store.get(id) && v.debugSession.store.remove(id);
+					pl.settings.ink = before.ink;
+					pl.settings.tools = before.tools;
+					v.palette?.refresh();
+				}
+				const S = res.structure;
+				res.ok =
+					!S.inkBar && S.annotationInTop.length === 0 && S.outsideRoot && S.unlabelled === 0 && res.missingCommands.length === 0 &&
+					["none", "pen", "highlighter", "eraser", "text", "area", "note", "undo", "redo", "collapse"].every((id) => S.paletteIds.includes(id)) &&
+					res.penTool === "pen" && res.pen?.tool === "pen" &&
+					res.options.openFor === "highlighter" && res.options.labelled && res.options.closedOnPress && res.options.saved.opacity === 0.5 &&
+					res.highlighter?.tool === "highlighter" && res.highlighter.opacity === 0.5 && res.highlighter.color === res.options.saved.color && Math.abs(parseFloat(res.highlighter.renderedOpacity) - 0.5) < 0.01 &&
+					res.eraserTool === "eraser" && res.erased.pen && res.erased.highlighterKept &&
+					res.textTool === "text" && res.text?.chars > 10 && res.text.color === res.text.expected && res.textNoInk &&
+					res.area.made && res.area.color === res.area.expected && res.area.fingerMade === 0 &&
+					res.noteTool === "note" && res.note.made && res.note.toolAfter === "area" && res.note.undoRedo &&
+					res.noTool.tool === "none" && res.noTool.alwaysWrote === "highlighter" && res.noTool.offWrote === 0 &&
+					res.remembered.toolAfterReopen === "pen" && res.remembered.dataLast === "pen" && res.remembered.dataOpacity === 0.5 &&
+					res.longPress.tip === "Stroke eraser" && res.longPress.above && !res.longPress.selected &&
+					res.centre.mode === "docked" && res.centre.offsetPx <= 2 && res.centre.clearOfPanel &&
+					res.lastPage.open.clear && res.lastPage.folded.clear &&
+					res.fold.collapsed && res.fold.barHidden && res.fold.handle && res.fold.expandedAgain &&
+					!res.narrow.labels && res.narrow.overflowed.length > 0 && res.narrow.fits && res.wide.labels && res.wide.overflowed.length === 0;
+				return res;
+			});
+
 			await check("area-ground-truth", async () => {
 				// drag over each known rectangle (Pencil on odd pages, finger on even): the stored quad matches
 				const res = { rows: [] };
 				const { v } = await openPenDF("areas.pdf");
 				const s = v.debugSession;
 				const made = [];
+				const inputBefore = P().settings.ink.input;
 				try {
+					// finger rows: "Everything writes" (fingers use the tool); checked below that they scroll otherwise
+					P().settings.ink = { ...P().settings.ink, input: "exclusive" };
 					v.setScale("page-width");
 					v.toggleArea(true);
 					res.toolOn = s.area.active;
@@ -2448,6 +2710,13 @@
 						res.pixelRows.push({ page: e.page, canvasPx: [x0, y0, x1, y1], maxErrPt: got ? +Math.max(...got.map((x, i) => Math.abs(x - e.box[i]))).toFixed(3) : null });
 					}
 					v.setScale("page-width");
+					// default input ("Pencil writes, finger scrolls"): with the tool on, a finger drag makes no area
+					P().settings.ink = { ...P().settings.ink, input: "stylus" };
+					await goPage(v, 1);
+					const rf = areaClientRect(v, 1, [150, 450, 330, 600]);
+					const nf = areasOn(v, 1).length;
+					await dragPointer(rf.left - 30, rf.top, rf.right + 20, rf.bottom, "touch", 89);
+					res.fingerStylusCreates = areasOn(v, 1).length - nf;
 					// with the tool off, a finger drag scrolls instead (no area)
 					v.toggleArea(false);
 					await goPage(v, 1);
@@ -2456,10 +2725,11 @@
 					await dragPointer(r.left - 30, r.top, r.right + 20, r.bottom, "touch", 90);
 					res.toolOffCreates = areasOn(v, 1).length - n0;
 				} finally {
+					P().settings.ink = { ...P().settings.ink, input: inputBefore };
 					v.toggleArea(false);
 					for (const id of made) s.store.remove(id);
 				}
-				res.ok = res.toolOn && res.rows.length === 5 && res.rows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5 && r.text === `Figure ${r.page}` && r.menu) && res.pixelRows.length === 5 && res.pixelRows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5) && res.toolOffCreates === 0;
+				res.ok = res.toolOn && res.rows.length === 5 && res.rows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5 && r.text === `Figure ${r.page}` && r.menu) && res.pixelRows.length === 5 && res.pixelRows.every((r) => r.maxErrPt !== null && r.maxErrPt <= 0.5) && res.fingerStylusCreates === 0 && res.toolOffCreates === 0;
 				return res;
 			});
 

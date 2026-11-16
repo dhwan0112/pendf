@@ -1,4 +1,6 @@
 import { FuzzySuggestModal, Notice, Plugin, TFile, normalizePath, type App, type TAbstractFile, type WorkspaceLeaf } from "obsidian";
+import { TOOL_IDS, isToolId, normalizeOpacity } from "./tools/model";
+import { TOOL_LABELS } from "./tools/palette";
 import { PenDFView, VIEW_TYPE } from "./view/PdfView";
 import { PEN_PROBE_VIEW, PenProbeView } from "./probe/PenProbeView";
 import { ANNOTATIONS_VIEW, AnnotationsView, type PanelTab } from "./panel/AnnotationsView";
@@ -138,7 +140,12 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "show-pages", name: "Show page thumbnails", callback: () => void this.showAnnotationsPanel("pages") });
 		this.addCommand({ id: "search-all", name: "Search the whole PDF", callback: () => void this.showAnnotationsPanel("search") });
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
-		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
+		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting (last pen tool ↔ no tool)", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
+		// one command per palette tool (D-46): hotkeys on a desktop or an iPad keyboard
+		for (const t of TOOL_IDS) {
+			this.addCommand({ id: `select-tool-${t}`, name: `Select tool: ${TOOL_LABELS[t].label}`, checkCallback: (c) => this.withView(c, (v) => v.setTool(t)) });
+		}
+		this.addCommand({ id: "toggle-tool-palette", name: "Show or hide the tool palette", checkCallback: (c) => this.withView(c, (v) => v.palette?.setCollapsed(!v.palette.collapsed)) });
 		this.addCommand({ id: "toggle-margin", name: "Toggle margin", checkCallback: (c) => this.withView(c, (v) => v.toggleMargin()) });
 		this.addCommand({ id: "area-excerpt", name: "Area excerpt", checkCallback: (c) => this.withView(c, (v) => v.toggleArea()) });
 		this.addCommand({ id: "add-bookmark", name: "Bookmark this spot", checkCallback: (c) => this.withView(c, (v) => void v.addBookmark()) });
@@ -156,7 +163,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({
 			id: "add-note",
 			name: "Add note (then tap the page)",
-			checkCallback: (c) => this.withView(c, (v) => v.debugSession?.notes.setPlacing(true)),
+			checkCallback: (c) => this.withView(c, (v) => v.setTool("note")),
 		});
 		this.addCommand({
 			id: "open-pen-probe",
@@ -400,11 +407,29 @@ export default class PenDFPlugin extends Plugin {
 		if (!Array.isArray(this.settings.colors) || this.settings.colors.length !== 4) this.settings.colors = structuredClone(DEFAULT_SETTINGS.colors);
 		if (typeof this.settings.positions !== "object" || !this.settings.positions) this.settings.positions = {};
 		this.settings.ink = { ...structuredClone(DEFAULT_SETTINGS.ink), ...(typeof data.ink === "object" && data.ink ? data.ink : {}) };
+		this.settings.ink.highlighterOpacity = normalizeOpacity(this.settings.ink.highlighterOpacity);
+		const t = { ...structuredClone(DEFAULT_SETTINGS.tools), ...(typeof data.tools === "object" && data.tools ? data.tools : {}) };
+		if (!isToolId(t.last) || t.last === "note") t.last = "none";
+		if (t.lastPen !== "highlighter") t.lastPen = "pen";
+		for (const k of ["textColor", "areaColor"] as const) if (typeof t[k] !== "string" || !/^#[0-9a-f]{6}$/i.test(t[k])) t[k] = DEFAULT_SETTINGS.tools[k];
+		t.collapsed = t.collapsed === true;
+		this.settings.tools = t;
 		if (!isZoomPreset(this.settings.zoomRendering)) this.settings.zoomRendering = DEFAULT_SETTINGS.zoomRendering;
 		if (this.settings.panelLocation !== "sidebar") this.settings.panelLocation = "view";
 		if (this.settings.marginSide !== "left") this.settings.marginSide = "right";
 		if (![1, 2, 3, 4].includes(this.settings.areaImageScale)) this.settings.areaImageScale = 2;
 		if (!(MARGIN_RATIOS as readonly number[]).includes(this.settings.marginRatio)) this.settings.marginRatio = 0.5;
+	}
+
+	private quietSaveTimer: number | null = null;
+
+	/** Save settings without re-applying them to the views (tool palette state), debounced. */
+	saveQuietly(): void {
+		if (this.quietSaveTimer !== null) window.clearTimeout(this.quietSaveTimer);
+		this.quietSaveTimer = window.setTimeout(() => {
+			this.quietSaveTimer = null;
+			void this.saveData(this.settings);
+		}, 250);
 	}
 
 	async saveSettings(): Promise<void> {

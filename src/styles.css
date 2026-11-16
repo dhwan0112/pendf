@@ -169,38 +169,12 @@
 }
 
 /* ---- handwriting (Phase 6) ---- */
-.pendf-view .pendf-inkbar {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: var(--size-4-2);
-	padding: var(--size-4-1) var(--size-4-2);
-	border-bottom: var(--border-width) solid var(--background-modifier-border);
-	flex: 0 0 auto;
-}
-.pendf-view .pendf-inkbar .pendf-swatch {
-	width: 26px;
-	height: 26px;
-	min-width: 26px;
-	padding: 0;
-	border-radius: 50%;
-	border: 2px solid var(--background-primary);
-	box-shadow: 0 0 0 1px var(--background-modifier-border);
-	background: var(--pendf-swatch);
-}
-.pendf-view .pendf-inkbar .pendf-swatch.is-active {
-	box-shadow: 0 0 0 2px var(--interactive-accent);
-}
 .pendf-view .pendf-ink-dot {
 	display: inline-block;
 	width: var(--pendf-dot);
 	height: var(--pendf-dot);
 	border-radius: 50%;
 	background: currentColor;
-}
-.pendf-view .pendf-ink-width {
-	min-width: 30px;
-	justify-content: center;
 }
 .pendf-root .pendf-ink-live {
 	position: absolute;
@@ -216,7 +190,7 @@
 	display: block;
 }
 .pendf-root .pendf-ink-live.is-highlighter {
-	opacity: 0.35;
+	opacity: var(--pendf-ink-opacity, 0.35);
 	mix-blend-mode: multiply;
 }
 .pendf-root .pendf-ink {
@@ -225,7 +199,7 @@
 	stroke-linejoin: round;
 }
 .pendf-root .pendf-ink-highlighter {
-	stroke-opacity: 0.35;
+	stroke-opacity: var(--pendf-ink-opacity, 0.35);
 }
 .pendf-root .pendf-ink.is-erased {
 	opacity: 0.15;
@@ -960,10 +934,13 @@
 	fill-opacity: 0.32;
 }
 .pendf-root.is-area-tool .pendf-container {
-	touch-action: none;
 	cursor: crosshair;
 	user-select: none;
 	-webkit-user-select: none;
+}
+/* fingers drag areas only in "Everything writes" input mode (D-46); otherwise they scroll */
+.pendf-root.is-area-tool.is-fingers-draw .pendf-container {
+	touch-action: none;
 }
 .pendf-root .pendf-area-live {
 	position: absolute;
@@ -1009,4 +986,133 @@
 .pendf-index-result .pendf-index-meta {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
+}
+
+/* ---- bottom tool palette (D-46) ---- */
+.pendf-view .pendf-tools {
+	position: absolute;
+	left: var(--pendf-tools-x, 50%);
+	bottom: calc(var(--size-4-3) + env(safe-area-inset-bottom, 0px));
+	transform: translateX(-50%);
+	z-index: 12;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: var(--pendf-tools-max, calc(100% - 32px));
+	pointer-events: none;
+}
+/* desktop: clear Obsidian's status bar, which floats over the bottom-right of the window */
+body:not(.is-mobile) .pendf-view .pendf-tools {
+	bottom: calc(var(--size-4-3) + 22px);
+}
+.pendf-view .pendf-tools > * {
+	pointer-events: auto;
+}
+.pendf-view .pendf-tools-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	max-width: var(--pendf-tools-max, calc(100vw - 32px));
+	overflow: hidden;
+	padding: var(--size-4-1);
+	border-radius: var(--radius-l);
+	background: var(--background-primary);
+	border: var(--border-width) solid var(--background-modifier-border);
+	box-shadow: var(--shadow-s);
+}
+.pendf-view .pendf-tools-bar.is-hidden {
+	display: none;
+}
+.pendf-view .pendf-tools-bar .pendf-group + .pendf-group {
+	margin-left: var(--size-4-1);
+	padding-left: var(--size-4-2);
+	border-left: var(--border-width) solid var(--background-modifier-border);
+}
+.pendf-view .pendf-tools-bar .pendf-icon-btn {
+	position: relative;
+	gap: var(--size-2-2);
+	min-height: 36px;
+	min-width: 36px;
+	justify-content: center;
+}
+.pendf-view .pendf-btn-label {
+	display: none;
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+}
+.pendf-view .has-labels .pendf-btn-label {
+	display: inline;
+}
+.pendf-view .pendf-tool-color {
+	position: absolute;
+	left: 25%;
+	right: 25%;
+	bottom: 3px;
+	height: 3px;
+	border-radius: 2px;
+	background: var(--pendf-tool-color, transparent);
+}
+.pendf-view .pendf-tools-handle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	height: 28px;
+	padding: 0 var(--size-4-2);
+	border-radius: var(--radius-l);
+	background: var(--background-primary);
+	border: var(--border-width) solid var(--background-modifier-border);
+	box-shadow: var(--shadow-s);
+}
+.pendf-view .pendf-tools-handle.is-hidden {
+	display: none;
+}
+.pendf-view .pendf-tools-handle.is-active {
+	color: var(--interactive-accent);
+}
+.pendf-view .pendf-tools-options {
+	position: absolute;
+	bottom: calc(100% + var(--size-4-2));
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2) var(--size-4-3);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	border: var(--border-width) solid var(--background-modifier-border);
+	box-shadow: var(--shadow-l);
+}
+.pendf-view .pendf-tools-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+.pendf-view .pendf-tools-swatch {
+	width: 28px;
+	height: 28px;
+	min-width: 28px;
+	padding: 0;
+	border-radius: 50%;
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	background: var(--pendf-swatch);
+}
+.pendf-view .pendf-tools-swatch.is-active {
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+.pendf-view .pendf-tools-width {
+	min-width: 32px;
+	justify-content: center;
+}
+.pendf-view .pendf-tools-op {
+	font-size: var(--font-ui-smaller);
+	min-width: 40px;
+	justify-content: center;
+}
+/* the last page can scroll above the palette (beats pdf.js's own padding rule, scoped the same way) */
+.pendf-view .pendf-root .pdfViewer {
+	padding-bottom: calc(var(--pendf-tools-space, 0px) + env(safe-area-inset-bottom, 0px));
+}
+.pendf-press-tip.is-above {
+	transform: translate(-50%, -100%);
 }

@@ -21,6 +21,7 @@ import { uuid } from "../store/schema";
 import type { SidecarStore } from "../store/sidecar";
 import type { UndoStack } from "../store/undo";
 import { logger } from "../util/log";
+import { DEFAULT_HIGHLIGHTER_OPACITY, normalizeOpacity } from "../tools/model";
 import { bounds, dedupe, distanceToPolyline, pathData, roundPoints, simplify, type Box } from "./model";
 
 const log = logger("ink");
@@ -46,6 +47,11 @@ export interface InkHost {
 	quietly?: (fn: () => void) => void;
 	/** another tool owns the next tap (e.g. placing a note): do not draw */
 	busy?: () => boolean;
+	/**
+	 * the ink tool a stroke uses now (0.8.x tool palette): the selected ink tool, or — with no
+	 * tool selected and "Apple Pencil always writes" on — the last pen tool (never the eraser)
+	 */
+	inkTool?: () => "pen" | "highlighter" | "eraser";
 }
 
 interface Stroke {
@@ -58,6 +64,8 @@ interface Stroke {
 	tool: "pen" | "highlighter";
 	color: string;
 	width: number;
+	/** highlighter only */
+	opacity?: number;
 	pts: number[];
 	lastX: number;
 	lastY: number;
@@ -175,13 +183,15 @@ export class InkController implements LayerRenderer {
 			stroke: a.color,
 			"stroke-width": a.width,
 		});
+		// per-stroke highlighter opacity on the path itself (never on the layer: that would isolate the blend)
+		if (a.tool === "highlighter") path.style.setProperty("--pendf-ink-opacity", String(normalizeOpacity(a.opacity)));
 		// the highlighter blends with the page like text highlights; the pen sits on its own layer
 		(a.tool === "highlighter" ? layer.group : layer.ink).appendChild(path);
 	}
 
 	// ----------------------------------------------------------------- input
 
-	/** the Pencil writes now: in ink mode, or always when "Apple Pencil always writes" is on */
+	/** the Pencil writes now: an ink tool is selected, or no tool and "Apple Pencil always writes" is on (busy() covers the others) */
 	private pencilWrites(): boolean {
 		return this._active || this.host.settings().pencilAlways;
 	}
@@ -229,7 +239,8 @@ export class InkController implements LayerRenderer {
 			// synthetic or already-released pointer: keep going without capture
 		}
 		const cfg = this.host.settings();
-		if (cfg.tool === "eraser") {
+		const inkTool = this.host.inkTool?.() ?? cfg.tool;
+		if (inkTool === "eraser") {
 			const store = this.host.store();
 			const strokes = (store?.all() ?? [])
 				.filter((a): a is InkAnnotation => a.type === "ink")
@@ -247,7 +258,7 @@ export class InkController implements LayerRenderer {
 		}
 		const pr = pageContentRect(pageDiv);
 		const scale = pr.width / geom.width;
-		const tool = cfg.tool;
+		const tool = inkTool;
 		const stroke: Stroke = {
 			pointerId: e.pointerId,
 			page,
@@ -257,6 +268,7 @@ export class InkController implements LayerRenderer {
 			tool,
 			color: tool === "pen" ? cfg.penColor : cfg.highlighterColor,
 			width: tool === "pen" ? cfg.penWidth : cfg.highlighterWidth,
+			...(tool === "highlighter" ? { opacity: normalizeOpacity(cfg.highlighterOpacity) } : {}),
 			pts: [],
 			lastX: e.clientX,
 			lastY: e.clientY,
@@ -355,6 +367,7 @@ export class InkController implements LayerRenderer {
 		ctx.strokeStyle = s.color;
 		ctx.lineWidth = Math.max(0.5, s.width * s.scale);
 		this.canvas.toggleClass("is-highlighter", s.tool === "highlighter");
+		this.canvas.style.setProperty("--pendf-ink-opacity", String(s.opacity ?? DEFAULT_HIGHLIGHTER_OPACITY));
 		this.canvas.addClass("is-drawing");
 	}
 
@@ -401,7 +414,7 @@ export class InkController implements LayerRenderer {
 		if (!store || !undo || !store.writable || s.pts.length < 2) return;
 		const pts = roundPoints(simplify(dedupe(s.pts), TOL[s.tool]));
 		const now = Date.now();
-		const a: InkAnnotation = { id: uuid(), type: "ink", page: s.page, createdAt: now, updatedAt: now, deleted: false, tool: s.tool, color: s.color, width: s.width, points: pts };
+		const a: InkAnnotation = { id: uuid(), type: "ink", page: s.page, createdAt: now, updatedAt: now, deleted: false, tool: s.tool, color: s.color, width: s.width, points: pts, ...(s.opacity !== undefined ? { opacity: s.opacity } : {}) };
 		const edit = () => undo.record("ink", [a.id], () => store.upsert(a));
 		if (this.host.quietly) this.host.quietly(edit);
 		else edit();

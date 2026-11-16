@@ -1,4 +1,4 @@
-# REPORT — penDF 현재 상태 (0.8.1, 2026-11-17)
+# REPORT — penDF 현재 상태 (0.8.1 + 미출시 도구 팔레트, 2026-11-17)
 
 버전별 변경은 [CHANGELOG.md](../CHANGELOG.md), 결정은 [DECISIONS.md](DECISIONS.md), 막힌 것은 [BLOCKERS.md](BLOCKERS.md), iPad 확인 절차는 [DEVICE_CHECKLIST.md](DEVICE_CHECKLIST.md)에 있다. 이 문서는 시간순 기록이 아니라 지금의 상태다.
 
@@ -10,6 +10,16 @@
 - 0.8.0을 낸 뒤 점검에서 찾아 0.8.1에서 고친 것: 하이라이트 혼합 회귀(화면 픽셀로 확인), 여백이 위·아래에 있을 때의 너비 맞춤, 여백 켠 상태의 배율 변경 2회 → 1회, 끌어서 너비를 바꿀 때 매 프레임 다시 맞추던 것, 툴바 길게 누르기 뒤 다음 탭이 먹히던 것.
 - **iPad에서는 아직 아무것도 확인되지 않았다.** 사용자 관찰(2026-11-17): 0.7.3에서 핀치 줌 깜빡임이 확실히 줄었다. 프리셋 판정(7-9)은 아직.
 - B-06은 테스트 볼트에서 재현되지 않았다. SciWiki 고유 조건으로 열어 둔다.
+- **미출시(main에 있음, 태그 없음): 도구 팔레트(D-46).** 지시문 3.2절 — 위 툴바는 보기·이동만, 주석 도구는 아래 가운데 팔레트로, 잉크 막대 없앰. build·test(266)·lint·`smoke:webkit`과 테스트 볼트 전체 하네스 47/47을 통과했다(새 검사 `tool-palette`; 19묶음 중 8번 묶음은 첫 시도에 Obsidian의 "No tab group found"로 `bookmarks`·`ink`가 실패하고 다시 시도해 통과 — 같은 코드의 바로 앞 전체 실행에서는 첫 시도에 통과). 지시문에 버전 번호와 릴리스 규칙이 없어 **버전을 올리지 않았고 태그·릴리스도 하지 않았다** — 버전을 정해 주면 태그를 단다.
+
+## 미출시 — 도구 팔레트 (D-46)
+
+- **위 툴바:** 쪽 이동, 배율, 너비 맞춤, 회전, 여백, 북마크(이동에 가까워 남김), 검색, 링크, 패널. 주석 도구 없음.
+- **아래 팔레트:** 도구 없음, 펜, 형광펜, 획 지우개, 텍스트 하이라이트, 영역 발췌, 메모, 실행 취소·다시 실행, 접기. 선택된 도구를 다시 누르면 위로 옵션(색·굵기·형광펜 투명도 25/35/50 %). 마지막 도구·옵션·접힘을 플러그인 데이터에 기억하고 PDF를 열면 마지막 도구를 다시 고른다.
+- **Pencil:** 선택된 도구로 동작. 도구 없음 + "Apple Pencil always writes"면 마지막 펜 도구(펜/형광펜, 지우개는 아님). 텍스트 도구는 Pencil이 끈 글자를 곧바로 하이라이트(범위를 직접 계산 — iPadOS의 Pencil 텍스트 선택에 기대지 않음). **바뀐 점:** 영역 도구가 켜져 있어도 손가락은 스크롤한다("Everything writes"에서만 손가락으로 끈다).
+- **배치(하네스 실측, 데스크톱):** 고정 패널을 연 페이지 영역 가운데에서 0 px, 패널과 겹치지 않음, 마지막 쪽 아래가 막대 위 8 px(펼침·접힘), 330 px 폭에서 아이콘만 한 줄(More에 지우개·텍스트·영역·메모·다시 실행). iPad 홈 인디케이터는 `env(safe-area-inset-bottom)`로 피하지만 **iPad에서 확인 전**(DEVICE_CHECKLIST 9장). 데스크톱에서는 Obsidian 상태 표시줄 위로 올렸다.
+- **명령:** `Select tool: …` 7개, `Show or hide the tool palette`(기본 단축키 없음).
+- **사이드카:** 형광펜 획의 `opacity`(선택). 0.7.3 파서가 읽고 보존함을 단위 시험으로 확인. 스키마 버전 1 그대로.
 
 ## 기능별 상태
 
@@ -129,6 +139,8 @@ DEVICE_CHECKLIST **7장**(7-1~7-9):
 
 ## 증거
 
+- `docs/evidence/harness-2026-11-17-tool-palette.json` — 도구 팔레트(미출시) 전체 하네스 47/47(19묶음, 8번 묶음 2회 시도).
+- `docs/evidence/webkit-smoke-tool-palette-2026-11-17.json` — 같은 코드의 `pnpm smoke:webkit`.
 - `docs/evidence/harness-2026-11-17-0.8.1.json` — 0.8.1 전체 하네스 46/46(18묶음, 묶음별 Obsidian·시스템 메모리).
 - `docs/evidence/webkit-smoke-0.8.1-2026-11-17.json` — 0.8.1 `pnpm smoke:webkit`(영역 렌더 5/5 포함).
 - `docs/evidence/harness-2026-11-17-0.8.0.json`, `webkit-smoke-0.8.0-2026-11-17.json` — 0.8.0.
@@ -167,9 +179,10 @@ DEVICE_CHECKLIST **7장**(7-1~7-9):
 ## 사용자가 할 일
 
 1. **BRAT로 0.8.1로 올린다**(0.8.0은 하이라이트 아래 글자가 흐려지는 회귀가 있다).
-2. **iPad:** DEVICE_CHECKLIST **8장**(보기 안 패널 가로·세로·Split View, 툴바 길게 누르기, 여백 Pencil·손가락, 영역 도구 Pencil·손가락, 클립보드 이미지 복사, 300쪽 안정성, 볼트 검색), 그리고 아직인 **7-9 줌 원인 판정**과 펜 프로브. 로그(**Export log**)와 줌 타임라인을 가져온다. 클립보드 이미지 복사가 iPad에서 되는지 알려 주면 BLOCKERS에 남긴다.
-3. **커뮤니티 심사 스캐너 재실행**(0.2.0 이후 거치지 않음).
-4. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
+2. **도구 팔레트의 버전을 정한다**(예: 0.8.2 또는 0.9.0). 정해 주면 올리고 태그·릴리스한다. 그 전에는 BRAT로 받을 수 없다.
+3. **iPad:** DEVICE_CHECKLIST **9장**(팔레트 가로·세로·Split View 배치, 홈 인디케이터, Pencil 도구 전환, Pencil 텍스트 하이라이트), **8장**(보기 안 패널 가로·세로·Split View, 툴바 길게 누르기, 여백 Pencil·손가락, 영역 도구 Pencil·손가락, 클립보드 이미지 복사, 300쪽 안정성, 볼트 검색), 그리고 아직인 **7-9 줌 원인 판정**과 펜 프로브. 로그(**Export log**)와 줌 타임라인을 가져온다. 클립보드 이미지 복사가 iPad에서 되는지 알려 주면 BLOCKERS에 남긴다.
+4. **커뮤니티 심사 스캐너 재실행**(0.2.0 이후 거치지 않음).
+5. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
    - `C:\Users\denny\Documents\Obsidian Vault\.obsidian\SciWiki\.obsidian\plugins\pendf\main.js`
    - `…\SciWiki\.obsidian\plugins\pendf\manifest.json`
    - `…\SciWiki\.obsidian\plugins\pendf\styles.css`

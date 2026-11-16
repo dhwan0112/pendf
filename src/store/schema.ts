@@ -64,6 +64,8 @@ export interface InkAnnotation extends AnnotationBase {
 	width: number;
 	/** flattened PDF user-space points [x0, y0, x1, y1, ...] of one stroke */
 	points: number[];
+	/** highlighter only (0.8.2): stroke opacity, 0–1; absent = 0.35 */
+	opacity?: number;
 }
 
 /** A rectangular excerpt of a page (Phase 7b, 0.8.0). The image is rendered from the PDF when needed, never stored. */
@@ -149,6 +151,7 @@ export function validateAnnotation(v: unknown): string | null {
 			if (!isStr(v.color)) return "color";
 			if (!isNum(v.width) || v.width <= 0) return "width";
 			if (!Array.isArray(v.points) || v.points.length % 2 !== 0 || !v.points.every(isNum)) return "points";
+			if (v.opacity !== undefined && (!isNum(v.opacity) || v.opacity <= 0 || v.opacity > 1)) return "opacity";
 			return null;
 		default:
 			return "type";

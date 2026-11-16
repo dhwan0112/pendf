@@ -16,10 +16,21 @@ export interface ToolButton {
 	/** 1: always visible, 2: overflows second, 3: overflows first */
 	priority: 1 | 2 | 3;
 	run: () => void;
+	/** text shown next to the icon when the bar has room (labels option); default: label */
+	short?: string;
 	el?: HTMLButtonElement;
 }
 
 const LONG_PRESS_MS = 450;
+
+export interface ToolbarOptions {
+	/** accessible name of the bar */
+	name?: string;
+	/** show text labels next to the icons while they fit (dropped before anything overflows) */
+	labels?: boolean;
+	/** the bar sits at the bottom: tooltips and press labels go above the buttons */
+	above?: boolean;
+}
 
 export class Toolbar {
 	private buttons: ToolButton[] = [];
@@ -29,12 +40,15 @@ export class Toolbar {
 	private tipTimer: number | null = null;
 	private fitting = false;
 
-	constructor(readonly el: HTMLElement) {
+	constructor(
+		readonly el: HTMLElement,
+		private readonly opts: ToolbarOptions = {},
+	) {
 		el.setAttribute("role", "toolbar");
-		el.setAttribute("aria-label", "penDF");
+		el.setAttribute("aria-label", opts.name ?? "penDF");
 		this.moreBtn = createEl("button", { cls: "pendf-icon-btn clickable-icon pendf-more is-hidden", attr: { "aria-label": "More" } });
 		setIcon(this.moreBtn, "more-horizontal");
-		setTooltip(this.moreBtn, "More");
+		setTooltip(this.moreBtn, "More", this.tipOpts());
 		this.moreBtn.addEventListener("click", (e) => this.openMore(e));
 		this.ro = new ResizeObserver(() => this.fit());
 		this.ro.observe(el);
@@ -54,10 +68,15 @@ export class Toolbar {
 		this.fit();
 	}
 
+	private tipOpts(): { placement: "top" } | undefined {
+		return this.opts.above ? { placement: "top" } : undefined;
+	}
+
 	add(parent: HTMLElement, b: ToolButton): HTMLButtonElement {
 		const el = parent.createEl("button", { cls: "pendf-icon-btn clickable-icon", attr: { "aria-label": b.label, "data-tool": b.id } });
 		setIcon(el, b.icon);
-		setTooltip(el, b.label);
+		if (this.opts.labels) el.createSpan({ cls: "pendf-btn-label", text: b.short ?? b.label });
+		setTooltip(el, b.label, this.tipOpts());
 		let suppressClick = false;
 		el.addEventListener("pointerdown", (e) => {
 			// a long press may end without a click (iPadOS): never let it swallow the next tap
@@ -94,14 +113,29 @@ export class Toolbar {
 		if (!b?.el) return;
 		b.label = label;
 		b.el.setAttribute("aria-label", label);
-		setTooltip(b.el, label);
+		setTooltip(b.el, label, this.tipOpts());
+	}
+
+	/** The button for `id`. */
+	button(id: string): HTMLButtonElement | undefined {
+		return this.buttons.find((x) => x.id === id)?.el;
+	}
+
+	/** Mark the active button(s). */
+	setActive(ids: Iterable<string>): void {
+		const on = new Set(ids);
+		for (const b of this.buttons) {
+			b.el?.toggleClass("is-active", on.has(b.id));
+			b.el?.setAttribute("aria-pressed", String(on.has(b.id)));
+		}
 	}
 
 	private showTip(anchor: HTMLElement, text: string): void {
 		this.tip?.remove();
 		const tip = this.el.ownerDocument.body.createDiv({ cls: "pendf-press-tip", text });
 		const r = anchor.getBoundingClientRect();
-		tip.setCssProps({ "--pendf-tip-x": `${Math.round(r.left + r.width / 2)}px`, "--pendf-tip-y": `${Math.round(r.bottom + 6)}px` });
+		if (this.opts.above) tip.addClass("is-above");
+		tip.setCssProps({ "--pendf-tip-x": `${Math.round(r.left + r.width / 2)}px`, "--pendf-tip-y": `${Math.round(this.opts.above ? r.top - 6 : r.bottom + 6)}px` });
 		this.tip = tip;
 		window.setTimeout(() => {
 			if (this.tip === tip) this.tip = null;
@@ -121,6 +155,12 @@ export class Toolbar {
 		try {
 			for (const b of this.buttons) b.el?.removeClass("is-overflowed");
 			this.moreBtn.addClass("is-hidden");
+			// labels first; icons only when they do not fit
+			if (this.opts.labels) {
+				this.el.addClass("has-labels");
+				if (!this.overflowing()) return;
+				this.el.removeClass("has-labels");
+			}
 			if (!this.overflowing()) return;
 			this.moreBtn.removeClass("is-hidden");
 			for (const prio of [3, 2] as const) {
