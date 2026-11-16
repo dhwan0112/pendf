@@ -120,18 +120,38 @@ function probeWorker(w: Worker, timeoutMs: number): Promise<void> {
 	});
 }
 
+/**
+ * Every Web Worker this module started and has not terminated. destroyWorker()
+ * terminates all of them — also one still starting when the plugin unloads, or
+ * one whose start-up handshake failed (0.8.0: such a worker used to be left alive).
+ */
+const liveWorkers = new Set<Worker>();
+
+function terminate(w: Worker): void {
+	liveWorkers.delete(w);
+	try {
+		w.terminate();
+	} catch {
+		// already gone
+	}
+}
+
 async function createWorker(): Promise<PDFWorker> {
 	const url = await ensureWorkerUrl();
 	// Module-scoped option of *our* pdf.js copy (not a global).
 	GlobalWorkerOptions.workerSrc = url;
+	let started: Worker | null = null;
 	try {
 		const w = new Worker(url, { type: "module", name: "pendf-worker" });
+		started = w;
+		liveWorkers.add(w);
 		await probeWorker(w, 15_000);
 		webWorker = w;
 		mode = "web-worker";
 		log.info("web worker ready (blob URL, module)");
 		return new PDFWorker({ port: w, name: "pendf" } as unknown as PDFWorkerParams);
 	} catch (e) {
+		if (started) terminate(started);
 		log.warn("web worker unavailable, falling back to main-thread pdf.js", e);
 		// pdf.js "fake worker": imports the same Blob URL on the main thread.
 		const fw = new PDFWorker({ name: "pendf-fake" } as unknown as PDFWorkerParams);
@@ -192,8 +212,9 @@ export function destroyWorker(final = false): void {
 	idleTimer = null;
 	pdfWorker?.destroy();
 	pdfWorker = null;
-	webWorker?.terminate();
+	if (webWorker) terminate(webWorker);
 	webWorker = null;
+	for (const w of [...liveWorkers]) terminate(w);
 	workerPromise = null;
 	mode = "none";
 	if (workerUrl) URL.revokeObjectURL(workerUrl);

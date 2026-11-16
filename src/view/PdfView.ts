@@ -1730,7 +1730,7 @@ export class PenDFView extends FileView {
 		if (this.saveStateTimer !== null) {
 			window.clearTimeout(this.saveStateTimer);
 			this.saveStateTimer = null;
-			if (s.ready) this.plugin.rememberPosition(s.file.path, s.viewer.currentPageNumber, s.viewer.currentScaleValue);
+			if (s.ready) this.plugin.rememberPosition(s.file.path, s.viewer.currentPageNumber, this.fitMode ? "page-width" : s.viewer.currentScaleValue);
 		}
 		try {
 			if (s.store) {
