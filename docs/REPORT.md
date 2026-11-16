@@ -1,18 +1,18 @@
-# REPORT — penDF 현재 상태 (main 0.7.3 미태그, 릴리스 0.7.2, 2026-11-16)
+# REPORT — penDF 현재 상태 (0.7.3, 2026-11-16)
 
 버전별 변경은 [CHANGELOG.md](../CHANGELOG.md), 결정은 [DECISIONS.md](DECISIONS.md), 막힌 것은 [BLOCKERS.md](BLOCKERS.md), iPad 확인 절차는 [DEVICE_CHECKLIST.md](DEVICE_CHECKLIST.md)에 있다. 이 문서는 시간순 기록이 아니라 지금의 상태다.
 
 ## 한눈에
 
-- 목표 문서의 6단계(뷰어, 하이라이트, 텍스트 주석, 링크, 북마크, 필기)와 추가 기능(기본 열기, 썸네일, 전체 검색, Pencil 상시 필기)이 모두 구현되어 있다. 최신 릴리스는 **0.7.2**(핀치 줌: 제스처 중 합성만, 한 번 커밋, 캔버스 메모리 프리셋). 그 뒤의 수정(예산 루프, 반전 모드)은 **0.7.3으로 main에 올렸지만 태그·릴리스하지 않았다**(아래 이유).
-- 0.7.2는 build·test·lint·`smoke:webkit`과 테스트 볼트 전체 하네스 32/32를 통과한 뒤 태그했다. 첫 전체 실행은 29/32였고, 실패(`pdf-links`, `fallback-main-thread`→`unload-cleanup`)는 하네스의 순서·시점 문제로 0.7.1 빌드에서도 똑같이 실패했다(`pdf-links` 판정을 고치고 순서를 바꾼 뒤 32/32).
-- **0.7.3을 태그하지 않은 이유:** 0.7.3의 전체 하네스 실행이 batch 4에서 기계 메모리 부족으로 중단됐다(Claude Code가 백그라운드 작업을 정리). 마친 24개 중 23개 통과, `ground-truth-same-pdf-embed` 1개 실패(선택→하이라이트 생성이 비어 있음). 하네스의 탭 다시 열기 보강(D-37)이 느린 PDF를 다시 열게 만든 것이 유력한 원인이라 고쳤지만 다시 돌려 확인하지 못했다. 나머지 9개 중 `zoom-gesture`·`zoom-extras`·`fallback-main-thread`는 따로 통과(`fallback-main-thread` 6/6). 증거 `docs/evidence/harness-2026-11-16-0.7.3-partial.json`. 메모리가 넉넉할 때 전체 하네스를 다시 돌려 통과하면 0.7.3을 태그한다.
+- 목표 문서의 6단계(뷰어, 하이라이트, 텍스트 주석, 링크, 북마크, 필기)와 추가 기능(기본 열기, 썸네일, 전체 검색, Pencil 상시 필기)이 모두 구현되어 있다. 최신 릴리스 **0.7.3**: 0.7.2의 핀치 줌(제스처 중 합성만, 한 번 커밋, 캔버스 메모리 프리셋)에 예산 루프·다크 모드 수정과 판정용 프리셋 *0.7.1 canvas cap*을 더했다.
+- 0.7.3은 build·test(193)·lint·`smoke:webkit`과 **테스트 볼트 전체 하네스 33/33**을 통과한 뒤 태그했다. 하네스는 `scripts/harness-batches.mjs`로 12묶음에 나눠, 묶음마다 테스트 볼트 창을 다시 열고 메모리를 기록하며 돌렸다(아래 §6). 0.7.2는 32/32로 태그했다(첫 실행 29/32의 실패는 하네스 순서·시점 문제로 0.7.1에서도 같았음).
+- 지난번 실패한 `ground-truth-same-pdf-embed`는 하네스 재시도 수정 뒤 통과했다(최종 빌드로 2회). 원인은 하네스가 느리게 열리는 PDF를 다시 연 것이었고 제품 문제가 아니어서 BLOCKERS에는 올리지 않았다(D-37).
 - **iPad에서는 아직 아무것도 확인되지 않았다.** 데스크톱(Obsidian/Chromium)과 Obsidian 밖 WebKit에서만 검증했다.
 - B-06은 테스트 볼트에서 재현되지 않았다(수정 전 빌드로도). SciWiki 고유 조건으로 열어 둔다.
 
 ## 기능별 상태
 
-검증 열: **단위** = vitest, **하네스** = 실제 Obsidian 데스크톱 자동 검사(0.7.2, 테스트 볼트, 32/32; 0.7.3 부분 실행 23/24), **WebKit** = Playwright WebKit/Chromium 스모크(Obsidian 밖, 0.7.2), **iPad** = 실기기.
+검증 열: **단위** = vitest, **하네스** = 실제 Obsidian 데스크톱 자동 검사(0.7.3, 테스트 볼트, 33/33), **WebKit** = Playwright WebKit/Chromium 스모크(Obsidian 밖, 0.7.3), **iPad** = 실기기.
 
 | 기능 | 구현 | 단위 | 하네스 | WebKit | iPad |
 | --- | --- | --- | --- | --- | --- |
@@ -78,16 +78,23 @@
 - 상세 캔버스를 켜 둔다(끄면 확대 시 흐림. 메모리도 줄지 않았다: 60.2 MB).
 - 화면 밖 캔버스 해제와 160 MB 예산을 더했다: 같은 상한에서 pdf.js 혼자일 때보다 피크가 낮다(47.9 vs 65.0 MB).
 - 검은 화면이 iOS 메모리 때문인지는 데스크톱에서 가릴 수 없으므로, iPad 비교(DEVICE_CHECKLIST 7-3) 뒤 확정한다. 그때 앱이 꺼지거나 검게 번쩍이면 *Memory saver*가 후보다.
-- **주의할 점:** (1) 0.7.1의 상한 2^23과 같은 프리셋이 없어, 프리셋 비교만으로 원인 A(iOS 메모리 한도)를 확인하거나 배제할 수는 없다. 타임라인의 `memPeakMB`와 검은 프레임의 관계로 본다. (2) 가로 화면 iPad의 쪽 폭 맞춤은 5,242,880 px를 넘을 수 있다. 그러면 pdf.js가 기본 캔버스 해상도를 반으로 낮추고 상세 캔버스에 기댄다. 그것이 흐려 보이면 더 큰 상한의 모바일 프리셋이 지금은 없다(필요하면 추가).
+- **원인 판정(0.7.3, D-40):** 진단용 프리셋 *0.7.1 canvas cap*(모바일 2^23 px, 예산 없음, 커밋 때 해제 없음, 나머지 수정은 그대로)과 *Default*를 iPad에서 비교한다(DEVICE_CHECKLIST 7-9). 0.7.1 cap에서만 검게 번쩍이면 원인은 iOS 캔버스 메모리(A), 둘 다 괜찮으면 원인은 0.7.2에서 고친 투명 배경·캔버스 삭제·멈춘 사이 재렌더였다. 이 프리셋은 진단용이며 기본값으로 쓰지 않는다.
+- **주의할 점:** 가로 화면 iPad의 쪽 폭 맞춤은 5,242,880 px를 넘을 수 있다. 그러면 pdf.js가 기본 캔버스 해상도를 반으로 낮추고 상세 캔버스에 기댄다. 그것이 흐려 보이면 더 큰 상한의 모바일 프리셋이 지금은 없다(필요하면 추가).
 - **0.7.3 수정:** 0.7.2의 예산은 화면에 있는 것보다 작으면 pdf.js가 미리 그린 다음 쪽을 해제→재렌더하는 루프에 빠질 수 있었다(예산 2 MB 강제 시 유휴 4초에 렌더 554회, iPad *Memory saver*에서 가능). 보이는 범위 앞뒤 쪽을 보호해 고쳤다(유휴 렌더 0회). 다크 읽기 모드에서 캔버스가 아직 없는 쪽이 흰색으로 보이던 것도 고쳤다(D-39).
 
 ### 5. iPad에서 할 일
-DEVICE_CHECKLIST **7장**(7-1~7-8):
+DEVICE_CHECKLIST **7장**(7-1~7-9):
 1. Debug overlay를 켜고 `long-300.pdf`에서 핀치(천천히·빠르게·멈췄다 계속)를 다른 기기의 240fps 슬로모션으로 찍는다.
 2. 핀치마다 명령 **penDF: Export last zoom timeline to vault** → `pendf-zoom-*.json`을 가져온다.
 3. 설정 → Diagnostics → Zoom rendering을 네 프리셋으로 바꿔 가며 1·2를 반복한다.
-4. Default로 최대 확대 후 1분 동안 스크롤·확대·축소를 반복해 앱이 꺼지지 않는지 본다.
+4. **원인 판정(7-9):** *Default*와 *0.7.1 canvas cap (diagnostic)*으로 같은 핀치를 10번씩 하고 비교한다. 끝나면 *Default*로 되돌린다.
+5. Default로 최대 확대 후 1분 동안 스크롤·확대·축소를 반복해 앱이 꺼지지 않는지 본다.
 결과 파일들을 주면 기본 프리셋과 예산을 확정한다.
+
+### 6. 0.7.3 전체 하네스와 메모리
+- 12묶음(2~3개씩), 묶음마다 테스트 볼트 창만 닫았다 다시 열었다(다른 볼트 창은 건드리지 않음). 상태를 묶음마다 저장해, 중단되면 통과한 묶음은 건너뛰고 나머지만 잇는다.
+- Obsidian 전체 프로세스 작업 집합: 묶음 시작 940~980 MB, 끝 993~1,092 MB(창을 다시 열면 매번 시작 수준으로 돌아옴). 시스템 여유 메모리 6.25~7.9 GB(전체 31.3 GB). 이번에는 중단 없이 끝났다. 묶음별 수치는 증거 파일의 `batches[].memBefore/memAfter`.
+- 하네스 수정(제품 코드 아님, D-37): 플러그인을 다시 켠 직후 빈 뷰로 남은 탭 다시 열기, 느린 PDF를 다시 열지 않기, `links`의 1쪽 이동, `unload-cleanup`이 penDF 워커를 이름으로 구별(하네스 자신의 pdf.js 프로브 워커를 penDF 것으로 세던 문제, 묶음 12를 이 수정 뒤 다시 돌림).
 
 0.7.1 이전에 한 일은 [CHANGELOG.md](../CHANGELOG.md).
 
@@ -97,7 +104,9 @@ DEVICE_CHECKLIST **7장**(7-1~7-8):
 - `docs/evidence/zoom-after-0.7.2.json` — 0.7.2의 `zoom-gesture`: 데스크톱, iPad 프로필 × 프리셋 4.
 - `docs/evidence/webkit-smoke-0.7.2-2026-11-16.json` — 0.7.2 `pnpm smoke:webkit`(줌 캔버스 유지 포함).
 - `docs/evidence/harness-2026-11-16-0.7.2.json` — 0.7.2 전체 하네스(테스트 볼트, 32/32).
-- `docs/evidence/harness-2026-11-16-0.7.3.json` — 0.7.3 전체 하네스(테스트 볼트, n/a).
+- `docs/evidence/harness-2026-11-16-0.7.3.json` — 0.7.3 전체 하네스(테스트 볼트, 33/33, 묶음별 메모리 기록 포함).
+- `docs/evidence/harness-2026-11-16-0.7.3-partial.json` — 메모리 부족으로 중단된 이전 실행(24개 중 23개).
+- `docs/evidence/webkit-smoke-0.7.3-2026-11-16.json` — 0.7.3 `pnpm smoke:webkit`.
 - `docs/evidence/b06-namespace-browsers-2026-11-15.json` — WebKit/Chromium 스모크와 B-06 시나리오 20개(수정 전/후 × 코어 먼저/안 먼저 × 글꼴 조합).
 - `docs/evidence/webkit-smoke-0.7.1-2026-11-15.json` — 0.7.1 최종 코드의 `pnpm smoke:webkit` 결과(통과).
 - `docs/evidence/harness-2026-11-16-0.7.1.json` — 0.7.1 전체 하네스(테스트 볼트, 31개 통과).
@@ -124,8 +133,8 @@ DEVICE_CHECKLIST **7장**(7-1~7-8):
 
 ## 사용자가 할 일
 
-1. **릴리스 0.7.2를 iPad에서 쓸 때:** 설정 → Diagnostics → Zoom rendering을 *Memory saver*로 두지 않는다(0.7.2에서는 예산 루프로 렌더가 멈추지 않을 수 있음, 0.7.3에서 고침). *Default*·*No detail canvas*·*pdf.js defaults*는 그대로 써도 된다. 메모리가 넉넉할 때 전체 하네스를 다시 돌려 0.7.3을 태그하도록 지시해 준다.
-2. **iPad:** 줌 확인(DEVICE_CHECKLIST **7장**, 위 0.7.2 §5)과 펜 프로브(6장 머리말), 이어서 나머지 장과 4-6~4-8. 로그(**penDF: Export log**), 줌 타임라인(**penDF: Export last zoom timeline**), 프로브 JSON을 가져온다.
+1. **BRAT로 0.7.3으로 올린다**(0.7.2의 *Memory saver* 예산 루프가 고쳐졌다).
+2. **iPad:** 줌 확인과 원인 판정(DEVICE_CHECKLIST **7장**, 7-9 포함, 위 0.7.2 §5)과 펜 프로브(6장 머리말), 이어서 나머지 장과 4-6~4-8. 로그(**penDF: Export log**), 줌 타임라인(**penDF: Export last zoom timeline**), 프로브 JSON을 가져온다.
 3. **커뮤니티 심사 스캐너 재실행:** 0.2.0 이후 버전을 아직 거치지 않았다. 로컬 lint(eslint-plugin-obsidianmd 0.5.1)는 스캐너와 세 번 결과가 달랐다.
 4. **SciWiki 정리(선택):** 예전 실행이 남긴 아래 파일은 지우지 않았다. 필요 없으면 직접 지운다.
    - `C:\Users\denny\Documents\Obsidian Vault\.obsidian\SciWiki\.obsidian\plugins\pendf\main.js`

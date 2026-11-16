@@ -4,16 +4,22 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
-## 0.7.3 — unreleased (on main, not tagged: full harness run incomplete, see docs/REPORT.md)
+## 0.7.3 — 2026-11-16
 
 - **Fix (0.7.2):** with a canvas budget smaller than what is on screen, the page pdf.js renders ahead
   of the visible ones was freed and rendered again in an endless loop (likely on an iPad with
   *Memory saver*). The budget no longer frees the pages right before and after the visible range (D-39).
 - **Fix:** in dark reading mode, pages without a canvas yet showed white paper; they now show inverted
   (dark) paper like rendered pages.
+- **Diagnostic preset "0.7.1 canvas cap":** Zoom rendering can bring back 0.7.1's canvas sizes (2^23 px on
+  mobile, no memory budget, nothing freed on a zoom commit) with every other zoom fix in place, to tell on an
+  iPad whether the black flash came from iOS canvas memory (DEVICE_CHECKLIST 7-9, D-40). Not for everyday use.
 - Harness: new check `zoom-extras` — highlight ground truth after a zoom commit (all four rotations),
   no render loop with a 2 MB budget, switching the preset in settings, page background in dark mode.
   Unit tests for layers during a gesture (frozen, restored after a pdf.js reset).
+- Harness: `scripts/harness-batches.mjs` runs the full harness in small resumable batches, reopening the
+  test vault window between batches and logging Obsidian / system memory; harness races fixed (D-37).
+  Full harness 33/33.
 
 ## 0.7.2 — 2026-11-16
 

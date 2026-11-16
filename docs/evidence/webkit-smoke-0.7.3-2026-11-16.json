@@ -1,0 +1,580 @@
+{
+ "at": "2026-11-16T15:55:56.636Z",
+ "node": "v22.22.0",
+ "fixtures": [
+  "a4.pdf",
+  "cropbox.pdf",
+  "korean-cmap.pdf",
+  "korean-embedded.pdf",
+  "letter.pdf",
+  "links.pdf",
+  "long-300.pdf",
+  "rotations.pdf",
+  "two-column.pdf"
+ ],
+ "browsers": {
+  "webkit": {
+   "version": "27.2",
+   "pdfjs": "6.5.438",
+   "fixtures": {
+    "a4.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 122,
+     "ms": 328
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "rendered": 1,
+     "textItems": 29,
+     "ms": 127
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 114,
+     "ms": 263
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 44,
+     "ms": 204
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 52,
+     "ms": 201
+    },
+    "links.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 9,
+     "ms": 281
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "rendered": 300,
+     "textItems": 5749,
+     "ms": 23338
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "rendered": 4,
+     "textItems": 96,
+     "ms": 361
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 158,
+     "ms": 205
+    }
+   },
+   "viewer": {
+    "textLayerSpans": 78,
+    "searchMatches": 12
+   },
+   "errors": [],
+   "workerMode": "web-worker",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       748.17,
+       358.17,
+       748.17,
+       56.01,
+       735.2,
+       358.17,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       56.01,
+       735.2,
+       56.01,
+       748.17,
+       358.17,
+       735.2,
+       358.17,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       735.2,
+       56.01,
+       735.2,
+       358.17,
+       748.17,
+       56.01,
+       748.17
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.16,
+      "spanWpt": 302.16,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.11,
+     "topAboveBaseline": 0.86,
+     "bottomBelowBaseline": 0.22,
+     "quadsRounded": [
+      [
+       358.17,
+       748.17,
+       358.17,
+       735.2,
+       56.01,
+       748.17,
+       56.01,
+       735.2
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.723693px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 0.89,
+     "bottomBelowBaseline": 0.25,
+     "quadsRounded": [
+      [
+       110,
+       692.43,
+       345.82,
+       692.43,
+       110,
+       676.52,
+       345.82,
+       676.52
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999899, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 27.299999px",
+      "spanText": "Inside the CropBox [100 150 500 700]",
+      "rangeWpt": 235.82,
+      "spanWpt": 235.82,
+      "expectedW": 235.4,
+      "textLen": 36,
+      "spanLen": 36,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "builtins": {
+    "added": [],
+    "replaced": [],
+    "removed": []
+   }
+  },
+  "chromium": {
+   "version": "156.0.8078.4",
+   "pdfjs": "6.5.438",
+   "fixtures": {
+    "a4.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 122,
+     "ms": 272
+    },
+    "cropbox.pdf": {
+     "pages": 1,
+     "rendered": 1,
+     "textItems": 29,
+     "ms": 18
+    },
+    "korean-cmap.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 114,
+     "ms": 44
+    },
+    "korean-embedded.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 44,
+     "ms": 36
+    },
+    "letter.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 52,
+     "ms": 33
+    },
+    "links.pdf": {
+     "pages": 3,
+     "rendered": 3,
+     "textItems": 9,
+     "ms": 47
+    },
+    "long-300.pdf": {
+     "pages": 300,
+     "rendered": 300,
+     "textItems": 5749,
+     "ms": 5001
+    },
+    "rotations.pdf": {
+     "pages": 4,
+     "rendered": 4,
+     "textItems": 96,
+     "ms": 68
+    },
+    "two-column.pdf": {
+     "pages": 2,
+     "rendered": 2,
+     "textItems": 158,
+     "ms": 35
+    }
+   },
+   "viewer": {
+    "textLayerSpans": 78,
+    "searchMatches": 12
+   },
+   "errors": [],
+   "workerMode": "web-worker",
+   "groundTruth": [
+    {
+     "file": "rotations.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       748.45,
+       358.1,
+       748.45,
+       56.01,
+       735.47,
+       358.1,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 2,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       56.01,
+       735.47,
+       56.01,
+       748.45,
+       358.1,
+       735.47,
+       358.1,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 3,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       735.47,
+       56.01,
+       735.47,
+       358.1,
+       748.45,
+       56.01,
+       748.45
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 302.09,
+      "spanWpt": 302.09,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "rotations.pdf",
+     "page": 4,
+     "quads": 1,
+     "dxStart": 0.01,
+     "dxEnd": -0.18,
+     "topAboveBaseline": 0.88,
+     "bottomBelowBaseline": 0.2,
+     "quadsRounded": [
+      [
+       358.1,
+       748.45,
+       358.1,
+       735.47,
+       56.01,
+       748.45,
+       56.01,
+       735.47
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999935, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 15.7237px",
+      "spanText": "This line is near the top-left corner of the unrotated page.",
+      "rangeWpt": 12.98,
+      "spanWpt": 12,
+      "expectedW": 302.28,
+      "textLen": 60,
+      "spanLen": 60,
+      "endInSameSpan": true
+     }
+    },
+    {
+     "file": "cropbox.pdf",
+     "page": 1,
+     "quads": 1,
+     "dxStart": 0,
+     "dxEnd": 0.42,
+     "topAboveBaseline": 0.89,
+     "bottomBelowBaseline": 0.24,
+     "quadsRounded": [
+      [
+       110,
+       692.5,
+       345.82,
+       692.5,
+       110,
+       676.6,
+       345.82,
+       676.6
+      ]
+     ],
+     "debug": {
+      "transform": "matrix(0.999899, 0, 0, 1, 0, 0)",
+      "font": "sans-serif 27.3px",
+      "spanText": "Inside the CropBox [100 150 500 700]",
+      "rangeWpt": 235.82,
+      "spanWpt": 235.82,
+      "expectedW": 235.4,
+      "textLen": 36,
+      "spanLen": 36,
+      "endInSameSpan": true
+     }
+    }
+   ],
+   "builtins": {
+    "added": [],
+    "replaced": [],
+    "removed": []
+   }
+  }
+ },
+ "zoom": [
+  {
+   "file": "two-column.pdf",
+   "variant": "before",
+   "dpr": 2,
+   "single": {
+    "frames": 12,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "scale": 1.769
+   },
+   "renderingWhenCancelled": true,
+   "cancelled": {
+    "frames": 12,
+    "framesWithoutCanvas": 1,
+    "blackFrames": 0,
+    "canvasesSeen": 1,
+    "keptOldCanvas": 0,
+    "scale": 2.044
+   },
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "file": "two-column.pdf",
+   "variant": "after",
+   "dpr": 2,
+   "single": {
+    "frames": 12,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "scale": 1.769
+   },
+   "renderingWhenCancelled": true,
+   "cancelled": {
+    "frames": 13,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "keptOldCanvas": 1,
+    "scale": 2.044
+   },
+   "browser": "webkit",
+   "errors": []
+  },
+  {
+   "file": "two-column.pdf",
+   "variant": "before",
+   "dpr": 2,
+   "single": {
+    "frames": 15,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "scale": 1.769
+   },
+   "renderingWhenCancelled": true,
+   "cancelled": {
+    "frames": 15,
+    "framesWithoutCanvas": 1,
+    "blackFrames": 0,
+    "canvasesSeen": 1,
+    "keptOldCanvas": 0,
+    "scale": 2.044
+   },
+   "browser": "chromium",
+   "errors": []
+  },
+  {
+   "file": "two-column.pdf",
+   "variant": "after",
+   "dpr": 2,
+   "single": {
+    "frames": 15,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "scale": 1.769
+   },
+   "renderingWhenCancelled": true,
+   "cancelled": {
+    "frames": 16,
+    "framesWithoutCanvas": 0,
+    "blackFrames": 0,
+    "canvasesSeen": 2,
+    "keptOldCanvas": 1,
+    "scale": 2.044
+   },
+   "browser": "chromium",
+   "errors": []
+  }
+ ],
+ "b06": [],
+ "webkitVsChromiumMaxQuadDiffPt": 0.28,
+ "failures": []
+}
