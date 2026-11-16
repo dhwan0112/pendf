@@ -40,6 +40,8 @@ export interface HighlightHost {
 	copyLink?: (a: HighlightAnnotation, text: string) => void;
 	/** copy a link to the current selection without highlighting it (Phase 4) */
 	copySelectionLink?: (t: { page: number; rect: [number, number, number, number]; text: string }) => void;
+	/** another tool owns the selection now (text-highlight tool dragging): no colour palette */
+	paletteSuppressed?: () => boolean;
 }
 
 interface PendingSelection {
@@ -116,7 +118,7 @@ export class HighlightController implements LayerRenderer {
 		const anchor = lastRects[lastRects.length - 1];
 		this.pending = { pieces, anchor, first: pieces[0].rects[0] };
 		const store = this.host.store();
-		if (store && store.writable) this.showPalette();
+		if (store && store.writable && !this.host.paletteSuppressed?.()) this.showPalette();
 	}
 
 	/** Turn the current selection into highlights. Returns the new ids. */

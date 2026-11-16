@@ -1,5 +1,5 @@
 {
- "at": "2026-11-16T18:49:53.940Z",
+ "at": "2026-11-16T19:09:19.755Z",
  "vault": "pendf-testvault",
  "summary": "47/47",
  "batches": [
@@ -13,231 +13,69 @@
    "attempts": 1,
    "windowReopened": true,
    "memBefore": {
-    "at": "2026-11-16T18:41:11.404Z",
-    "systemFreeMB": 5654,
+    "at": "2026-11-16T19:01:20.720Z",
+    "systemFreeMB": 4275,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1009,
-    "obsidianPrivateMB": 1876
+    "obsidianWorkingSetMB": 1030,
+    "obsidianPrivateMB": 1899
    },
    "memAfter": {
-    "at": "2026-11-16T18:41:23.625Z",
-    "systemFreeMB": 5536,
+    "at": "2026-11-16T19:01:33.285Z",
+    "systemFreeMB": 4482,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1101,
-    "obsidianPrivateMB": 2002
+    "obsidianWorkingSetMB": 1104,
+    "obsidianPrivateMB": 1995
    },
    "processesBefore": [
     {
      "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 386
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 155772,
-     "title": "",
-     "workingSetMB": 221,
-     "privateMB": 177
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 188
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 427
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 155772,
-     "title": "",
-     "workingSetMB": 311,
-     "privateMB": 261
-    }
-   ]
-  },
-  {
-   "batch": 2,
-   "checks": [
-    "open-by-default",
-    "state-restore",
-    "coexistence-core-first"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:41:31.866Z",
-    "systemFreeMB": 5766,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1010,
-    "obsidianPrivateMB": 1878
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:41:51.833Z",
-    "systemFreeMB": 5528,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1108,
-    "obsidianPrivateMB": 2062
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 387
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 164352,
-     "title": "",
-     "workingSetMB": 221,
-     "privateMB": 177
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 187,
-     "privateMB": 489
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 164352,
-     "title": "",
-     "workingSetMB": 309,
-     "privateMB": 257
-    }
-   ]
-  },
-  {
-   "batch": 3,
-   "checks": [
-    "coexistence-pendf-first",
-    "css-inward",
-    "highlight-ground-truth"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:42:00.080Z",
-    "systemFreeMB": 5718,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1007,
-    "obsidianPrivateMB": 1873
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:42:14.426Z",
-    "systemFreeMB": 4869,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1049,
-    "obsidianPrivateMB": 2173
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 159,
+     "privateMB": 182
     },
     {
      "id": 7220,
      "title": "",
      "workingSetMB": 179,
      "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 257,
+     "privateMB": 701
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 163768,
+     "title": "",
+     "workingSetMB": 227,
+     "privateMB": 186
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 168,
+     "privateMB": 190
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 420
     },
     {
      "id": 39364,
@@ -254,33 +92,157 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 161884,
+     "id": 163768,
      "title": "",
-     "workingSetMB": 224,
-     "privateMB": 180
+     "workingSetMB": 309,
+     "privateMB": 259
+    }
+   ]
+  },
+  {
+   "batch": 2,
+   "checks": [
+    "open-by-default",
+    "state-restore",
+    "coexistence-core-first"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:01:41.624Z",
+    "systemFreeMB": 4739,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1021,
+    "obsidianPrivateMB": 1886
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:02:01.908Z",
+    "systemFreeMB": 4590,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1115,
+    "obsidianPrivateMB": 2069
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 159,
+     "privateMB": 182
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 690
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 147504,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 184
     }
    ],
    "processesAfter": [
     {
      "id": 3116,
      "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
+     "workingSetMB": 168,
+     "privateMB": 190
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 180,
-     "privateMB": 652
+     "workingSetMB": 188,
+     "privateMB": 493
     },
     {
      "id": 39364,
      "title": "",
      "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 147504,
+     "title": "",
+     "workingSetMB": 312,
+     "privateMB": 260
+    }
+   ]
+  },
+  {
+   "batch": 3,
+   "checks": [
+    "coexistence-pendf-first",
+    "css-inward",
+    "highlight-ground-truth"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:02:10.164Z",
+    "systemFreeMB": 4306,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1013,
+    "obsidianPrivateMB": 1881
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:02:24.534Z",
+    "systemFreeMB": 4638,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1100,
+    "obsidianPrivateMB": 2165
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 159,
+     "privateMB": 182
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 391
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
      "privateMB": 684
     },
     {
@@ -292,14 +254,52 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 161884,
+     "id": 163608,
      "title": "",
-     "workingSetMB": 257,
-     "privateMB": 207
+     "workingSetMB": 226,
+     "privateMB": 183
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 168,
+     "privateMB": 190
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 208,
+     "privateMB": 651
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 163608,
+     "title": "",
+     "workingSetMB": 277,
+     "privateMB": 199
     }
    ]
   },
@@ -313,37 +313,37 @@
    "attempts": 1,
    "windowReopened": true,
    "memBefore": {
-    "at": "2026-11-16T18:42:22.691Z",
-    "systemFreeMB": 4466,
+    "at": "2026-11-16T19:02:32.799Z",
+    "systemFreeMB": 4743,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1013,
-    "obsidianPrivateMB": 1893
+    "obsidianWorkingSetMB": 1015,
+    "obsidianPrivateMB": 1894
    },
    "memAfter": {
-    "at": "2026-11-16T18:42:33.190Z",
-    "systemFreeMB": 4463,
+    "at": "2026-11-16T19:02:43.279Z",
+    "systemFreeMB": 4705,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1095,
-    "obsidianPrivateMB": 1958
+    "obsidianWorkingSetMB": 1109,
+    "obsidianPrivateMB": 1971
    },
    "processesBefore": [
     {
      "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 180
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 159,
+     "privateMB": 182
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 178,
-     "privateMB": 400
+     "workingSetMB": 180,
+     "privateMB": 402
     },
     {
      "id": 39364,
      "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
+     "workingSetMB": 239,
+     "privateMB": 683
     },
     {
      "id": 40012,
@@ -354,27 +354,27 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 161448,
+     "id": 166688,
      "title": "",
-     "workingSetMB": 224,
-     "privateMB": 179
+     "workingSetMB": 229,
+     "privateMB": 185
     }
    ],
    "processesAfter": [
     {
      "id": 3116,
      "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
+     "workingSetMB": 168,
+     "privateMB": 191
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 180,
+     "workingSetMB": 182,
      "privateMB": 384
     },
     {
@@ -392,14 +392,14 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 161448,
+     "id": 166688,
      "title": "",
-     "workingSetMB": 302,
-     "privateMB": 258
+     "workingSetMB": 311,
+     "privateMB": 269
     }
    ]
   },
@@ -413,37 +413,37 @@
    "attempts": 1,
    "windowReopened": true,
    "memBefore": {
-    "at": "2026-11-16T18:42:41.509Z",
-    "systemFreeMB": 4656,
+    "at": "2026-11-16T19:02:51.533Z",
+    "systemFreeMB": 4696,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1011,
-    "obsidianPrivateMB": 1877
+    "obsidianWorkingSetMB": 1005,
+    "obsidianPrivateMB": 1870
    },
    "memAfter": {
-    "at": "2026-11-16T18:42:50.098Z",
-    "systemFreeMB": 4683,
+    "at": "2026-11-16T19:03:00.194Z",
+    "systemFreeMB": 4035,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1063,
-    "obsidianPrivateMB": 1936
+    "obsidianWorkingSetMB": 1059,
+    "obsidianPrivateMB": 1927
    },
    "processesBefore": [
     {
      "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 181
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 172
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 179,
-     "privateMB": 387
+     "workingSetMB": 180,
+     "privateMB": 388
     },
     {
      "id": 39364,
      "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
+     "workingSetMB": 239,
+     "privateMB": 683
     },
     {
      "id": 40012,
@@ -454,33 +454,33 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 153660,
+     "id": 162240,
      "title": "",
-     "workingSetMB": 221,
-     "privateMB": 176
+     "workingSetMB": 228,
+     "privateMB": 185
     }
    ],
    "processesAfter": [
     {
      "id": 3116,
      "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
+     "workingSetMB": 158,
+     "privateMB": 180
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 179,
-     "privateMB": 396
+     "workingSetMB": 180,
+     "privateMB": 394
     },
     {
      "id": 39364,
      "title": "",
-     "workingSetMB": 239,
+     "workingSetMB": 240,
      "privateMB": 684
     },
     {
@@ -492,14 +492,14 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 153660,
+     "id": 162240,
      "title": "",
-     "workingSetMB": 272,
-     "privateMB": 225
+     "workingSetMB": 273,
+     "privateMB": 226
     }
    ]
   },
@@ -513,25 +513,25 @@
    "attempts": 1,
    "windowReopened": true,
    "memBefore": {
-    "at": "2026-11-16T18:42:58.411Z",
-    "systemFreeMB": 4742,
+    "at": "2026-11-16T19:03:08.537Z",
+    "systemFreeMB": 4805,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1007,
-    "obsidianPrivateMB": 1874
+    "obsidianWorkingSetMB": 1001,
+    "obsidianPrivateMB": 1867
    },
    "memAfter": {
-    "at": "2026-11-16T18:43:09.083Z",
-    "systemFreeMB": 4734,
+    "at": "2026-11-16T19:03:19.122Z",
+    "systemFreeMB": 4511,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1041,
-    "obsidianPrivateMB": 1922
+    "obsidianWorkingSetMB": 1037,
+    "obsidianPrivateMB": 1915
    },
    "processesBefore": [
     {
      "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 180
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 171
     },
     {
      "id": 7220,
@@ -540,16 +540,10 @@
      "privateMB": 387
     },
     {
-     "id": 26032,
-     "title": "",
-     "workingSetMB": 225,
-     "privateMB": 181
-    },
-    {
      "id": 39364,
      "title": "",
      "workingSetMB": 239,
-     "privateMB": 684
+     "privateMB": 683
     },
     {
      "id": 40012,
@@ -560,34 +554,34 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
+    },
+    {
+     "id": 168756,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 182
     }
    ],
    "processesAfter": [
     {
      "id": 3116,
      "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
+     "workingSetMB": 158,
+     "privateMB": 180
     },
     {
      "id": 7220,
      "title": "",
-     "workingSetMB": 179,
+     "workingSetMB": 180,
      "privateMB": 402
-    },
-    {
-     "id": 26032,
-     "title": "",
-     "workingSetMB": 250,
-     "privateMB": 205
     },
     {
      "id": 39364,
      "title": "",
      "workingSetMB": 239,
-     "privateMB": 684
+     "privateMB": 683
     },
     {
      "id": 40012,
@@ -598,8 +592,14 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
+    },
+    {
+     "id": 168756,
+     "title": "",
+     "workingSetMB": 252,
+     "privateMB": 207
     }
    ]
   },
@@ -613,1258 +613,68 @@
    "attempts": 1,
    "windowReopened": true,
    "memBefore": {
-    "at": "2026-11-16T18:43:20.544Z",
-    "systemFreeMB": 4658,
+    "at": "2026-11-16T19:03:27.463Z",
+    "systemFreeMB": 4629,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1004,
-    "obsidianPrivateMB": 1870
+    "obsidianWorkingSetMB": 1009,
+    "obsidianPrivateMB": 1861
    },
    "memAfter": {
-    "at": "2026-11-16T18:43:29.064Z",
-    "systemFreeMB": 4731,
+    "at": "2026-11-16T19:03:36.112Z",
+    "systemFreeMB": 4654,
     "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1042,
-    "obsidianPrivateMB": 1914
+    "obsidianWorkingSetMB": 1046,
+    "obsidianPrivateMB": 1907
    },
    "processesBefore": [
     {
      "id": 3116,
-     "title": "areas - pendf-testvault - Obsidian 1.15.1",
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 374
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 690
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 167768,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
      "workingSetMB": 157,
      "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 386
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 240,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 156944,
-     "title": "",
-     "workingSetMB": 221,
-     "privateMB": 177
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 179,
-     "privateMB": 390
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 156944,
-     "title": "",
-     "workingSetMB": 252,
-     "privateMB": 208
-    }
-   ]
-  },
-  {
-   "batch": 8,
-   "checks": [
-    "pdf-links",
-    "bookmarks",
-    "ink"
-   ],
-   "attempts": 2,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:46:21.126Z",
-    "systemFreeMB": 4601,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1032,
-    "obsidianPrivateMB": 1902
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:46:47.292Z",
-    "systemFreeMB": 4683,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1196,
-    "obsidianPrivateMB": 2115
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 387
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 162696,
-     "title": "",
-     "workingSetMB": 244,
-     "privateMB": 202
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 145,
-     "privateMB": 168
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 192,
-     "privateMB": 471
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 162696,
-     "title": "",
-     "workingSetMB": 412,
-     "privateMB": 348
-    }
-   ]
-  },
-  {
-   "batch": 9,
-   "checks": [
-    "pages-search",
-    "zoom-gesture"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:44:05.993Z",
-    "systemFreeMB": 4876,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 981,
-    "obsidianPrivateMB": 1838
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:44:37.969Z",
-    "systemFreeMB": 4610,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1119,
-    "obsidianPrivateMB": 2050
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 155,
-     "privateMB": 179
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 377
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 165076,
-     "title": "",
-     "workingSetMB": 193,
-     "privateMB": 149
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 179,
-     "privateMB": 460
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 165076,
-     "title": "",
-     "workingSetMB": 328,
-     "privateMB": 275
-    }
-   ]
-  },
-  {
-   "batch": 10,
-   "checks": [
-    "zoom-extras",
-    "persist-restart-rename"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:44:46.242Z",
-    "systemFreeMB": 4752,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1034,
-    "obsidianPrivateMB": 1880
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:45:06.543Z",
-    "systemFreeMB": 4685,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1111,
-    "obsidianPrivateMB": 2069
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 364
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 162584,
-     "title": "",
-     "workingSetMB": 245,
-     "privateMB": 203
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 175,
-     "privateMB": 199
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 181,
-     "privateMB": 484
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 162584,
-     "title": "",
-     "workingSetMB": 308,
-     "privateMB": 260
-    }
-   ]
-  },
-  {
-   "batch": 11,
-   "checks": [
-    "in-view-panel",
-    "toolbar-labels"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:45:14.849Z",
-    "systemFreeMB": 4919,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 971,
-    "obsidianPrivateMB": 1804
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:45:31.329Z",
-    "systemFreeMB": 4557,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1048,
-    "obsidianPrivateMB": 1927
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 155,
-     "privateMB": 179
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 353
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 240,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 160692,
-     "title": "",
-     "workingSetMB": 191,
-     "privateMB": 146
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 398
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 160692,
-     "title": "",
-     "workingSetMB": 257,
-     "privateMB": 213
-    }
-   ]
-  },
-  {
-   "batch": 12,
-   "checks": [
-    "margin-ink",
-    "margin-ground-truth"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:45:39.607Z",
-    "systemFreeMB": 4793,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1034,
-    "obsidianPrivateMB": 1881
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:45:52.121Z",
-    "systemFreeMB": 4634,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1074,
-    "obsidianPrivateMB": 1960
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 364
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 247,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 161384,
-     "title": "",
-     "workingSetMB": 245,
-     "privateMB": 203
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 180,
-     "privateMB": 410
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 161384,
-     "title": "",
-     "workingSetMB": 281,
-     "privateMB": 235
-    }
-   ]
-  },
-  {
-   "batch": 13,
-   "checks": [
-    "margin-note",
-    "margin-with-panel"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:46:55.585Z",
-    "systemFreeMB": 4574,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1032,
-    "obsidianPrivateMB": 1905
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:47:08.097Z",
-    "systemFreeMB": 4881,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1076,
-    "obsidianPrivateMB": 1991
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "long-300 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 156,
-     "privateMB": 180
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 391
-    },
-    {
-     "id": 33088,
-     "title": "",
-     "workingSetMB": 243,
-     "privateMB": 200
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 247,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
     },
     {
      "id": 7220,
      "title": "",
      "workingSetMB": 182,
-     "privateMB": 441
-    },
-    {
-     "id": 33088,
-     "title": "",
-     "workingSetMB": 282,
-     "privateMB": 234
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    }
-   ]
-  },
-  {
-   "batch": 14,
-   "checks": [
-    "highlight-blend",
-    "margin-rotated"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:47:16.365Z",
-    "systemFreeMB": 4594,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 980,
-    "obsidianPrivateMB": 1837
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:47:28.845Z",
-    "systemFreeMB": 4941,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1016,
-    "obsidianPrivateMB": 1910
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "New tab - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 155,
-     "privateMB": 179
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 377
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 159872,
-     "title": "",
-     "workingSetMB": 193,
-     "privateMB": 148
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 413
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 159872,
-     "title": "",
-     "workingSetMB": 225,
-     "privateMB": 181
-    }
-   ]
-  },
-  {
-   "batch": 15,
-   "checks": [
-    "tool-palette"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:47:37.167Z",
-    "systemFreeMB": 4883,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1022,
-    "obsidianPrivateMB": 1888
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:47:55.461Z",
-    "systemFreeMB": 4303,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1039,
-    "obsidianPrivateMB": 1931
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 181
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 386
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 246,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 164752,
-     "title": "",
-     "workingSetMB": 232,
-     "privateMB": 187
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 411
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 164752,
-     "title": "",
-     "workingSetMB": 248,
-     "privateMB": 204
-    }
-   ]
-  },
-  {
-   "batch": 16,
-   "checks": [
-    "area-ground-truth",
-    "area-image",
-    "area-link"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:48:03.751Z",
-    "systemFreeMB": 4722,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1019,
-    "obsidianPrivateMB": 1886
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:48:20.075Z",
-    "systemFreeMB": 4762,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1037,
-    "obsidianPrivateMB": 1974
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 181
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 386
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 247,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 44836,
-     "title": "",
-     "workingSetMB": 229,
-     "privateMB": 185
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 165,
-     "privateMB": 189
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 456
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 44836,
-     "title": "",
-     "workingSetMB": 247,
-     "privateMB": 203
-    }
-   ]
-  },
-  {
-   "batch": 17,
-   "checks": [
-    "index-rename",
-    "index-perf"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:48:28.364Z",
-    "systemFreeMB": 4812,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1019,
-    "obsidianPrivateMB": 1891
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:49:12.084Z",
-    "systemFreeMB": 4430,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1081,
-    "obsidianPrivateMB": 1951
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 157,
-     "privateMB": 181
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 392
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 247,
-     "privateMB": 691
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 157564,
-     "title": "",
-     "workingSetMB": 230,
-     "privateMB": 184
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 166,
-     "privateMB": 190
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 391
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 157564,
-     "title": "",
-     "workingSetMB": 290,
-     "privateMB": 243
-    }
-   ]
-  },
-  {
-   "batch": 18,
-   "checks": [
-    "long-300-memory",
-    "pdfjs-footprint"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:49:20.455Z",
-    "systemFreeMB": 4788,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1015,
-    "obsidianPrivateMB": 1881
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:49:35.115Z",
-    "systemFreeMB": 4396,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1162,
-    "obsidianPrivateMB": 2332
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 158,
-     "privateMB": 182
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 386
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 240,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 161564,
-     "title": "",
-     "workingSetMB": 232,
-     "privateMB": 187
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 166,
-     "privateMB": 190
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 692
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 161564,
-     "title": "",
-     "workingSetMB": 371,
-     "privateMB": 324
-    }
-   ]
-  },
-  {
-   "batch": 19,
-   "checks": [
-    "fingerprint-mismatch",
-    "fallback-main-thread",
-    "unload-cleanup"
-   ],
-   "attempts": 1,
-   "windowReopened": true,
-   "memBefore": {
-    "at": "2026-11-16T18:49:43.403Z",
-    "systemFreeMB": 4525,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1013,
-    "obsidianPrivateMB": 1889
-   },
-   "memAfter": {
-    "at": "2026-11-16T18:49:53.938Z",
-    "systemFreeMB": 4541,
-    "systemTotalMB": 32076,
-    "obsidianWorkingSetMB": 1006,
-    "obsidianPrivateMB": 1875
-   },
-   "processesBefore": [
-    {
-     "id": 3116,
-     "title": "a4 - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 158,
-     "privateMB": 181
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
-     "privateMB": 397
-    },
-    {
-     "id": 39364,
-     "title": "",
-     "workingSetMB": 239,
-     "privateMB": 684
-    },
-    {
-     "id": 40012,
-     "title": "",
-     "workingSetMB": 23,
-     "privateMB": 23
-    },
-    {
-     "id": 43536,
-     "title": "",
-     "workingSetMB": 185,
-     "privateMB": 419
-    },
-    {
-     "id": 159264,
-     "title": "",
-     "workingSetMB": 230,
-     "privateMB": 185
-    }
-   ],
-   "processesAfter": [
-    {
-     "id": 3116,
-     "title": "penDF - pendf-testvault - Obsidian 1.15.1",
-     "workingSetMB": 146,
-     "privateMB": 169
-    },
-    {
-     "id": 7220,
-     "title": "",
-     "workingSetMB": 178,
      "privateMB": 389
     },
     {
@@ -1882,14 +692,1204 @@
     {
      "id": 43536,
      "title": "",
-     "workingSetMB": 185,
+     "workingSetMB": 186,
      "privateMB": 419
     },
     {
-     "id": 159264,
+     "id": 167768,
      "title": "",
-     "workingSetMB": 236,
+     "workingSetMB": 259,
+     "privateMB": 212
+    }
+   ]
+  },
+  {
+   "batch": 8,
+   "checks": [
+    "pdf-links",
+    "bookmarks",
+    "ink"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:03:47.171Z",
+    "systemFreeMB": 4661,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1008,
+    "obsidianPrivateMB": 1873
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:04:13.240Z",
+    "systemFreeMB": 4629,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1189,
+    "obsidianPrivateMB": 2101
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 171
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 146840,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 147,
+     "privateMB": 170
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 193,
+     "privateMB": 468
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 146840,
+     "title": "",
+     "workingSetMB": 401,
+     "privateMB": 338
+    }
+   ]
+  },
+  {
+   "batch": 9,
+   "checks": [
+    "pages-search",
+    "zoom-gesture"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:04:21.538Z",
+    "systemFreeMB": 4378,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1003,
+    "obsidianPrivateMB": 1869
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:04:53.494Z",
+    "systemFreeMB": 4656,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1106,
+    "obsidianPrivateMB": 2037
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 171
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 389
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 169948,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 465
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 169948,
+     "title": "",
+     "workingSetMB": 321,
+     "privateMB": 267
+    }
+   ]
+  },
+  {
+   "batch": 10,
+   "checks": [
+    "zoom-extras",
+    "persist-restart-rename"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:05:01.854Z",
+    "systemFreeMB": 4419,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1008,
+    "obsidianPrivateMB": 1838
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:05:22.141Z",
+    "systemFreeMB": 4640,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1106,
+    "obsidianPrivateMB": 2049
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 351
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 159668,
+     "title": "",
+     "workingSetMB": 225,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 167,
      "privateMB": 190
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 481
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 159668,
+     "title": "",
+     "workingSetMB": 305,
+     "privateMB": 252
+    }
+   ]
+  },
+  {
+   "batch": 11,
+   "checks": [
+    "in-view-panel",
+    "toolbar-labels"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:05:30.441Z",
+    "systemFreeMB": 4101,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1005,
+    "obsidianPrivateMB": 1848
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:05:46.792Z",
+    "systemFreeMB": 4493,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1051,
+    "obsidianPrivateMB": 1949
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 171
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 366
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 166772,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 184
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 420
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 166772,
+     "title": "",
+     "workingSetMB": 267,
+     "privateMB": 223
+    }
+   ]
+  },
+  {
+   "batch": 12,
+   "checks": [
+    "margin-ink",
+    "margin-ground-truth"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:05:55.111Z",
+    "systemFreeMB": 4546,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1011,
+    "obsidianPrivateMB": 1855
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:06:07.621Z",
+    "systemFreeMB": 4490,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1030,
+    "obsidianPrivateMB": 1917
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 171
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 366
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 166264,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 184
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 409
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 166264,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 202
+    }
+   ]
+  },
+  {
+   "batch": 13,
+   "checks": [
+    "margin-note",
+    "margin-with-panel"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:06:15.927Z",
+    "systemFreeMB": 4727,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1009,
+    "obsidianPrivateMB": 1876
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:06:28.386Z",
+    "systemFreeMB": 4582,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1053,
+    "obsidianPrivateMB": 1968
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 388
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 156120,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 183
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 157,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 438
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 156120,
+     "title": "",
+     "workingSetMB": 269,
+     "privateMB": 224
+    }
+   ]
+  },
+  {
+   "batch": 14,
+   "checks": [
+    "highlight-blend",
+    "margin-rotated"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:06:40.273Z",
+    "systemFreeMB": 4255,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1005,
+    "obsidianPrivateMB": 1870
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:06:52.754Z",
+    "systemFreeMB": 4804,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1026,
+    "obsidianPrivateMB": 1923
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 387
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 139928,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 185
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 421
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 139928,
+     "title": "",
+     "workingSetMB": 241,
+     "privateMB": 196
+    }
+   ]
+  },
+  {
+   "batch": 15,
+   "checks": [
+    "tool-palette"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:07:01.058Z",
+    "systemFreeMB": 4343,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1011,
+    "obsidianPrivateMB": 1877
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:07:23.130Z",
+    "systemFreeMB": 4801,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1042,
+    "obsidianPrivateMB": 1928
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 388
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 143636,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 184
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 409
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 143636,
+     "title": "",
+     "workingSetMB": 258,
+     "privateMB": 213
+    }
+   ]
+  },
+  {
+   "batch": 16,
+   "checks": [
+    "area-ground-truth",
+    "area-image",
+    "area-link"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:07:31.461Z",
+    "systemFreeMB": 4408,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1009,
+    "obsidianPrivateMB": 1875
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:07:47.793Z",
+    "systemFreeMB": 4572,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1029,
+    "obsidianPrivateMB": 1966
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 149,
+     "privateMB": 172
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 388
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 247,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 167852,
+     "title": "",
+     "workingSetMB": 225,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 180
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 460
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 167852,
+     "title": "",
+     "workingSetMB": 244,
+     "privateMB": 199
+    }
+   ]
+  },
+  {
+   "batch": 17,
+   "checks": [
+    "index-rename",
+    "index-perf"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:07:56.097Z",
+    "systemFreeMB": 4618,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1010,
+    "obsidianPrivateMB": 1863
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:08:39.801Z",
+    "systemFreeMB": 4293,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1073,
+    "obsidianPrivateMB": 1927
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 173
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 375
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 691
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 169524,
+     "title": "",
+     "workingSetMB": 226,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 158,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 380
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 169524,
+     "title": "",
+     "workingSetMB": 288,
+     "privateMB": 240
+    }
+   ]
+  },
+  {
+   "batch": 18,
+   "checks": [
+    "long-300-memory",
+    "pdfjs-footprint"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:08:48.140Z",
+    "systemFreeMB": 4568,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1007,
+    "obsidianPrivateMB": 1859
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:09:02.750Z",
+    "systemFreeMB": 4560,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1152,
+    "obsidianPrivateMB": 2294
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 151,
+     "privateMB": 174
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 375
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 150040,
+     "title": "",
+     "workingSetMB": 228,
+     "privateMB": 185
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "pendf-view - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 159,
+     "privateMB": 181
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 667
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 240,
+     "privateMB": 684
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 150040,
+     "title": "",
+     "workingSetMB": 366,
+     "privateMB": 320
+    }
+   ]
+  },
+  {
+   "batch": 19,
+   "checks": [
+    "fingerprint-mismatch",
+    "fallback-main-thread",
+    "unload-cleanup"
+   ],
+   "attempts": 1,
+   "windowReopened": true,
+   "memBefore": {
+    "at": "2026-11-16T19:09:11.144Z",
+    "systemFreeMB": 4401,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1009,
+    "obsidianPrivateMB": 1860
+   },
+   "memAfter": {
+    "at": "2026-11-16T19:09:19.753Z",
+    "systemFreeMB": 4472,
+    "systemTotalMB": 32076,
+    "obsidianWorkingSetMB": 1023,
+    "obsidianPrivateMB": 1878
+   },
+   "processesBefore": [
+    {
+     "id": 3116,
+     "title": "rotations - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 150,
+     "privateMB": 173
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 179,
+     "privateMB": 372
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 246,
+     "privateMB": 690
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 167476,
+     "title": "",
+     "workingSetMB": 225,
+     "privateMB": 182
+    }
+   ],
+   "processesAfter": [
+    {
+     "id": 3116,
+     "title": "penDF - pendf-testvault - Obsidian 1.15.1",
+     "workingSetMB": 151,
+     "privateMB": 173
+    },
+    {
+     "id": 7220,
+     "title": "",
+     "workingSetMB": 180,
+     "privateMB": 379
+    },
+    {
+     "id": 39364,
+     "title": "",
+     "workingSetMB": 239,
+     "privateMB": 683
+    },
+    {
+     "id": 40012,
+     "title": "",
+     "workingSetMB": 23,
+     "privateMB": 23
+    },
+    {
+     "id": 43536,
+     "title": "",
+     "workingSetMB": 186,
+     "privateMB": 419
+    },
+    {
+     "id": 167476,
+     "title": "",
+     "workingSetMB": 245,
+     "privateMB": 200
     }
    ]
   }
@@ -1994,7 +1994,7 @@
    "sameVersion": true,
    "pdfjsWorkerUnchanged": true,
    "pdfjsViewerBefore": "undefined",
-   "coreCanvasesBefore": 2,
+   "coreCanvasesBefore": 1,
    "coreCanvasesAfter": 2,
    "pendfCanvases": 3
   },
@@ -2185,6 +2185,7 @@
    "ok": true,
    "coreFonts": [
     "g_pendf_d0_sf2",
+    "g_pendf_d0_sf4",
     "g_d0_sf2",
     "g_d0_sf4",
     "g_d0_sf6"
@@ -2347,7 +2348,7 @@
     2
    ],
    "groups": [
-    "b215fc5f-0791-4f6d-8340-d6a317a54f8c"
+    "bcf1e77f-14fd-4ef0-b3e3-9152029993e3"
    ]
   },
   "smoke-ui": {
@@ -2539,7 +2540,7 @@
     "Beta 2"
    ],
    "bookmarkJump": 120,
-   "link": "[[long-300.pdf#page=50&pendf=671c225d-1947-42f8-ab87-b45ce273c15f|Alpha]]",
+   "link": "[[long-300.pdf#page=50&pendf=dc495e14-704b-451e-9bb5-34fb4a0ab2b3|Alpha]]",
    "linkJump": 50,
    "reopened": [
     "Gamma",
@@ -2613,11 +2614,11 @@
    "afterUndo": 2,
    "stress": {
     "strokes": 1500,
-    "upsertMs": 27,
-    "renderPageMs": 32,
-    "flushMs": 86,
+    "upsertMs": 20,
+    "renderPageMs": 33,
+    "flushMs": 96,
     "stringifyMs": 4,
-    "eraserMsPerMove": 0.17,
+    "eraserMsPerMove": 0.23,
     "erasedInDrag": 142,
     "sidecarBytes": 974835,
     "paths": 1500
@@ -2627,8 +2628,8 @@
   "pages-search": {
    "ok": true,
    "cells": 300,
-   "rendered": 6,
-   "canvases": 7,
+   "rendered": 4,
+   "canvases": 5,
    "thumbCssWidth": 104,
    "darkPixelShare": 0.0378,
    "lastRendered": true,
@@ -2661,10 +2662,10 @@
      "pagesRenderedAfter": 0,
      "detailRendersAfter": 0,
      "framesDuring": 20,
-     "frameGapAvgMs": 17,
-     "frameGapP95Ms": 17.8,
-     "frameGapMaxMs": 17.8,
-     "frameGapMaxAfterMs": 18.5,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 18.2,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2698,7 +2699,7 @@
      "frameGapAvgMs": 16.9,
      "frameGapP95Ms": 18.2,
      "frameGapMaxMs": 18.2,
-     "frameGapMaxAfterMs": 26.7,
+     "frameGapMaxAfterMs": 28,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2707,7 +2708,7 @@
      "canvasPeak": 8,
      "scrollMovesAfter": [
       [
-       380,
+       379,
        52,
        834,
        0.573
@@ -2726,7 +2727,7 @@
      "commit": {
       "scale": 0.5728,
       "anchorErrorPx": 0.42,
-      "ms": 20.600000023841858,
+      "ms": 19.100000023841858,
       "released": 4,
       "clamp": [
        0,
@@ -2752,8 +2753,8 @@
      "framesDuring": 74,
      "frameGapAvgMs": 17.1,
      "frameGapP95Ms": 18.1,
-     "frameGapMaxMs": 18.7,
-     "frameGapMaxAfterMs": 27,
+     "frameGapMaxMs": 18.3,
+     "frameGapMaxAfterMs": 28.9,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2762,7 +2763,7 @@
      "canvasPeak": 5,
      "scrollMovesAfter": [
       [
-       1308,
+       1300,
        69,
        1057,
        0.615
@@ -2781,7 +2782,7 @@
      "commit": {
       "scale": 0.615,
       "anchorErrorPx": 0.11,
-      "ms": 22.899999976158142,
+      "ms": 18,
       "released": 2,
       "clamp": [
        0,
@@ -2806,9 +2807,9 @@
      "detailRendersAfter": 0,
      "framesDuring": 18,
      "frameGapAvgMs": 17,
-     "frameGapP95Ms": 18.1,
-     "frameGapMaxMs": 18.1,
-     "frameGapMaxAfterMs": 27.8,
+     "frameGapP95Ms": 18.6,
+     "frameGapMaxMs": 18.6,
+     "frameGapMaxAfterMs": 29.5,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2817,7 +2818,7 @@
      "canvasPeak": 4,
      "scrollMovesAfter": [
       [
-       344,
+       342,
        19,
        246,
        0.663
@@ -2831,7 +2832,7 @@
      "commit": {
       "scale": 0.6627,
       "anchorErrorPx": 0.66,
-      "ms": 17.599999964237213,
+      "ms": 16.80000001192093,
       "released": 1,
       "clamp": [
        0,
@@ -2855,10 +2856,10 @@
      "pagesRenderedAfter": 3,
      "detailRendersAfter": 0,
      "framesDuring": 20,
-     "frameGapAvgMs": 17,
-     "frameGapP95Ms": 18,
-     "frameGapMaxMs": 18,
-     "frameGapMaxAfterMs": 27.9,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.7,
+     "frameGapMaxMs": 18.7,
+     "frameGapMaxAfterMs": 27.3,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2867,7 +2868,7 @@
      "canvasPeak": 5,
      "scrollMovesAfter": [
       [
-       376,
+       383,
        7,
        472,
        0.509
@@ -2886,7 +2887,7 @@
      "commit": {
       "scale": 0.5093,
       "anchorErrorPx": 0.46,
-      "ms": 16,
+      "ms": 21,
       "released": 2,
       "clamp": [
        0,
@@ -2910,10 +2911,10 @@
      "pagesRenderedAfter": 5,
      "detailRendersAfter": 0,
      "framesDuring": 20,
-     "frameGapAvgMs": 17,
-     "frameGapP95Ms": 18.2,
-     "frameGapMaxMs": 18.2,
-     "frameGapMaxAfterMs": 24.3,
+     "frameGapAvgMs": 16.8,
+     "frameGapP95Ms": 17.5,
+     "frameGapMaxMs": 17.5,
+     "frameGapMaxAfterMs": 25.8,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2922,7 +2923,7 @@
      "canvasPeak": 6,
      "scrollMovesAfter": [
       [
-       380,
+       376,
        0,
        -922,
        0.236
@@ -2941,7 +2942,7 @@
      "commit": {
       "scale": 0.2361,
       "anchorErrorPx": 0.06,
-      "ms": 18,
+      "ms": 20,
       "released": 0,
       "clamp": [
        0,
@@ -2965,10 +2966,10 @@
      "pagesRenderedAfter": 3,
      "detailRendersAfter": 0,
      "framesDuring": 23,
-     "frameGapAvgMs": 16.9,
+     "frameGapAvgMs": 16.8,
      "frameGapP95Ms": 17.5,
-     "frameGapMaxMs": 17.6,
-     "frameGapMaxAfterMs": 27.1,
+     "frameGapMaxMs": 17.5,
+     "frameGapMaxAfterMs": 25.6,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -2977,7 +2978,7 @@
      "canvasPeak": 6,
      "scrollMovesAfter": [
       [
-       578,
+       596,
        162,
        2282,
        0.849
@@ -2991,7 +2992,7 @@
      "commit": {
       "scale": 0.849,
       "anchorErrorPx": 0.52,
-      "ms": 18.30000001192093,
+      "ms": 21,
       "released": 3,
       "clamp": [
        0,
@@ -3018,7 +3019,7 @@
      "frameGapAvgMs": 0,
      "frameGapP95Ms": 0,
      "frameGapMaxMs": 0,
-     "frameGapMaxAfterMs": 26.4,
+     "frameGapMaxAfterMs": 23,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -3034,7 +3035,7 @@
      "commit": {
       "scale": 0.4546,
       "anchorErrorPx": 0.13,
-      "ms": 18.099999964237213,
+      "ms": 16.200000047683716,
       "released": 2,
       "clamp": [
        0,
@@ -3057,11 +3058,11 @@
      "maxRendersPerPageAfter": 0,
      "pagesRenderedAfter": 0,
      "detailRendersAfter": 0,
-     "framesDuring": 158,
-     "frameGapAvgMs": 17.9,
-     "frameGapP95Ms": 24.8,
-     "frameGapMaxMs": 38.2,
-     "frameGapMaxAfterMs": 18.6,
+     "framesDuring": 159,
+     "frameGapAvgMs": 17.7,
+     "frameGapP95Ms": 23.7,
+     "frameGapMaxMs": 35.2,
+     "frameGapMaxAfterMs": 18.9,
      "blankFrames": 0,
      "blankPages": [],
      "blackFrames": 0,
@@ -3076,31 +3077,31 @@
        0.914
       ],
       [
-       831,
+       832,
        440,
        5784,
        2.02
       ],
       [
-       1296,
+       1287,
        973,
        12788,
        4.467
       ],
       [
-       1325,
+       1315,
        -2,
        -1,
        4.467
       ],
       [
-       1776,
+       1756,
        2149,
        28274,
        9.876
       ],
       [
-       2266,
+       2242,
        49,
        652,
        10
@@ -3118,30 +3119,30 @@
    },
    "zoomTimeline": {
     "kind": "pinch",
-    "startedAt": "2026-11-16T18:44:32.659Z",
+    "startedAt": "2026-11-16T19:04:48.158Z",
     "startScale": 10,
     "endScale": 10,
-    "endT": 306,
+    "endT": 307,
     "commitMs": 0.7,
     "frames": [
-     16,
-     16.5,
-     18.1,
-     17.7,
-     16.4,
-     16.5,
-     16.5,
-     18.2,
      16.6,
-     16.6,
-     16.7,
-     17.1,
-     16.7,
-     17,
-     16.9,
-     17.1,
      17.2,
-     17.1
+     17.2,
+     17.3,
+     17.2,
+     17.5,
+     16.6,
+     17.2,
+     16.5,
+     16.5,
+     17.7,
+     16.5,
+     17.3,
+     17.1,
+     17.1,
+     16.5,
+     16.9,
+     16.6
     ],
     "transformWrites": 16,
     "scaleChangesDuringGesture": 0,
@@ -3393,8 +3394,8 @@
    "marginSeen": [
     [
      "rotations.pdf",
-     true,
-     0.75
+     false,
+     0.5
     ],
     [
      "rotations.pdf",
@@ -3402,9 +3403,24 @@
      0.75
     ],
     [
-     "cropbox.pdf",
+     "rotations.pdf",
+     false,
+     0.5
+    ],
+    [
+     "rotations.pdf",
      true,
      0.75
+    ],
+    [
+     "rotations.pdf",
+     false,
+     0.5
+    ],
+    [
+     "rotations.pdf",
+     false,
+     0.5
     ]
    ]
   },
@@ -3416,7 +3432,7 @@
     "y": 631.42
    },
    "create": {
-    "id": "f1f4dc7c-3769-4507-af17-abeda52ac79e",
+    "id": "8927abbb-7fbb-4d21-811c-8daf1b9dc797",
     "drawnAt": [
      0,
      0
@@ -3576,6 +3592,10 @@
    "options": {
     "openFor": "highlighter",
     "labelled": true,
+    "swatchPress": {
+     "tip": "Pink",
+     "unchanged": true
+    },
     "saved": {
      "color": "#2ea8e5",
      "opacity": 0.5
@@ -3601,6 +3621,12 @@
     "expected": "#ffd400"
    },
    "textNoInk": true,
+   "textSlow": {
+    "paletteMidDrag": false,
+    "chars": 38,
+    "spanChars": 39,
+    "paletteAfter": false
+   },
    "area": {
     "made": true,
     "color": "#ffd400",
@@ -3623,6 +3649,10 @@
     "dataLast": "pen",
     "dataOpacity": 0.5,
     "dataColor": "#2ea8e5"
+   },
+   "twoViews": {
+    "other": "highlighter",
+    "otherButton": true
    },
    "longPress": {
     "tip": "Stroke eraser",
@@ -3661,7 +3691,8 @@
      "note",
      "redo"
     ],
-    "fits": true
+    "fits": true,
+    "moreLit": true
    },
    "wide": {
     "labels": true,
@@ -3940,7 +3971,7 @@
   },
   "area-link": {
    "ok": true,
-   "link": "[[areas.pdf#page=3&pendf=19a3da9c-0bd8-4544-a14d-ba497c85224b|linked figure]]",
+   "link": "[[areas.pdf#page=3&pendf=2fb10f14-d2fc-4110-8f36-d21300f59182|linked figure]]",
    "nav": {
     "page": 4,
     "visible": [
@@ -3973,35 +4004,35 @@
   },
   "index-perf": {
    "ok": true,
-   "writeMs": 2904,
+   "writeMs": 2698,
    "build": {
-    "ms": 111,
+    "ms": 108,
     "sidecars": 501,
     "annotations": 50000,
     "read": 501,
     "fromCache": 0,
-    "maxSliceMs": 12.2,
+    "maxSliceMs": 12.6,
     "slices": 7
    },
-   "heapDeltaMB": 6.1,
+   "heapDeltaMB": 3.4,
    "total": {
     "sidecars": 501,
     "annotations": 50000
    },
    "incremental": {
     "reflected": true,
-    "ms": 389,
+    "ms": 328,
     "includesDebounceMs": 300
    },
    "searchHits": 200,
-   "searchMs": 46,
+   "searchMs": 13.8,
    "warm": {
-    "ms": 51,
+    "ms": 44,
     "sidecars": 501,
     "annotations": 49901,
     "read": 0,
     "fromCache": 501,
-    "maxSliceMs": 0.1,
+    "maxSliceMs": 0,
     "slices": 1
    },
    "after": {
@@ -4014,8 +4045,8 @@
    "maxCanvas": 11,
    "maxLayers": 4,
    "maxRendered": 10,
-   "seconds": 7.3,
-   "heapMB": 37
+   "seconds": 7.4,
+   "heapMB": 38
   },
   "pdfjs-footprint": {
    "ok": true,
@@ -4105,29 +4136,29 @@
    "blobWorkersInRun": 2,
    "unterminatedInRun": 0,
    "workerLog": [
-    "2026-11-16T18:49:48.505Z INFO  [pdfjs] web worker ready (blob URL, module)",
-    "2026-11-16T18:49:48.512Z INFO  [view] opened pendf-fixtures/a4.pdf (3 pages, worker: web-worker)",
-    "2026-11-16T18:49:48.610Z INFO  [view] opened pendf-fixtures/a4.pdf (3 pages, worker: web-worker)"
+    "2026-11-16T19:09:16.162Z INFO  [pdfjs] web worker ready (blob URL, module)",
+    "2026-11-16T19:09:16.169Z INFO  [view] opened pendf-fixtures/rotations.pdf (4 pages, worker: web-worker)",
+    "2026-11-16T19:09:16.242Z INFO  [view] opened pendf-fixtures/a4.pdf (3 pages, worker: web-worker)"
    ],
    "workerKinds": [
     [
      "blob:app://o",
      true,
      "pendf-worker",
-     8762,
+     8912,
      "setup",
      [
-      "at _p (plugin:pendf:602:951)"
+      "at eg (plugin:pendf:602:951)"
      ]
     ],
     [
      "blob:app://o",
      true,
      "pendf-worker",
-     10110,
+     10122,
      "fallback-main-thread",
      [
-      "at _p (plugin:pendf:602:951)"
+      "at eg (plugin:pendf:602:951)"
      ]
     ]
    ],

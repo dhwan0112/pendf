@@ -140,7 +140,7 @@ export default class PenDFPlugin extends Plugin {
 		this.addCommand({ id: "show-pages", name: "Show page thumbnails", callback: () => void this.showAnnotationsPanel("pages") });
 		this.addCommand({ id: "search-all", name: "Search the whole PDF", callback: () => void this.showAnnotationsPanel("search") });
 		this.addCommand({ id: "show-bookmarks", name: "Show bookmarks", callback: () => void this.showAnnotationsPanel("bookmarks") });
-		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting (last pen tool ↔ no tool)", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
+		this.addCommand({ id: "toggle-ink", name: "Toggle handwriting (last ink tool ↔ no tool)", checkCallback: (c) => this.withView(c, (v) => v.toggleInk()) });
 		// one command per palette tool (D-46): hotkeys on a desktop or an iPad keyboard
 		for (const t of TOOL_IDS) {
 			this.addCommand({ id: `select-tool-${t}`, name: `Select tool: ${TOOL_LABELS[t].label}`, checkCallback: (c) => this.withView(c, (v) => v.setTool(t)) });
@@ -422,6 +422,13 @@ export default class PenDFPlugin extends Plugin {
 	}
 
 	private quietSaveTimer: number | null = null;
+
+	/** Show a tool palette change in every open penDF view. */
+	refreshToolViews(): void {
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) {
+			if (leaf.view instanceof PenDFView) leaf.view.refreshTools();
+		}
+	}
 
 	/** Save settings without re-applying them to the views (tool palette state), debounced. */
 	saveQuietly(): void {

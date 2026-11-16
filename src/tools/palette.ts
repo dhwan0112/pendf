@@ -7,7 +7,7 @@
 
 import { setIcon, setTooltip } from "obsidian";
 import { PEN_COLORS, PEN_WIDTHS, type HighlightColor, type PenDFSettings } from "../settings";
-import { Toolbar } from "../view/toolbar";
+import { Toolbar, pressLabel } from "../view/toolbar";
 import { HIGHLIGHTER_OPACITIES, hasOptions, type ToolId } from "./model";
 
 export interface PaletteHost {
@@ -19,7 +19,7 @@ export interface PaletteHost {
 	select(tool: ToolId): void;
 	undo(): void;
 	redo(): void;
-	/** persist settings without re-rendering the views */
+	/** persist settings without re-rendering the views, and show the change in every open view */
 	save(): void;
 }
 
@@ -80,6 +80,7 @@ export class ToolPalette {
 
 		this.handle = this.el.createEl("button", { cls: "pendf-tools-handle clickable-icon", attr: { "aria-label": "Show the tool palette", "data-tool": "expand" } });
 		setTooltip(this.handle, "Show the tool palette", { placement: "top" });
+		pressLabel(this.handle, () => "Show the tool palette", { above: true });
 		this.handle.addEventListener("click", (e) => {
 			e.preventDefault();
 			this.setCollapsed(false);
@@ -205,6 +206,7 @@ export class ToolPalette {
 				const b = row.createEl("button", { cls: "pendf-swatch pendf-tools-swatch", attr: { "aria-label": c.name, "data-hex": c.hex } });
 				b.setCssProps({ "--pendf-swatch": c.hex });
 				setTooltip(b, c.name, { placement: "top" });
+				pressLabel(b, () => c.name, { above: true });
 				const on = c.hex.toLowerCase() === current.toLowerCase();
 				b.toggleClass("is-active", on);
 				b.setAttribute("aria-pressed", String(on));
@@ -218,6 +220,7 @@ export class ToolPalette {
 				const b = row.createEl("button", { cls: "pendf-icon-btn pendf-tools-width", attr: { "aria-label": label, "data-width": String(w) } });
 				b.createSpan({ cls: "pendf-ink-dot" }).setCssProps({ "--pendf-dot": `${4 + i * 4}px` });
 				setTooltip(b, label, { placement: "top" });
+				pressLabel(b, () => label, { above: true });
 				b.toggleClass("is-active", w === current);
 				b.setAttribute("aria-pressed", String(w === current));
 				b.addEventListener("click", () => set(() => pick(w)));
@@ -235,6 +238,7 @@ export class ToolPalette {
 				const label = `Opacity ${Math.round(o * 100)} %`;
 				const b = row.createEl("button", { cls: "pendf-icon-btn pendf-tools-op", text: `${Math.round(o * 100)}%`, attr: { "aria-label": label, "data-opacity": String(o) } });
 				setTooltip(b, label, { placement: "top" });
+				pressLabel(b, () => label, { above: true });
 				const on = Math.abs(o - s.ink.highlighterOpacity) < 1e-6;
 				b.toggleClass("is-active", on);
 				b.setAttribute("aria-pressed", String(on));

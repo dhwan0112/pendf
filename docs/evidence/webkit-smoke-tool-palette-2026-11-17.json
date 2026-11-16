@@ -1,5 +1,5 @@
 {
- "at": "2026-11-16T18:50:05.002Z",
+ "at": "2026-11-16T19:09:52.978Z",
  "node": "v22.22.0",
  "fixtures": [
   "a4.pdf",
@@ -22,61 +22,61 @@
      "pages": 3,
      "rendered": 3,
      "textItems": 122,
-     "ms": 330
+     "ms": 319
     },
     "areas.pdf": {
      "pages": 5,
      "rendered": 5,
      "textItems": 14,
-     "ms": 432
+     "ms": 436
     },
     "cropbox.pdf": {
      "pages": 1,
      "rendered": 1,
      "textItems": 29,
-     "ms": 126
+     "ms": 124
     },
     "korean-cmap.pdf": {
      "pages": 2,
      "rendered": 2,
      "textItems": 114,
-     "ms": 261
+     "ms": 264
     },
     "korean-embedded.pdf": {
      "pages": 2,
      "rendered": 2,
      "textItems": 44,
-     "ms": 202
+     "ms": 203
     },
     "letter.pdf": {
      "pages": 2,
      "rendered": 2,
      "textItems": 52,
-     "ms": 204
+     "ms": 202
     },
     "links.pdf": {
      "pages": 3,
      "rendered": 3,
      "textItems": 9,
-     "ms": 279
+     "ms": 278
     },
     "long-300.pdf": {
      "pages": 300,
      "rendered": 300,
      "textItems": 5749,
-     "ms": 23299
+     "ms": 23343
     },
     "rotations.pdf": {
      "pages": 4,
      "rendered": 4,
      "textItems": 96,
-     "ms": 360
+     "ms": 359
     },
     "two-column.pdf": {
      "pages": 2,
      "rendered": 2,
      "textItems": 158,
-     "ms": 203
+     "ms": 204
     }
    },
    "viewer": {
@@ -261,13 +261,13 @@
      "pages": 3,
      "rendered": 3,
      "textItems": 122,
-     "ms": 141
+     "ms": 237
     },
     "areas.pdf": {
      "pages": 5,
      "rendered": 5,
      "textItems": 14,
-     "ms": 80
+     "ms": 79
     },
     "cropbox.pdf": {
      "pages": 1,
@@ -279,7 +279,7 @@
      "pages": 2,
      "rendered": 2,
      "textItems": 114,
-     "ms": 45
+     "ms": 46
     },
     "korean-embedded.pdf": {
      "pages": 2,
@@ -291,31 +291,31 @@
      "pages": 2,
      "rendered": 2,
      "textItems": 52,
-     "ms": 32
+     "ms": 33
     },
     "links.pdf": {
      "pages": 3,
      "rendered": 3,
      "textItems": 9,
-     "ms": 47
+     "ms": 48
     },
     "long-300.pdf": {
      "pages": 300,
      "rendered": 300,
      "textItems": 5749,
-     "ms": 5002
+     "ms": 5001
     },
     "rotations.pdf": {
      "pages": 4,
      "rendered": 4,
      "textItems": 96,
-     "ms": 69
+     "ms": 66
     },
     "two-column.pdf": {
      "pages": 2,
      "rendered": 2,
      "textItems": 158,
-     "ms": 33
+     "ms": 35
     }
    },
    "viewer": {
@@ -499,7 +499,7 @@
    "variant": "before",
    "dpr": 2,
    "single": {
-    "frames": 12,
+    "frames": 13,
     "framesWithoutCanvas": 0,
     "blackFrames": 0,
     "canvasesSeen": 2,
@@ -507,7 +507,7 @@
    },
    "renderingWhenCancelled": true,
    "cancelled": {
-    "frames": 13,
+    "frames": 12,
     "framesWithoutCanvas": 1,
     "blackFrames": 0,
     "canvasesSeen": 1,
@@ -522,7 +522,7 @@
    "variant": "after",
    "dpr": 2,
    "single": {
-    "frames": 14,
+    "frames": 12,
     "framesWithoutCanvas": 0,
     "blackFrames": 0,
     "canvasesSeen": 2,
@@ -530,7 +530,7 @@
    },
    "renderingWhenCancelled": true,
    "cancelled": {
-    "frames": 12,
+    "frames": 13,
     "framesWithoutCanvas": 0,
     "blackFrames": 0,
     "canvasesSeen": 2,
@@ -545,7 +545,7 @@
    "variant": "before",
    "dpr": 2,
    "single": {
-    "frames": 16,
+    "frames": 15,
     "framesWithoutCanvas": 0,
     "blackFrames": 0,
     "canvasesSeen": 2,

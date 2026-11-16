@@ -2454,7 +2454,18 @@
 					res.options = { openFor: v.palette.optionsOpenFor };
 					const pop = pal.querySelector(".pendf-tools-options");
 					res.options.labelled = pop ? [...pop.querySelectorAll("button")].every((b) => (b.getAttribute("aria-label") || "").trim()) : false;
-					pop?.querySelector(`[data-hex="${pl.settings.colors[2].hex}"]`)?.click();
+					{
+						const sw = pop?.querySelector(`[data-hex="${pl.settings.colors[3].hex}"]`);
+						const colorBefore = pl.settings.ink.highlighterColor;
+						sw?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch", pointerId: 111 }));
+						await sleep(600);
+						const tip = document.querySelector(".pendf-press-tip");
+						res.options.swatchPress = { tip: tip?.textContent ?? null };
+						sw?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch", pointerId: 111 }));
+						sw?.click();
+						res.options.swatchPress.unchanged = pl.settings.ink.highlighterColor === colorBefore;
+					}
+					pal.querySelector(`.pendf-tools-options [data-hex="${pl.settings.colors[2].hex}"]`)?.click();
 					pal.querySelector('.pendf-tools-options [data-opacity="0.5"]')?.click();
 					res.options.saved = { color: pl.settings.ink.highlighterColor, opacity: pl.settings.ink.highlighterOpacity };
 					btn("highlighter").click();
@@ -2483,6 +2494,38 @@
 					if (th) made.push(th.id);
 					res.text = th ? { color: th.color, chars: th.text.length, quads: th.quads.length, expected: pl.settings.tools.textColor } : null;
 					res.textNoInk = fresh("ink").length === 0;
+					// human speed: 100 ms per move and a pause longer than the selection debounce mid-drag
+					{
+						const sp2 = spans(v, 1).filter((x) => x.textContent.trim().length > 25)[3];
+						const r2 = sp2.getBoundingClientRect();
+						const y2 = r2.top + r2.height / 2;
+						const c2 = s.viewer.container;
+						let downT = null;
+						const fire2 = (type, x) => {
+							let t = document.elementFromPoint(x, y2) ?? c2;
+							if (type === "pointerdown") downT = t;
+							else if (t.closest(".pendf-tools")) t = downT;
+							t.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerType: "pen", pointerId: 110, isPrimary: true, clientX: x, clientY: y2, pressure: 0.5, buttons: type === "pointerup" ? 0 : 1 }));
+						};
+						const x0 = r2.left + 2;
+						const x1 = r2.right - 2;
+						fire2("pointerdown", x0);
+						let paletteMidDrag = false;
+						for (let i = 1; i <= 10; i++) {
+							await sleep(100);
+							fire2("pointermove", x0 + ((x1 - x0) * i) / 10);
+							if (i === 5) {
+								await sleep(500);
+								paletteMidDrag = !!v.containerEl.querySelector(".pendf-palette:not(.is-hidden)");
+							}
+						}
+						fire2("pointerup", x1);
+						await sleep(300);
+						const th2 = fresh("highlight")[0];
+						if (th2) made.push(th2.id);
+						const spanText = sp2.textContent.trim();
+						res.textSlow = { paletteMidDrag, chars: th2?.text.length ?? 0, spanChars: spanText.length, paletteAfter: !!v.containerEl.querySelector(".pendf-palette:not(.is-hidden)") };
+					}
 
 					// area: Pencil drags one; a finger (default input) scrolls instead
 					btn("area").click();
@@ -2539,6 +2582,21 @@
 					res.remembered = { toolAfterReopen: v.currentTool, dataLast: data?.tools?.last, dataOpacity: data?.ink?.highlighterOpacity, dataColor: data?.ink?.highlighterColor };
 					btn("none").click();
 
+					// a second view shares the pen case: its palette shows the ink tool picked in this one
+					{
+						const leaf2 = app.workspace.getLeaf("split");
+						await leaf2.setViewState({ type: VIEW, state: { file: FIX + "letter.pdf" }, active: false });
+						await waitFor(() => leaf2.view.debugSession?.ready && leaf2.view.debugSession.store, 20000);
+						const v2 = leaf2.view;
+						v2.setTool("pen");
+						btn("highlighter").click();
+						await sleep(100);
+						res.twoViews = { other: v2.currentTool, otherButton: !!v2.containerEl.querySelector('.pendf-tools [data-tool="highlighter"].is-active') };
+						v2.setTool("none");
+						leaf2.detach();
+						btn("pen").click();
+						await sleep(400);
+					}
 					// long press on a palette button: its name, above the button, without selecting it
 					const lp = btn("eraser");
 					lp.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch", pointerId: 109 }));
@@ -2593,6 +2651,9 @@
 					v.palette.layout();
 					await sleep(100);
 					res.narrow = { labels: bar.classList.contains("has-labels"), overflowed: v.palette.overflowed, fits: bar.scrollWidth <= bar.clientWidth + 1 };
+					v.setTool("area");
+					res.narrow.moreLit = bar.querySelector(".pendf-more").classList.contains("is-active");
+					v.setTool("none");
 					body.style.width = "";
 					await sleep(400);
 					v.palette.layout();
@@ -2620,6 +2681,9 @@
 					res.noTool.tool === "none" && res.noTool.alwaysWrote === "highlighter" && res.noTool.offWrote === 0 &&
 					res.remembered.toolAfterReopen === "pen" && res.remembered.dataLast === "pen" && res.remembered.dataOpacity === 0.5 &&
 					res.longPress.tip === "Stroke eraser" && res.longPress.above && !res.longPress.selected &&
+					res.options.swatchPress.tip === pl.settings.colors[3].name && res.options.swatchPress.unchanged &&
+					!res.textSlow.paletteMidDrag && !res.textSlow.paletteAfter && res.textSlow.chars >= res.textSlow.spanChars * 0.8 &&
+					res.twoViews.other === "highlighter" && res.twoViews.otherButton && res.narrow.moreLit &&
 					res.centre.mode === "docked" && res.centre.offsetPx <= 2 && res.centre.clearOfPanel &&
 					res.lastPage.open.clear && res.lastPage.folded.clear &&
 					res.fold.collapsed && res.fold.barHidden && res.fold.handle && res.fold.expandedAgain &&

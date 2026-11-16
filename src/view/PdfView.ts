@@ -248,7 +248,10 @@ export class PenDFView extends FileView {
 			select: (t) => this.setTool(t),
 			undo: () => this.undo(),
 			redo: () => this.redo(),
-			save: () => this.plugin.saveQuietly(),
+			save: () => {
+				this.plugin.saveQuietly();
+				this.plugin.refreshToolViews();
+			},
 		});
 		if (this.pendingPanel) {
 			this.panel.setState(this.pendingPanel);
@@ -425,6 +428,14 @@ export class PenDFView extends FileView {
 		this.syncToolClasses();
 		this.palette?.refresh();
 		this.plugin.saveQuietly();
+		// the pen case is shared: other open views show (and use) the same ink tool and options
+		this.plugin.refreshToolViews();
+	}
+
+	/** Settings of the tools changed elsewhere (another view's palette): show the real state. */
+	refreshTools(): void {
+		this.syncToolClasses();
+		this.palette?.refresh();
 	}
 
 	/** Root classes that depend on the tool and the input mode. */
@@ -588,6 +599,7 @@ export class PenDFView extends FileView {
 			note: (a) => session.notes.noteOnHighlight(a),
 			copyLink: (a, text) => this.copyLink({ page: a.page, id: a.id }, aliasFrom(text) || `p. ${a.page}`),
 			copySelectionLink: (t) => this.copyLink({ page: t.page, rect: t.rect }, aliasFrom(t.text) || `p. ${t.page}`),
+			paletteSuppressed: () => session.textTool?.dragging ?? false,
 		});
 		session.notes = new NoteController({
 			app: this.app,

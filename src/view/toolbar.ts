@@ -32,13 +32,66 @@ export interface ToolbarOptions {
 	above?: boolean;
 }
 
+let activeTip: HTMLElement | null = null;
+
+function showPressTip(anchor: HTMLElement, text: string, above: boolean): void {
+	activeTip?.remove();
+	const tip = anchor.ownerDocument.body.createDiv({ cls: "pendf-press-tip", text });
+	const r = anchor.getBoundingClientRect();
+	if (above) tip.addClass("is-above");
+	tip.setCssProps({ "--pendf-tip-x": `${Math.round(r.left + r.width / 2)}px`, "--pendf-tip-y": `${Math.round(above ? r.top - 6 : r.bottom + 6)}px` });
+	activeTip = tip;
+	window.setTimeout(() => {
+		if (activeTip === tip) activeTip = null;
+		tip.remove();
+	}, 1600);
+}
+
+/**
+ * iPad has no hover: a long press (touch or Pencil) on `el` shows its name instead of acting.
+ * Call before adding the element's own click listener (the suppressed click stops here).
+ */
+export function pressLabel(el: HTMLElement, label: () => string, opts: { above?: boolean } = {}): void {
+	let timer: number | null = null;
+	let suppressClick = false;
+	const clear = () => {
+		if (timer !== null) window.clearTimeout(timer);
+		timer = null;
+	};
+	el.addEventListener("pointerdown", (e) => {
+		// a long press may end without a click (iPadOS): never let it swallow the next tap
+		suppressClick = false;
+		if (e.pointerType === "mouse") return;
+		clear();
+		timer = window.setTimeout(() => {
+			timer = null;
+			suppressClick = true;
+			showPressTip(el, label(), !!opts.above);
+		}, LONG_PRESS_MS);
+	});
+	for (const t of ["pointerup", "pointercancel", "pointerleave"] as const) el.addEventListener(t, clear);
+	el.addEventListener("contextmenu", (e) => {
+		// iPadOS/Android long press may also raise a context menu
+		if (suppressClick) e.preventDefault();
+	});
+	el.addEventListener(
+		"click",
+		(e) => {
+			if (!suppressClick) return;
+			suppressClick = false;
+			e.preventDefault();
+			e.stopImmediatePropagation();
+		},
+		{ capture: true },
+	);
+}
+
 export class Toolbar {
 	private buttons: ToolButton[] = [];
 	private moreBtn: HTMLButtonElement;
 	private ro: ResizeObserver;
-	private tip: HTMLElement | null = null;
-	private tipTimer: number | null = null;
 	private fitting = false;
+	private activeIds = new Set<string>();
 
 	constructor(
 		readonly el: HTMLElement,
@@ -77,29 +130,9 @@ export class Toolbar {
 		setIcon(el, b.icon);
 		if (this.opts.labels) el.createSpan({ cls: "pendf-btn-label", text: b.short ?? b.label });
 		setTooltip(el, b.label, this.tipOpts());
-		let suppressClick = false;
-		el.addEventListener("pointerdown", (e) => {
-			// a long press may end without a click (iPadOS): never let it swallow the next tap
-			suppressClick = false;
-			if (e.pointerType === "mouse") return;
-			this.clearTipTimer();
-			this.tipTimer = window.setTimeout(() => {
-				this.tipTimer = null;
-				suppressClick = true;
-				this.showTip(el, b.label);
-			}, LONG_PRESS_MS);
-		});
-		for (const t of ["pointerup", "pointercancel", "pointerleave"] as const) el.addEventListener(t, () => this.clearTipTimer());
-		el.addEventListener("contextmenu", (e) => {
-			// iPadOS/Android long press may also raise a context menu
-			if (suppressClick) e.preventDefault();
-		});
+		pressLabel(el, () => b.label, { above: this.opts.above });
 		el.addEventListener("click", (e) => {
 			e.preventDefault();
-			if (suppressClick) {
-				suppressClick = false;
-				return;
-			}
 			b.run();
 		});
 		b.el = el;
@@ -123,29 +156,17 @@ export class Toolbar {
 
 	/** Mark the active button(s). */
 	setActive(ids: Iterable<string>): void {
-		const on = new Set(ids);
+		this.activeIds = new Set(ids);
 		for (const b of this.buttons) {
-			b.el?.toggleClass("is-active", on.has(b.id));
-			b.el?.setAttribute("aria-pressed", String(on.has(b.id)));
+			b.el?.toggleClass("is-active", this.activeIds.has(b.id));
+			b.el?.setAttribute("aria-pressed", String(this.activeIds.has(b.id)));
 		}
+		this.markMore();
 	}
 
-	private showTip(anchor: HTMLElement, text: string): void {
-		this.tip?.remove();
-		const tip = this.el.ownerDocument.body.createDiv({ cls: "pendf-press-tip", text });
-		const r = anchor.getBoundingClientRect();
-		if (this.opts.above) tip.addClass("is-above");
-		tip.setCssProps({ "--pendf-tip-x": `${Math.round(r.left + r.width / 2)}px`, "--pendf-tip-y": `${Math.round(this.opts.above ? r.top - 6 : r.bottom + 6)}px` });
-		this.tip = tip;
-		window.setTimeout(() => {
-			if (this.tip === tip) this.tip = null;
-			tip.remove();
-		}, 1600);
-	}
-
-	private clearTipTimer(): void {
-		if (this.tipTimer !== null) window.clearTimeout(this.tipTimer);
-		this.tipTimer = null;
+	/** An active button inside "More" lights up the More button. */
+	private markMore(): void {
+		this.moreBtn.toggleClass("is-active", this.buttons.some((b) => this.activeIds.has(b.id) && b.el?.hasClass("is-overflowed")));
 	}
 
 	/** Show everything, then move priority-3, then priority-2 buttons into More until one line fits. */
@@ -153,6 +174,15 @@ export class Toolbar {
 		if (this.fitting) return;
 		this.fitting = true;
 		try {
+			this.fitInner();
+		} finally {
+			this.fitting = false;
+			this.markMore();
+		}
+	}
+
+	private fitInner(): void {
+		{
 			for (const b of this.buttons) b.el?.removeClass("is-overflowed");
 			this.moreBtn.addClass("is-hidden");
 			// labels first; icons only when they do not fit
@@ -170,8 +200,6 @@ export class Toolbar {
 					if (!this.overflowing()) return;
 				}
 			}
-		} finally {
-			this.fitting = false;
 		}
 	}
 
@@ -195,7 +223,7 @@ export class Toolbar {
 
 	destroy(): void {
 		this.ro.disconnect();
-		this.clearTipTimer();
-		this.tip?.remove();
+		activeTip?.remove();
+		activeTip = null;
 	}
 }

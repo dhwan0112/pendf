@@ -47,6 +47,11 @@ export class TextTool {
 		return this._active;
 	}
 
+	/** a Pencil drag is selecting text (the selection palette stays away) */
+	get dragging(): boolean {
+		return this.drag !== null;
+	}
+
 	setActive(on: boolean): void {
 		if (on === this._active) return;
 		this._active = on;
