@@ -37,7 +37,7 @@ const only = arg("--only", "");
 const outFile = arg("--out", path.join(root, "harness-result.json"));
 const OBSIDIAN = process.platform === "win32" ? "C:/Program Files/Obsidian/obsidian" : "obsidian";
 if (!existsSync(path.join(vaultPath, ".obsidian"))) {
-	console.error("usage: node scripts/obsidian-harness.mjs [--vault <name>] [--path <test vault dir>] [--only check1,check2] [--zoom-profile ipad [--zoom-preset default|low-memory|no-detail|pdfjs]] [--zoom-dpr 2]");
+	console.error("usage: node scripts/obsidian-harness.mjs [--vault <name>] [--path <test vault dir>] [--only check1,check2] [--zoom-profile ipad [--zoom-preset default|low-memory|no-detail|pdfjs|cap-071]] [--zoom-dpr 2]");
 	process.exit(2);
 }
 
@@ -131,6 +131,7 @@ async function main() {
 		"low-memory": { preset: "low-memory", maxCanvasPixels: 2 ** 21, enableDetailCanvas: true, budgetMB: 64, releaseOffscreen: true },
 		"no-detail": { preset: "no-detail", maxCanvasPixels: 5242880, enableDetailCanvas: false, budgetMB: 160, releaseOffscreen: true },
 		pdfjs: { preset: "pdfjs", maxCanvasPixels: 5242880, budgetMB: null, releaseOffscreen: false },
+		"cap-071": { preset: "cap-071", maxCanvasPixels: 2 ** 23, enableDetailCanvas: true, budgetMB: null, releaseOffscreen: false },
 	};
 	const render = zoomProfile === "ipad" ? MOBILE[arg("--zoom-preset", "default")] : null;
 	const profile = zoomDpr > 0 ? { dpr: zoomDpr, render } : null;

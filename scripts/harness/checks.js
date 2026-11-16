@@ -48,7 +48,7 @@
 		class TrackedWorker extends orig.Worker {
 			constructor(url, opts) {
 				super(url, opts);
-				const rec = { url: String(url), terminated: false };
+				const rec = { url: String(url), name: opts?.name ?? null, terminated: false };
 				workers.push(rec);
 				const t = this.terminate.bind(this);
 				this.terminate = () => {
@@ -1958,8 +1958,11 @@
 				const sp = spans(v, v.debugSession.viewer.currentPageNumber);
 				select(sp[3], 0, sp[3]);
 				const [id] = v.highlights.createFromSelection("#ffd400");
-				const ours = workers.filter((w) => w.url.startsWith("blob:"));
+				// every worker penDF started in this run ("pendf-worker"; it may already be running for a tab
+				// Obsidian restored, and is shared): other blob workers are the harness's own pdf.js probe (D-37)
+				const ours = workers.filter((w) => w.name === "pendf-worker");
 				const urls = [...new Set(ours.map((w) => w.url))];
+				const logBefore = (P()?.getLogText?.() ?? "").split(String.fromCharCode(10)).filter((l) => /worker|main-thread|opened/.test(l)).slice(-6).map((l) => l.slice(0, 160));
 				await app.plugins.disablePlugin(ID);
 				await sleep(1500);
 				const leftovers = document.querySelectorAll(".pendf-view, .pendf-root, .pendf-floating, .pendf-layer-host, .pendf-hud").length;
@@ -1979,6 +1982,11 @@
 					leftovers,
 					workers: ours.length,
 					allTerminated: ours.every((w) => w.terminated),
+					blobWorkersInRun: workers.filter((w) => w.url.startsWith("blob:")).length,
+					unterminatedInRun: workers.filter((w) => w.url.startsWith("blob:") && !w.terminated).length,
+					workerLog: logBefore,
+					workerKinds: workers.map((w) => [w.url.slice(0, 12), !!w.terminated]),
+					nativeWorker: String(window.Worker).includes("native code"),
 					blobRevoked: revoked,
 					pendingHighlightSaved: saved,
 					styleLeft,
