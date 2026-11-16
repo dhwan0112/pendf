@@ -51,6 +51,15 @@ describe("zoom rendering presets", () => {
 		expect(p.budgetMB).toBeNull();
 		expect(p.releaseOffscreen).toBe(false);
 	});
+	it("the 0.7.1 cap preset brings back 0.7.1's canvas sizes without a budget (diagnostic)", () => {
+		const m = renderConfig("cap-071", true);
+		expect(m.maxCanvasPixels).toBe(2 ** 23);
+		expect(m.budgetMB).toBeNull();
+		expect(m.releaseOffscreen).toBe(false);
+		expect(m.enableDetailCanvas).toBe(true);
+		expect(renderConfig("cap-071", false).maxCanvasPixels).toBe(2 ** 25);
+		expect(ZOOM_PRESETS["cap-071"]).toMatch(/diagnostic/);
+	});
 	it("validates stored values", () => {
 		for (const k of Object.keys(ZOOM_PRESETS)) expect(isZoomPreset(k)).toBe(true);
 		expect(isZoomPreset("huge")).toBe(false);

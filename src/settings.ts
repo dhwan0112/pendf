@@ -85,7 +85,7 @@ const TEXT = {
 	penProbe: ["Pen probe", "Enables the 'Open pen probe' command: measures Apple Pencil / touch input in this webview."],
 	zoomRendering: [
 		"Zoom rendering",
-		"How large page canvases may get, and how much canvas memory penDF keeps. Try another preset if zooming flashes or the app restarts on your device. Open PDFs reopen when you change it.",
+		"How large page canvases may get, and how much canvas memory penDF keeps. Try another preset if zooming flashes or the app restarts on your device. \"0.7.1 canvas cap\" is for diagnosis only (it brings back 0.7.1's large canvases and no memory limit) — not for everyday use. Open PDFs reopen when you change it.",
 	],
 } as const;
 

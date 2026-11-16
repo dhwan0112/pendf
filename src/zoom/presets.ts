@@ -5,13 +5,14 @@
 // pdf.js itself uses 5,242,880 px on iOS/Android and 2^25 elsewhere; 0.7.1 used
 // 2^23 on mobile, above the iOS default (see docs/DECISIONS.md D-38).
 
-export type ZoomPreset = "default" | "low-memory" | "no-detail" | "pdfjs";
+export type ZoomPreset = "default" | "low-memory" | "no-detail" | "pdfjs" | "cap-071";
 
 export const ZOOM_PRESETS: Record<ZoomPreset, string> = {
 	default: "Default",
 	"low-memory": "Memory saver",
 	"no-detail": "No detail canvas",
 	pdfjs: "pdf.js defaults",
+	"cap-071": "0.7.1 canvas cap (diagnostic)",
 };
 
 export interface RenderConfig {
@@ -37,6 +38,11 @@ export function renderConfig(preset: ZoomPreset, mobile: boolean): RenderConfig 
 	switch (preset) {
 		case "pdfjs":
 			return { preset, budgetMB: null, releaseOffscreen: false };
+		case "cap-071":
+			// Diagnostic only (D-40), never the default: 0.7.1's canvas sizes and memory behaviour —
+			// mobile cap 2^23 px, no budget, nothing freed on a zoom commit — with every other
+			// 0.7.2/0.7.3 change in place. Black flashes only here → iOS canvas memory was the cause.
+			return { preset, maxCanvasPixels: mobile ? 2 ** 23 : 2 ** 25, enableDetailCanvas: true, budgetMB: null, releaseOffscreen: false };
 		case "low-memory":
 			return { preset, maxCanvasPixels: mobile ? 2 ** 21 : 2 ** 23, enableDetailCanvas: true, budgetMB: mobile ? 64 : 192, releaseOffscreen: true };
 		case "no-detail":
