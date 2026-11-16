@@ -238,3 +238,43 @@ D-23, D-25, D-30을 합쳐 지금 코드가 실제로 하는 일을 한 곳에 �
 - **결정:** `notes`, `persist-restart-rename`은 PDF를 연 뒤 1쪽으로 직접 이동하고, `state-restore`는 자기가 연 탭을 집는다(`getLeavesOfType(...)[0]` 대신).
 - **근거:** 테스트 볼트에는 사용자가 연 penDF 탭이 있고, penDF는 파일마다 마지막 위치를 기억하므로 "열면 1쪽", "첫 penDF 탭 = 방금 연 탭"이라는 가정이 깨졌다(SciWiki에서는 우연히 맞았다). 제품 동작이 아니라 검사의 가정 문제다.
 - **되돌리기:** 해당 줄을 이전 형태로.
+- **추가(2026-11-16, 0.7.2):** 같은 종류의 순서 의존 둘을 더 찾았다. 둘 다 0.7.1 빌드로도 똑같이 실패해 제품 회귀가 아니다.
+  1. `pdf-links`가 `highlight-palette`·`highlight-menu-undo`·`notes` 뒤에 돌면 링크 대상 쪽(9쪽, 12쪽)이 화면에 있는데도 pdf.js의 "현재 쪽"은 10쪽, 13쪽이었다(앞 검사가 남긴 뷰어 폭 때문). 판정을 "대상 쪽이 보이는 쪽에 들어 있음"으로 바꿨다.
+  2. `fallback-main-thread`가 한 실행의 **첫 검사**이면 a4.pdf 세션이 준비되지 않아 시간 초과되고, 이어서 `unload-cleanup`도 실패하며, 그 뒤 Obsidian CLI가 그 창에서 응답하지 않는다(창을 닫았다 다시 열면 회복). 앞에 다른 검사가 하나라도 있으면 통과한다. 원인은 아직 모른다(창 전체의 `window.Worker`를 바꾸는 검사). 전체 실행에서는 앞에 다른 검사를 둔다.
+
+## D-38 핀치·트랙패드 줌: 제스처 중에는 합성만, 손을 떼면 한 번 커밋 (2026-11-16, 0.7.2)
+- **문제:** iPad에서 핀치 줌 중 화면이 검게 번쩍이고 끊긴다(사용자 보고). 0.7.1은 `TouchManager`의 `onPinching`마다 `viewer.updateScale({ scaleFactor, origin, drawingDelay: 400 })`을 불렀다. 0.7.1 기준선(`docs/evidence/zoom-baseline-0.7.1-*.json`, 하네스 `zoom-gesture`)에서 핀치 한 번에 pdf.js 배율 변경 10~29회, 레이어 제거 최대 13회, 손가락 아래 내용 이동 25~221 px, 프레임 간격 최대 36~49 ms였다.
+- **결정:**
+  1. **제스처 중:** `.pdfViewer`에 `transform-origin`(제스처 시작점)과 `translate() scale()`만 쓴다(rAF당 한 번). pdf.js에는 아무것도 알리지 않고, 레이아웃을 읽지 않으며, 레이어 관리(`LayerManager`)를 멈춘다(`setFrozen`). 배율은 0.1~10(시작 배율이 그 밖이면 시작 배율까지 허용)으로 묶고, 미리보기는 손을 뗀 뒤 스크롤로 닿을 수 있는 위치로 묶는다(문서 위·아래 끝, 컨테이너보다 좁아진 쪽은 가운데, `clampTranslate`). 두 손가락 팬도 같은 경로(떼면 스크롤).
+  2. **손을 뗄 때(한 작업 안에서):** 미리보기에서 손가락 중심 아래 있던 쪽·쪽 안 비율을 기록 → transform 제거 → `viewer.currentScale = 새 배율` 한 번 → pdf.js가 동기로 보내는 `scalechanging` 안에서(아직 렌더할 쪽을 고르기 전) 그 점이 손가락 중심에 오도록 스크롤 보정 → 보이지 않는 쪽의 캔버스 해제 → 레이어 동기화 한 번. 브라우저는 최종 상태만 그린다.
+  3. **바뀐 쪽의 그림:** pdf.js는 새 캔버스가 다 그려질 때까지 옛 캔버스(CSS로 늘린, 흐린)를 남겨 둔다. 그런데 그 재렌더가 취소되면(첫 커밋 직후 두 번째 핀치) 옛 캔버스까지 지워 쪽이 다음 렌더가 끝날 때까지 비었다. 빌드 변환 규칙 "keep the old page canvas when a re-render is cancelled"로 옛 캔버스를 남긴다(아래 pdf.js 내부 목록 7).
+  4. **쪽 상자 맞춤:** pdf.js는 쪽을 새 배율로 그리기 시작할 때 쪽 상자를 캔버스 픽셀 격자에 맞춘다(`--scale-round-x/y`). DPR 2·캔버스 상한에서 이것이 커밋 뒤 레이아웃을 몇 px 옮겼다(하네스 iPad 프로필에서 3.8 px). 커밋 뒤 3초 동안 `pagerendered`마다 기준점을 다시 맞춘다(사용자가 그새 스크롤했으면 중단, 0.5~40 px만).
+  5. **데스크톱 휠:** ⌘/Ctrl+휠 중 작은 픽셀 delta(트랙패드 핀치)는 같은 합성 경로로 연속 줌하고 이벤트가 160 ms 멈추면 커밋한다(배율 = Π exp(−Δy/100)). 마우스 휠 한 칸(줄 단위이거나 |Δy| ≥ 50)은 예전처럼 10% 한 단계이되, 같은 커밋 함수로 포인터 아래 내용을 고정한다. 툴바 버튼과 명령은 그대로 `updateScale({ steps, drawingDelay: 0 })`.
+  6. **레이어:** pdf.js가 쪽을 리셋하며 모르는 자식(penDF 레이어)을 지우면 `MutationObserver`가 그 프레임이 그려지기 전에 되돌려 놓는다(`counters.restored`).
+  7. **종이 배경:** `.canvasWrapper`에 흰 배경. 아직 그려지지 않았거나 iOS가 메모리를 못 받아 비어 있는 캔버스 뒤로 어두운 뷰 배경(`--background-secondary`)이 비치지 않는다. 반전 모드 필터 안에 있으므로 반전 시 어두운 종이가 된다. 원인: 스코프된 pdf.js CSS가 캔버스가 있는 쪽의 배경을 투명으로 바꾼다(`.page:has(> .canvasWrapper > canvas)`).
+- **검증:** 하네스 `zoom-gesture`(9개 시나리오, 매 프레임 표본) 데스크톱과 iPad 프로필(DPR 2 + 모바일 렌더 설정) 모두 통과. WebKit/Chromium 스모크(DPR 2)에서 취소된 재렌더 때 캔버스 없는 프레임: 규칙 없이 1, 규칙과 함께 0. 수치는 REPORT.
+- **pdf.js 내부에 기대는 지점(번들 6.5.438 고정, 지시에 따라 기록):**
+  1. `TouchManager`(pdf.mjs export)의 `onPinchStart`/`onPinching(origin, prevDistance, distance)`/`onPanning(dx, dy)`/`onPinchEnd`, `isPinchingDisabled`. 0.1.0부터 쓰던 것. 임계값이 `OutputScale.pixelRatio`에 따라 바뀐다.
+  2. `PDFViewer.currentScale` 설정자가 쪽 갱신·스크롤 뒤, `update()`(렌더할 쪽 선택) 전에 `scalechanging`을 **동기로** 보낸다는 순서(`#setScaleUpdatePages`). 커밋의 스크롤 보정과 캔버스 해제가 여기에 걸려 있다. 순서가 바뀌면 보정은 커밋 직후 다시 적용되지만(같은 배율이면 직접 호출) 첫 렌더가 화면 밖 쪽에 쓰일 수 있다.
+  3. `PDFPageView.reset({ keepAnnotationLayer, keepAnnotationEditorLayer, keepXfaLayer, keepTextLayer })` — 쪽 캔버스 해제(`src/zoom/budget.ts`), `renderingState`(1 = 그리는 중이면 건드리지 않음), `div`.
+  4. `PDFViewer` 옵션 `maxCanvasPixels`, `enableDetailCanvas`(D-39), 진단용으로 `viewer.maxCanvasPixels` 읽기.
+  5. `pagerendered`의 `cssTransform`, `isDetailView`, `source.canvas`(타임라인, 진단 모드의 빈 캔버스 판정).
+  6. 쪽 리셋이 모르는 자식을 지운다는 동작(레이어 복원), 그리기 시작 때 `--scale-round-x/y`로 쪽 상자를 맞춘다는 동작(4번).
+  7. 빌드 변환(`scripts/pdfjs-transform.mjs`, pdf_viewer.mjs): `PDFPageView.draw()`의 취소 콜백 — 옛 캔버스가 문서에 붙어 있고 새 캔버스가 아직 안 붙었으면 새 캔버스를 0×0으로 비우고 `this.canvas = prevCanvas`로 되돌린다(`this.pendfKeptCanvas` 횟수 기록). 콜백은 `RenderTask.cancel()` 안에서 동기로 불리므로(`InternalRenderTask.cancel` → `task.onError`) 새 `draw()`보다 먼저 끝난다. 정확히 1회 일치해야 빌드되고 check-standalone가 `pendfKeptCanvas`를 확인한다.
+- **더 이상 쓰지 않는 것:** 제스처의 `updateScale({ drawingDelay: 300/400 })`(후보 C: 손가락이 멈춘 사이 다시 그리기). 툴바 버튼과 명령만 예전대로 `updateScale({ steps, drawingDelay: 0 })`.
+- **되돌리기:** `PdfView.installInput`을 0.7.1 형태로, 변환 규칙 하나 삭제.
+
+## D-39 줌 렌더링 프리셋과 기본값 (2026-11-16, 0.7.2, 잠정)
+- **결정:** 설정 → penDF → Diagnostics → **Zoom rendering**(`zoomRendering`). 바꾸면 열린 PDF를 다시 연다(PDFViewer 생성 옵션이므로).
+
+  | 프리셋 | `maxCanvasPixels` 모바일 / 데스크톱 | 상세 캔버스 | 캔버스 예산 모바일 / 데스크톱 | 커밋 때 화면 밖 해제 |
+  | --- | --- | --- | --- | --- |
+  | Default | 5,242,880 / 2^25 | 켬 | 160 / 512 MB | 예 |
+  | Memory saver | 2^21 / 2^23 | 켬 | 64 / 192 MB | 예 |
+  | No detail canvas | 5,242,880 / 2^25 | 끔 | 160 / 512 MB | 예 |
+  | pdf.js defaults | (pdf.js가 정함: iOS·Android 5,242,880, 그 밖 2^25) | (기본 켬) | 없음 | 아니오 |
+
+  예산: 쪽이 그려질 때마다 쪽 캔버스(상세 포함) 합이 예산을 넘으면 보이는 범위에서 가장 먼 쪽부터 해제(보이는 쪽, 그리는 중인 쪽은 제외).
+- **기본값 Default의 근거:** 0.7.1은 모바일에서 2^23(8,388,608 px = 쪽당 32 MB)을 썼다. pdf.js 자신의 iOS 값 5,242,880 px(20 MB)보다 크다(후보 A). iPad(DPR 2)에서 쪽 폭 맞춤이 대략 이 값에 닿으므로 그 이상 확대는 pdf.js의 상세 캔버스(보이는 부분만 고해상도)가 맡는다. pdf.js는 최근 쪽 10개 이상의 캔버스를 쥐고 있어 쪽당 크기만 줄여서는 합이 묶이지 않으므로 예산을 더했다.
+- **잠정인 이유:** iOS의 실제 캔버스 메모리 한도와 검은 프레임의 직접 원인(후보 A)은 데스크톱에서 확인할 수 없다. DEVICE_CHECKLIST 7-3의 프리셋 비교와 7-2 타임라인으로 확정한다.
+- **되돌리기:** `src/zoom/presets.ts`의 `default` 값을 바꾸거나, 사용자가 *pdf.js defaults*를 고른다.

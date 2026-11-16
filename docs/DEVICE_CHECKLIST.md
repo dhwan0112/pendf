@@ -24,7 +24,7 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
 | --- | --- | --- | --- |
 | 1-1 | 파일 목록에서 `a4.pdf`를 탭한다(0.1.5부터 기본으로 penDF가 연다) | penDF 툴바가 보이고 `/ 3`이 나온다. 코어 뷰어가 잠깐 보였다가 바뀔 수 있다 | 0-1, 0-2. 코어 뷰어로 남으면 설정 → penDF → Open PDFs in penDF |
-| 1-2 | `long-300.pdf`를 열고 손가락으로 끝까지 빠르게 스크롤, 중간중간 핀치 줌(50%~300%), 다시 처음으로 | 앱이 종료되지 않는다. HUD의 `canvases`가 대략 10~20 사이를 유지한다 | 캔버스 메모리. `PdfView.ts`의 `maxCanvasPixels`(모바일 2^23)를 낮춘다 |
+| 1-2 | `long-300.pdf`를 열고 손가락으로 끝까지 빠르게 스크롤, 중간중간 핀치 줌(50%~300%), 다시 처음으로 | 앱이 종료되지 않는다. HUD의 `canvases`가 대략 10~20 사이를 유지한다 | 캔버스 메모리. 설정 → penDF → Diagnostics → **Zoom rendering**을 *Memory saver*로 바꾸고 다시 한다(7장) |
 | 1-3 | 1-2 직후 HUD의 `renderMs`와 체감 속도를 기록한다 | 한 페이지가 1초 안에 그려진다 | 0-2 폴백 여부 |
 | 1-4 | `korean-cmap.pdf`(글꼴 미포함, CMap 필요)와 `korean-embedded.pdf`를 연다 | 두 파일 모두 한글이 깨지지 않는다 | CMap 임베드(`pendf:assets`) 또는 iOS의 CJK 대체 글꼴 |
 | 1-5 | `a4.pdf`에서 손가락으로 단어를 길게 눌러 선택하고 핸들을 끈다 | 텍스트가 선택되고, 선택 영역이 글자와 겹친다 | 텍스트 레이어 CSS(중첩 규칙 스코핑, `box-sizing`) |
@@ -126,3 +126,18 @@ Claude Code는 iPad에 접근할 수 없다. 아래 항목은 데스크톱(Windo
 | 6-7 | 쓴 뒤 핀치 줌, 툴바 회전, 다크 모드(설정 Invert page colors) | 획이 글자에 붙어 있고, 다크 모드에서 검은 펜이 흰색으로 보인다 | 잉크 레이어, invert 필터 |
 | 6-8 | 한 페이지에 획을 수백 개 쓰고 다른 쪽으로 갔다 온다, 앱을 껐다 켠다 | 느려지지 않고 획이 그대로 있다 | 증분 렌더, 사이드카 크기 |
 | 6-9 | **지연 비교(완료 기준)**: 240fps 슬로모션으로 penDF와 Excalidraw에서 같은 속도의 획을 찍고 펜 끝–잉크 끝 간격을 프레임 단위로 비교한다 | penDF가 Excalidraw보다 1프레임(120 Hz 기준 약 8 ms) 이내로 늦다 | 실시간 캔버스(`desynchronized`), coalesced 이벤트 지원 여부(펜 프로브) |
+
+## 7. 줌 (0.7.2) — 핀치 중 검은 화면, 부드러움
+
+0.7.2부터 핀치·트랙패드 줌은 손가락이 움직이는 동안 화면을 합성(transform)만 하고, 손을 떼는 순간 한 번에 배율을 바꾼다. 아래 항목은 그 결과를 실기기에서 확인한다. 준비: 설정 → penDF에서 **Debug overlay**를 켠다. HUD에 `canvasMB`(살아 있는 캔버스 메모리 추정, 폭×높이×4), `zoomPreset`, `lastZoom`(마지막 제스처 요약) 줄이 나온다.
+
+| # | 확인 절차 | 기대 결과 | 실패 시 의심 지점 |
+| --- | --- | --- | --- |
+| 7-1 | `long-300.pdf`를 열고 5쪽쯤에서 천천히, 빠르게, 중간에 멈췄다가 계속하는 핀치(50%↔300%)를 각각 몇 번 한다. **다른 기기로 240fps 슬로모션 촬영**(없으면 iPad 화면 기록) | 손가락이 움직이는 동안 검은·빈 프레임이 없다. 손을 뗀 뒤 흐림→선명 교체가 한 번. 손가락 사이에 있던 글자가 손가락 사이에 남는다 | `lastZoom`의 `scale changes during`이 0이 아니면 제스처가 합성 경로를 타지 않음(로그). 검은 프레임이면 7-3 |
+| 7-2 | 7-1의 각 핀치 직후 명령 **penDF: Export last zoom timeline to vault** → 볼트 루트의 `pendf-zoom-*.json`을 가져온다 | `frames` 간격이 대부분 16.7 ms(60 Hz) 또는 8.3 ms(ProMotion), `scaleChangesDuringGesture` 0, `layerDetachDuringGesture` 0, `blank` 0, `anchorErrorPx` ≤ 2 | `memPeakMB`, `canvasesCreated`, `renders`(쪽별 다시 그림)가 원인 판정 자료 |
+| 7-3 | 설정 → penDF → Diagnostics → **Zoom rendering**을 *Default* → *Memory saver* → *No detail canvas* → *pdf.js defaults*로 바꿔 가며 7-1·7-2를 반복한다(바꾸면 열린 PDF가 다시 열린다) | 프리셋마다 검은 프레임 유무, `memPeakMB`, 선명해지기까지 걸린 시간을 적는다 | 이 비교로 기본 프리셋을 확정한다(현재 *Default*는 잠정, D-39) |
+| 7-4 | **앱 종료 확인:** *Default*로 `long-300.pdf`를 최대(1000%)까지 확대하고 1분 동안 빠르게 스크롤·축소·확대를 반복한다 | Obsidian이 꺼지거나 다시 시작하지 않는다. HUD `canvasMB`가 대략 160 이하에서 오르내린다 | 꺼지면 *Memory saver*로 다시 해 보고, 다시 켠 뒤 **Export log**와 7-2 파일을 가져온다 |
+| 7-5 | 두 손가락을 벌리지 않고 같이 움직인다(두 손가락 팬) | 화면이 손가락을 따라가고, 떼면 그 자리로 스크롤된다 | `onPanning` |
+| 7-6 | 필기 중 손바닥을 댄다, Pencil로 쓰는 중에 다른 손가락을 댄다 | 확대·축소되지 않는다 | `isPinchingDisabled`, 제스처 취소 |
+| 7-7 | **Invert page colors**를 켜고 7-1을 반복한다 | 흰 번쩍임도 없다(아직 안 그려진 페이지는 반전된 종이색) | `.canvasWrapper`의 종이 배경 |
+| 7-8 | 매직 키보드·트랙패드가 있으면 트랙패드로 핀치, 마우스가 있으면 ⌘+휠 한 칸 | 트랙패드는 연속으로 부드럽게, 휠 한 칸은 10% 한 단계. 포인터 아래 내용이 그 자리에 남는다 | `ZoomController.wheel` |

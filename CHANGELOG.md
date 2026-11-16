@@ -4,6 +4,27 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
+## 0.7.2 — 2026-11-16
+
+- **Pinch zoom without re-rendering:** while two fingers (or a trackpad pinch) move, the pages are only
+  composited with a CSS transform — pdf.js is not touched, no layout is read, annotation layers stay put.
+  When the fingers lift, the new scale is applied once and the view is scrolled so the content under the
+  fingers stays there. Two-finger pans move with the fingers too (D-38).
+- **No empty pages during re-rendering:** a page keeps its old (blurry) canvas until the sharp one is
+  ready, now also when a second zoom cancels the first re-render (build-time pdf.js rule). A paper-coloured
+  background sits under every canvas, so an unpainted canvas never shows the dark view background.
+- **Canvas memory:** new setting *Diagnostics → Zoom rendering* with presets Default / Memory saver /
+  No detail canvas / pdf.js defaults. Default uses pdf.js's own iOS canvas limit (0.7.1 used a larger one),
+  frees off-screen canvases when a zoom is applied and keeps rendered pages under a memory budget (D-39,
+  provisional until measured on an iPad).
+- **Desktop:** Ctrl/⌘ + trackpad pinch zooms continuously on the same path; a mouse-wheel notch still
+  zooms one 10 % step, now anchored under the pointer.
+- **Diagnostics:** the debug overlay shows canvas memory, the preset and the last zoom gesture; command
+  *Export last zoom timeline to vault* writes the last gesture's frame gaps, renders, canvas memory and
+  anchor error as JSON.
+- Harness: new `zoom-gesture` check (9 scenarios, per-frame sampling, `--zoom-profile ipad`); WebKit
+  smoke checks the kept canvas at device pixel ratio 2. Before/after numbers in docs/REPORT.md.
+
 ## 0.7.1 — 2026-11-16
 
 - **Shared-page names (B-06):** penDF's pdf.js now names its documents `pendf_d0…` instead of `d0…`, so

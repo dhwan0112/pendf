@@ -1,0 +1,2550 @@
+{
+ "at": "2026-11-16T14:07:13.199Z",
+ "note": "harness zoom-gesture, test vault, long-300.pdf; iPad profile = devicePixelRatio 2 + penDF mobile render settings for the preset (desktop Obsidian/Chromium)",
+ "runs": {
+  "desktop": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.791,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.8,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 17.9,
+     "frameGapMaxAfterMs": 18.2,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 6.6,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.097,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 26.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 8.3,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       380,
+       110,
+       1492,
+       1.097
+      ]
+     ],
+     "anchorErrorPx": 0.38,
+     "anchorErrXY": [
+      0,
+      -0.38
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.0968,
+      "anchorErrorPx": 0.38,
+      "ms": 18.099999964237213,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.177,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 74,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18,
+     "frameGapMaxMs": 18.6,
+     "frameGapMaxAfterMs": 29.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 14.3,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       1298,
+       142,
+       1883,
+       1.177
+      ]
+     ],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.1774,
+      "anchorErrorPx": 0,
+      "ms": 18.900000035762787,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 1.177,
+     "scaleAfter": 1.269,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 18,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.7,
+     "frameGapMaxMs": 17.7,
+     "frameGapMaxAfterMs": 25.2,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 14.3,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       342,
+       37,
+       448,
+       1.269
+      ]
+     ],
+     "anchorErrorPx": 0.68,
+     "anchorErrXY": [
+      -0.5,
+      -0.47
+     ],
+     "commit": {
+      "scale": 1.2688,
+      "anchorErrorPx": 0.68,
+      "ms": 17.100000023841858,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 2
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.975,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.2,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.1,
+     "frameGapMaxAfterMs": 27.5,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 9.8,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       381,
+       24,
+       865,
+       0.975
+      ]
+     ],
+     "anchorErrorPx": 0.08,
+     "anchorErrXY": [
+      0.02,
+      -0.08
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.975,
+      "anchorErrorPx": 0.08,
+      "ms": 16.100000023841858,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.452,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 4,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 17.8,
+     "frameGapMaxMs": 17.8,
+     "frameGapMaxAfterMs": 23.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 6.6,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       374,
+       0,
+       -1657,
+       0.452
+      ]
+     ],
+     "anchorErrorPx": 0.13,
+     "anchorErrXY": [
+      0,
+      0.13
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.452,
+      "anchorErrorPx": 0.13,
+      "ms": 13.699999988079071,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.625,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 23,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 17.7,
+     "frameGapMaxMs": 17.8,
+     "frameGapMaxAfterMs": 26,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 18.1,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       584,
+       320,
+       4070,
+       1.625
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      0.42
+     ],
+     "commit": {
+      "scale": 1.6255,
+      "anchorErrorPx": 0.42,
+      "ms": 16.5,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.87,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 5,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 24.4,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 7.9,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.31,
+     "anchorErrXY": [
+      0,
+      -0.31
+     ],
+     "commit": {
+      "scale": 0.8703,
+      "anchorErrorPx": 0.31,
+      "ms": 14,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 4,
+     "layerRemovalsDuringGesture": 14,
+     "cssOnlyRendersDuringGesture": 4,
+     "fullRendersDuringGesture": 7,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 130,
+     "frameGapAvgMs": 17.6,
+     "frameGapP95Ms": 24.3,
+     "frameGapMaxMs": 33.3,
+     "frameGapMaxAfterMs": 18.7,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 31.4,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       341,
+       369,
+       4675,
+       1.749
+      ],
+      [
+       793,
+       841,
+       10341,
+       3.868
+      ],
+      [
+       1256,
+       1859,
+       22865,
+       8.552
+      ],
+      [
+       1718,
+       575,
+       7071,
+       10
+      ]
+     ],
+     "rounds": 5,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 1,
+    "maxCanvasPixels": 33554432,
+    "preset": "default",
+    "budgetMB": 512
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T14:04:52.123Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 219,
+    "commitMs": 0.6,
+    "frames": [
+     16.1,
+     16.6,
+     16.9,
+     16.9,
+     17.3,
+     17,
+     16.4,
+     16.5,
+     16.6,
+     16.2,
+     17.1,
+     17.1,
+     17.1
+    ],
+    "transformWrites": 13,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 26.7,
+    "memPeakMB": 26.7,
+    "memEndMB": 26.7,
+    "canvasPeak": 3,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "default",
+    "maxCanvasPixels": 33554432,
+    "dpr": 1,
+    "mobile": false
+   },
+   "failed": []
+  },
+  "ipad-default": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.791,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 18.2,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 34.2,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.21,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 30.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 39.9,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       380,
+       155,
+       2040,
+       1.21
+      ]
+     ],
+     "anchorErrorPx": 0.44,
+     "anchorErrXY": [
+      0,
+      -0.44
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.2097,
+      "anchorErrorPx": 0.44,
+      "ms": 19.19999998807907,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.318,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 74,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.3,
+     "frameGapMaxAfterMs": 26.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 27.9,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       1295,
+       198,
+       2570,
+       1.318
+      ],
+      [
+       1321,
+       -3,
+       -2,
+       1.318
+      ]
+     ],
+     "anchorErrorPx": 0.34,
+     "anchorErrXY": [
+      0,
+      -0.34
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.3178,
+      "anchorErrorPx": 0.51,
+      "ms": 18.69999998807907,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 1.318,
+     "scaleAfter": 1.764,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 1,
+     "framesDuring": 18,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 19.2,
+     "frameGapMaxMs": 19.2,
+     "frameGapMaxAfterMs": 33.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 30.1,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       356,
+       120,
+       1468,
+       1.764
+      ]
+     ],
+     "anchorErrorPx": 0.11,
+     "anchorErrXY": [
+      0,
+      0.11
+     ],
+     "commit": {
+      "scale": 1.7644,
+      "anchorErrorPx": 0.11,
+      "ms": 23.80000001192093,
+      "released": 1,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.082,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 37.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 47.9,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       385,
+       45,
+       1373,
+       1.082
+      ]
+     ],
+     "anchorErrorPx": 0.22,
+     "anchorErrXY": [
+      -0.22,
+      -0.05
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.0824,
+      "anchorErrorPx": 0.22,
+      "ms": 18.899999976158142,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.388,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 4,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 25.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 25.7,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       379,
+       0,
+       -1970,
+       0.388
+      ]
+     ],
+     "anchorErrorPx": 0.02,
+     "anchorErrXY": [
+      0,
+      0.02
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.388,
+      "anchorErrorPx": 0.02,
+      "ms": 17.5,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.625,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 23,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 28.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 30.1,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       579,
+       320,
+       4070,
+       1.625
+      ],
+      [
+       608,
+       -1,
+       0,
+       1.625
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      0.42
+     ],
+     "commit": {
+      "scale": 1.6255,
+      "anchorErrorPx": 0.42,
+      "ms": 18.100000023841858,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.87,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 5,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 30.6,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 31,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.31,
+     "anchorErrXY": [
+      0,
+      -0.31
+     ],
+     "commit": {
+      "scale": 0.8703,
+      "anchorErrorPx": 0.31,
+      "ms": 14.299999952316284,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 3,
+     "layerRemovalsDuringGesture": 9,
+     "cssOnlyRendersDuringGesture": 4,
+     "fullRendersDuringGesture": 4,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 104,
+     "frameGapAvgMs": 17.7,
+     "frameGapP95Ms": 24.6,
+     "frameGapMaxMs": 30.4,
+     "frameGapMaxAfterMs": 18.7,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 30.1,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       344,
+       459,
+       5784,
+       1.976
+      ],
+      [
+       370,
+       0,
+       -1,
+       1.976
+      ],
+      [
+       823,
+       1172,
+       14454,
+       4.937
+      ],
+      [
+       1283,
+       2012,
+       24716,
+       10
+      ]
+     ],
+     "rounds": 4,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 2,
+    "maxCanvasPixels": 5242880,
+    "preset": "default",
+    "budgetMB": 160
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T14:05:19.697Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 258,
+    "commitMs": 0.7,
+    "frames": [
+     17.7,
+     18.1,
+     16.6,
+     16.2,
+     17.5,
+     16.6,
+     17.7,
+     17.5,
+     17,
+     16.4,
+     16.2,
+     18.2,
+     16.7,
+     17.2,
+     18
+    ],
+    "transformWrites": 15,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 30,
+    "memPeakMB": 30,
+    "memEndMB": 30,
+    "canvasPeak": 3,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "default",
+    "maxCanvasPixels": 5242880,
+    "dpr": 2,
+    "mobile": false
+   },
+   "failed": []
+  },
+  "ipad-low-memory": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.791,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.1,
+     "frameGapMaxAfterMs": 18.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 15,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.21,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 1,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.1,
+     "frameGapMaxAfterMs": 37.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 15,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [
+      [
+       393,
+       155,
+       2040,
+       1.21
+      ]
+     ],
+     "anchorErrorPx": 0.44,
+     "anchorErrXY": [
+      0,
+      -0.44
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.2097,
+      "anchorErrorPx": 0.44,
+      "ms": 28,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.318,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 74,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 18.5,
+     "frameGapMaxAfterMs": 30.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 14.2,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       1297,
+       198,
+       2570,
+       1.318
+      ],
+      [
+       1327,
+       0,
+       -2,
+       1.318
+      ]
+     ],
+     "anchorErrorPx": 0.51,
+     "anchorErrXY": [
+      -0.5,
+      0.1
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.3178,
+      "anchorErrorPx": 0.51,
+      "ms": 24.30000001192093,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 1.318,
+     "scaleAfter": 1.764,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 1,
+     "framesDuring": 18,
+     "frameGapAvgMs": 16.8,
+     "frameGapP95Ms": 17.5,
+     "frameGapMaxMs": 17.5,
+     "frameGapMaxAfterMs": 35.7,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 12.2,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       342,
+       120,
+       1467,
+       1.764
+      ]
+     ],
+     "anchorErrorPx": 0.52,
+     "anchorErrXY": [
+      -0.4,
+      -0.34
+     ],
+     "commit": {
+      "scale": 1.7644,
+      "anchorErrorPx": 0.52,
+      "ms": 17,
+      "released": 1,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 2
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.082,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 1,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.7,
+     "frameGapP95Ms": 17.7,
+     "frameGapMaxMs": 17.7,
+     "frameGapMaxAfterMs": 31.2,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 13,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       374,
+       45,
+       1373,
+       1.082
+      ]
+     ],
+     "anchorErrorPx": 0.22,
+     "anchorErrXY": [
+      -0.22,
+      -0.05
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.0824,
+      "anchorErrorPx": 0.22,
+      "ms": 18.5,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.388,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 4,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 26.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 13,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       375,
+       0,
+       -1970,
+       0.388
+      ]
+     ],
+     "anchorErrorPx": 0.02,
+     "anchorErrXY": [
+      0,
+      0.02
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.388,
+      "anchorErrorPx": 0.02,
+      "ms": 14.699999988079071,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.625,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 1,
+     "framesDuring": 23,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 18.4,
+     "frameGapMaxAfterMs": 27.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 15.1,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [
+      [
+       583,
+       320,
+       4070,
+       1.625
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      0.42
+     ],
+     "commit": {
+      "scale": 1.6255,
+      "anchorErrorPx": 0.42,
+      "ms": 16.80000001192093,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.87,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 2,
+     "cssOnlyRendersDuringGesture": 3,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 24.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 13.8,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.31,
+     "anchorErrXY": [
+      0,
+      -0.31
+     ],
+     "commit": {
+      "scale": 0.8703,
+      "anchorErrorPx": 0.31,
+      "ms": 19.299999952316284,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 3,
+     "layerRemovalsDuringGesture": 6,
+     "cssOnlyRendersDuringGesture": 8,
+     "fullRendersDuringGesture": 4,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 104,
+     "frameGapAvgMs": 17.6,
+     "frameGapP95Ms": 23.6,
+     "frameGapMaxMs": 33,
+     "frameGapMaxAfterMs": 18.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 14.2,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       344,
+       459,
+       5782,
+       1.976
+      ],
+      [
+       377,
+       0,
+       -1,
+       1.976
+      ],
+      [
+       817,
+       1175,
+       14456,
+       4.937
+      ],
+      [
+       1279,
+       2010,
+       24716,
+       10
+      ]
+     ],
+     "rounds": 4,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 2,
+    "maxCanvasPixels": 2097152,
+    "preset": "low-memory",
+    "budgetMB": 64
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T14:05:48.504Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 255,
+    "commitMs": 0.7,
+    "frames": [
+     16.6,
+     16.5,
+     16.9,
+     16.9,
+     16.4,
+     16.5,
+     17.1,
+     17.1,
+     17,
+     16.5,
+     16.9,
+     17.4,
+     17.9,
+     17.2,
+     17.2
+    ],
+    "transformWrites": 15,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 12,
+    "memPeakMB": 12,
+    "memEndMB": 12,
+    "canvasPeak": 3,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "low-memory",
+    "maxCanvasPixels": 2097152,
+    "dpr": 2,
+    "mobile": false
+   },
+   "failed": []
+  },
+  "ipad-no-detail": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.791,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18,
+     "frameGapMaxMs": 18,
+     "frameGapMaxAfterMs": 18.7,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 34.2,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.21,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.5,
+     "frameGapMaxMs": 17.5,
+     "frameGapMaxAfterMs": 47.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 39.9,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       403,
+       155,
+       2040,
+       1.21
+      ]
+     ],
+     "anchorErrorPx": 0.44,
+     "anchorErrXY": [
+      0,
+      -0.44
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.2097,
+      "anchorErrorPx": 0.44,
+      "ms": 34.80000001192093,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.318,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 74,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.3,
+     "frameGapMaxAfterMs": 50.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 60.2,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       1313,
+       198,
+       2570,
+       1.318
+      ],
+      [
+       1364,
+       -1,
+       -4,
+       1.318
+      ]
+     ],
+     "anchorErrorPx": 0.06,
+     "anchorErrXY": [
+      0,
+      0.06
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.3178,
+      "anchorErrorPx": 0.51,
+      "ms": 26.69999998807907,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 1.318,
+     "scaleAfter": 1.764,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 1,
+     "detailRendersAfter": 0,
+     "framesDuring": 18,
+     "frameGapAvgMs": 17.2,
+     "frameGapP95Ms": 18.5,
+     "frameGapMaxMs": 18.5,
+     "frameGapMaxAfterMs": 50.6,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 40.2,
+     "canvasPeak": 3,
+     "scrollMovesAfter": [
+      [
+       376,
+       120,
+       1471,
+       1.764
+      ]
+     ],
+     "anchorErrorPx": 0.49,
+     "anchorErrXY": [
+      0,
+      0.49
+     ],
+     "commit": {
+      "scale": 1.7644,
+      "anchorErrorPx": 0.49,
+      "ms": 29.19999998807907,
+      "released": 1,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.082,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.2,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 17.9,
+     "frameGapMaxAfterMs": 44,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 47.9,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       405,
+       45,
+       1373,
+       1.082
+      ]
+     ],
+     "anchorErrorPx": 0.22,
+     "anchorErrXY": [
+      -0.22,
+      -0.05
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.0824,
+      "anchorErrorPx": 0.22,
+      "ms": 34.30000001192093,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.388,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 4,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.3,
+     "frameGapP95Ms": 18.4,
+     "frameGapMaxMs": 18.4,
+     "frameGapMaxAfterMs": 35.4,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 25.7,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       398,
+       0,
+       -1970,
+       0.388
+      ]
+     ],
+     "anchorErrorPx": 0.02,
+     "anchorErrXY": [
+      0,
+      0.02
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.388,
+      "anchorErrorPx": 0.02,
+      "ms": 29.599999964237213,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.625,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 23,
+     "frameGapAvgMs": 16.9,
+     "frameGapP95Ms": 17.9,
+     "frameGapMaxMs": 18,
+     "frameGapMaxAfterMs": 44.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 40.1,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       595,
+       320,
+       4070,
+       1.625
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      0.42
+     ],
+     "commit": {
+      "scale": 1.6255,
+      "anchorErrorPx": 0.42,
+      "ms": 25.400000035762787,
+      "released": 3,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.87,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 5,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 46.1,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 31,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.31,
+     "anchorErrXY": [
+      0,
+      -0.31
+     ],
+     "commit": {
+      "scale": 0.8703,
+      "anchorErrorPx": 0.31,
+      "ms": 25,
+      "released": 2,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 3,
+     "layerRemovalsDuringGesture": 9,
+     "cssOnlyRendersDuringGesture": 5,
+     "fullRendersDuringGesture": 5,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 102,
+     "frameGapAvgMs": 18.5,
+     "frameGapP95Ms": 29.1,
+     "frameGapMaxMs": 55.5,
+     "frameGapMaxAfterMs": 18.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 60.1,
+     "canvasPeak": 4,
+     "scrollMovesAfter": [
+      [
+       360,
+       459,
+       5784,
+       1.976
+      ],
+      [
+       415,
+       0,
+       -3,
+       1.976
+      ],
+      [
+       845,
+       1174,
+       14455,
+       4.937
+      ],
+      [
+       1319,
+       2010,
+       24715,
+       10
+      ]
+     ],
+     "rounds": 4,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 2,
+    "maxCanvasPixels": 5242880,
+    "preset": "no-detail",
+    "budgetMB": 160
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T14:06:17.433Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 256,
+    "commitMs": 0.9,
+    "frames": [
+     17.1,
+     17.3,
+     16.3,
+     16.6,
+     18.1,
+     17.1,
+     17.2,
+     16.5,
+     16.9,
+     17,
+     16.8,
+     17.1,
+     17.2,
+     16.9,
+     16.9
+    ],
+    "transformWrites": 15,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 40,
+    "memPeakMB": 40,
+    "memEndMB": 40,
+    "canvasPeak": 2,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "no-detail",
+    "maxCanvasPixels": 5242880,
+    "dpr": 2,
+    "mobile": false
+   },
+   "failed": []
+  },
+  "ipad-pdfjs": {
+   "ok": true,
+   "scenarios": {
+    "anchor-sanity": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.791,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 16.7,
+     "frameGapP95Ms": 17.4,
+     "frameGapMaxMs": 17.4,
+     "frameGapMaxAfterMs": 18.6,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 34.2,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0,
+     "anchorErrXY": [
+      0,
+      0
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": null
+    },
+    "pinch-in": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.21,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.2,
+     "frameGapP95Ms": 18.1,
+     "frameGapMaxMs": 18.1,
+     "frameGapMaxAfterMs": 38.5,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 56.9,
+     "canvasPeak": 5,
+     "scrollMovesAfter": [
+      [
+       398,
+       155,
+       2040,
+       1.21
+      ]
+     ],
+     "anchorErrorPx": 0.44,
+     "anchorErrXY": [
+      0,
+      -0.44
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.2097,
+      "anchorErrorPx": 0.44,
+      "ms": 28,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-hold-continue": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.318,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 74,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.6,
+     "frameGapMaxAfterMs": 25.9,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 57,
+     "canvasPeak": 7,
+     "scrollMovesAfter": [
+      [
+       1303,
+       198,
+       2570,
+       1.318
+      ],
+      [
+       1329,
+       -3,
+       -2,
+       1.318
+      ]
+     ],
+     "anchorErrorPx": 0.34,
+     "anchorErrXY": [
+      0,
+      -0.34
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.3178,
+      "anchorErrorPx": 0.51,
+      "ms": 16.69999998807907,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "pinch-again-before-idle": {
+     "scaleBefore": 1.318,
+     "scaleAfter": 1.764,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 1,
+     "framesDuring": 18,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 41.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 55.6,
+     "canvasPeak": 7,
+     "scrollMovesAfter": [
+      [
+       365,
+       120,
+       1468,
+       1.764
+      ]
+     ],
+     "anchorErrorPx": 0.11,
+     "anchorErrXY": [
+      0,
+      0.11
+     ],
+     "commit": {
+      "scale": 1.7644,
+      "anchorErrorPx": 0.11,
+      "ms": 30,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-off-centre": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.082,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17,
+     "frameGapP95Ms": 18,
+     "frameGapMaxMs": 18,
+     "frameGapMaxAfterMs": 45.2,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 65,
+     "canvasPeak": 6,
+     "scrollMovesAfter": [
+      [
+       386,
+       45,
+       1373,
+       1.082
+      ]
+     ],
+     "anchorErrorPx": 0.22,
+     "anchorErrXY": [
+      -0.22,
+      -0.05
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 1.0824,
+      "anchorErrorPx": 0.22,
+      "ms": 20.100000023841858,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "pinch-out-below-fit": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.388,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 4,
+     "detailRendersAfter": 0,
+     "framesDuring": 20,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18,
+     "frameGapMaxMs": 18,
+     "frameGapMaxAfterMs": 24.8,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 42.7,
+     "canvasPeak": 7,
+     "scrollMovesAfter": [
+      [
+       385,
+       0,
+       -1970,
+       0.388
+      ]
+     ],
+     "anchorErrorPx": 0.02,
+     "anchorErrXY": [
+      0,
+      0.02
+     ],
+     "previewErrorPx": 0,
+     "previewXY": [
+      0,
+      0
+     ],
+     "commit": {
+      "scale": 0.388,
+      "anchorErrorPx": 0.02,
+      "ms": 20.399999976158142,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "trackpad-pinch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 1.625,
+     "scaleChangesDuringGesture": 0,
+     "layerRemovalsDuringGesture": 0,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 2,
+     "detailRendersAfter": 1,
+     "framesDuring": 23,
+     "frameGapAvgMs": 17.1,
+     "frameGapP95Ms": 18.2,
+     "frameGapMaxMs": 18.2,
+     "frameGapMaxAfterMs": 28,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 61.2,
+     "canvasPeak": 8,
+     "scrollMovesAfter": [
+      [
+       592,
+       320,
+       4070,
+       1.625
+      ],
+      [
+       620,
+       -1,
+       0,
+       1.625
+      ]
+     ],
+     "anchorErrorPx": 0.42,
+     "anchorErrXY": [
+      0,
+      0.42
+     ],
+     "commit": {
+      "scale": 1.6255,
+      "anchorErrorPx": 0.42,
+      "ms": 19.5,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 1
+     }
+    },
+    "mouse-notch": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 0.87,
+     "scaleChangesDuringGesture": 1,
+     "layerRemovalsDuringGesture": 3,
+     "cssOnlyRendersDuringGesture": 0,
+     "fullRendersDuringGesture": 0,
+     "maxRendersPerPageAfter": 1,
+     "pagesRenderedAfter": 3,
+     "detailRendersAfter": 0,
+     "framesDuring": 0,
+     "frameGapAvgMs": 0,
+     "frameGapP95Ms": 0,
+     "frameGapMaxMs": 0,
+     "frameGapMaxAfterMs": 36.3,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 50.1,
+     "canvasPeak": 7,
+     "scrollMovesAfter": [],
+     "anchorErrorPx": 0.31,
+     "anchorErrXY": [
+      0,
+      -0.31
+     ],
+     "commit": {
+      "scale": 0.8703,
+      "anchorErrorPx": 0.31,
+      "ms": 23.5,
+      "released": 0,
+      "clamp": [
+       0,
+       0
+      ],
+      "moved": [
+       0,
+       0
+      ],
+      "settled": 0
+     }
+    },
+    "max-zoom": {
+     "scaleBefore": 0.791,
+     "scaleAfter": 10,
+     "scaleChangesDuringGesture": 3,
+     "layerRemovalsDuringGesture": 5,
+     "cssOnlyRendersDuringGesture": 4,
+     "fullRendersDuringGesture": 2,
+     "maxRendersPerPageAfter": 0,
+     "pagesRenderedAfter": 0,
+     "detailRendersAfter": 0,
+     "framesDuring": 103,
+     "frameGapAvgMs": 18.4,
+     "frameGapP95Ms": 30.9,
+     "frameGapMaxMs": 44.6,
+     "frameGapMaxAfterMs": 18.6,
+     "blankFrames": 0,
+     "blankPages": [],
+     "blackFrames": 0,
+     "layerMissingFrames": 0,
+     "memPeakMB": 61.2,
+     "canvasPeak": 8,
+     "scrollMovesAfter": [
+      [
+       356,
+       459,
+       5784,
+       1.976
+      ],
+      [
+       387,
+       0,
+       -1,
+       1.976
+      ],
+      [
+       851,
+       1172,
+       14454,
+       4.937
+      ],
+      [
+       1327,
+       2012,
+       24716,
+       10
+      ]
+     ],
+     "rounds": 4,
+     "capReached": true
+    }
+   },
+   "profile": {
+    "dpr": 2,
+    "maxCanvasPixels": 5242880,
+    "preset": "pdfjs",
+    "budgetMB": null
+   },
+   "zoomTimeline": {
+    "kind": "pinch",
+    "startedAt": "2026-11-16T14:06:49.669Z",
+    "startScale": 10,
+    "endScale": 10,
+    "endT": 255,
+    "commitMs": 0.8,
+    "frames": [
+     17,
+     17.6,
+     16.6,
+     16.4,
+     16.8,
+     16.5,
+     17.4,
+     17,
+     16.8,
+     16.4,
+     17,
+     17.1,
+     16.9,
+     18,
+     16.8
+    ],
+    "transformWrites": 15,
+    "scaleChangesDuringGesture": 0,
+    "layerAttachDuringGesture": 0,
+    "layerDetachDuringGesture": 0,
+    "renders": [],
+    "canvasesCreated": 0,
+    "canvasesReleased": 0,
+    "memStartMB": 57.5,
+    "memPeakMB": 57.5,
+    "memEndMB": 57.5,
+    "canvasPeak": 7,
+    "blank": 0,
+    "releasedOffscreen": 0,
+    "anchorErrorPx": null,
+    "preset": "pdfjs",
+    "maxCanvasPixels": 5242880,
+    "dpr": 2,
+    "mobile": false
+   },
+   "failed": []
+  }
+ }
+}
