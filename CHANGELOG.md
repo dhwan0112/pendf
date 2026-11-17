@@ -4,7 +4,7 @@ All releases are on GitHub (tag = version, no "v"); each release's `main.js`, `m
 `styles.css` carry build-provenance attestations from 0.1.1 on. Decisions are in
 [docs/DECISIONS.md](docs/DECISIONS.md) (D-numbers below).
 
-## Unreleased
+## 0.8.2 — 2026-11-17
 
 - **Tool palette (D-46):** the annotation tools moved from the top toolbar into a palette floating at
   the bottom of the page area — no tool, pen, highlighter, stroke eraser, text highlight, area excerpt,

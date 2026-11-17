@@ -12,7 +12,7 @@ A standalone, iPad-first PDF viewer and annotator for Obsidian.
 
 ## Status
 
-All six phases (viewer, highlights, notes, links, bookmarks, handwriting) plus, in 0.8.0, a margin beside the pages, area excerpts, a panel inside the view and a vault-wide annotation index. See [docs/REPORT.md](docs/REPORT.md).
+All six phases (viewer, highlights, notes, links, bookmarks, handwriting) plus, in 0.8.0, a margin beside the pages, area excerpts, a panel inside the view and a vault-wide annotation index, and in 0.8.2 a tool palette at the bottom of the view. See [docs/REPORT.md](docs/REPORT.md).
 
 | Phase | Feature | State |
 | --- | --- | --- |
